@@ -1,23 +1,19 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: xcelera performance audit
+description: Perform a performance audit of a GitHub repository
+author: xcelera.dev
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+  icon: lightning
+  color: yellow
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
+  url:
+    description: The URL of the web page to audit
     required: true
-    default: '1000'
 
-# Define your outputs here.
 outputs:
-  time:
-    description: Your output description here
+  result:
+    description: The result of the audit request
 
 runs:
   using: node20
