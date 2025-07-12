@@ -1,27 +1,68 @@
 import * as core from '@actions/core'
-import { wait } from './wait.js'
 
-/**
- * The main function for the action.
- *
- * @returns Resolves when the action is complete.
- */
+interface AuditResponse {
+  auditId: string
+  status: string
+}
+
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
+    const url = core.getInput('url', { required: true })
+    const token = core.getInput('token', { required: true })
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    core.debug(`Auditing URL: ${url}`)
+    core.debug(`API Base URL: ${getApiBaseUrl()}`)
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    core.debug('Calling Xcelera audit API...')
+    const response = await requestAudit(url, token)
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    // Set outputs
+    core.setOutput('auditId', response.auditId)
+    core.setOutput('status', response.status)
+
+    core.info(`✅ Audit scheduled successfully!`)
+    core.info(`Audit ID: ${response.auditId}`)
+    core.info(`Status: ${response.status}`)
   } catch (error) {
-    // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message)
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred'
+    core.setFailed(errorMessage)
+    core.setOutput('status', 'failed')
   }
+}
+
+async function requestAudit(
+  url: string,
+  token: string
+): Promise<AuditResponse> {
+  const apiUrl = `${getApiBaseUrl()}/api/v1/audit`
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ url })
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(
+      `API request failed: ${response.status} ${response.statusText} - ${errorText}`
+    )
+  }
+
+  const data = await response.json()
+  return data as AuditResponse
+}
+
+function getApiBaseUrl(): string {
+  if (
+    process.env.NODE_ENV === 'development' ||
+    process.env.GITHUB_ACTIONS !== 'true'
+  ) {
+    return 'http://localhost:3000'
+  }
+  return 'https://xcelera.dev'
 }

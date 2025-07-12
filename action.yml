@@ -1,5 +1,7 @@
 name: xcelera performance audit
-description: Perform a performance audit of a GitHub repository
+description:
+  Perform a performance audit of a web page using Xcelera's Lighthouse testing
+  service
 author: xcelera.dev
 
 branding:
@@ -10,10 +12,17 @@ inputs:
   url:
     description: The URL of the web page to audit
     required: true
+  token:
+    description: Xcelera API token for authentication
+    required: true
 
 outputs:
-  result:
-    description: The result of the audit request
+  auditId:
+    description: The ID of the scheduled test
+  status:
+    description: The status of the audit request (scheduled, failed)
+  error:
+    description: The error message if the audit request fails
 
 runs:
   using: node20
