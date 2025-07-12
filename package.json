@@ -1,6 +1,6 @@
 {
-  "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
+  "name": "@xcelera-dev/cli",
+  "description": "CLI for xcelera.dev",
   "version": "0.0.0",
   "author": "",
   "type": "module",

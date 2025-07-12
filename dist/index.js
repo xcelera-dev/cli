@@ -27247,40 +27247,111 @@ function requireCore () {
 var coreExports = requireCore();
 
 /**
- * Waits for a number of milliseconds.
- *
- * @param milliseconds The number of milliseconds to wait.
- * @returns Resolves with 'done!' after the wait is over.
+ * Get the API base URL based on environment
  */
-async function wait(milliseconds) {
-    return new Promise((resolve) => {
-        if (isNaN(milliseconds))
-            throw new Error('milliseconds is not a number');
-        setTimeout(() => resolve('done!'), milliseconds);
-    });
+function getApiBaseUrl() {
+    // Use localhost for local development, production URL for GitHub Actions
+    if (process.env.NODE_ENV === 'development' ||
+        process.env.GITHUB_ACTIONS !== 'true') {
+        return 'http://localhost:3000';
+    }
+    return 'https://xcelera.dev';
 }
-
+/**
+ * Detect GitHub context from environment variables
+ */
+function detectGitHubContext() {
+    const repo = process.env.GITHUB_REPOSITORY;
+    const sha = process.env.GITHUB_SHA;
+    const eventName = process.env.GITHUB_EVENT_NAME;
+    const ref = process.env.GITHUB_REF;
+    if (!repo || !sha) {
+        return null;
+    }
+    let pr;
+    if (eventName === 'pull_request' && ref) {
+        const prMatch = ref.match(/refs\/pull\/(\d+)\/merge/);
+        if (prMatch) {
+            pr = parseInt(prMatch[1], 10);
+        }
+    }
+    return {
+        repo,
+        pr,
+        sha
+    };
+}
+/**
+ * Call the Xcelera audit API
+ */
+async function callAuditApi(request, token) {
+    const apiUrl = `${getApiBaseUrl()}/api/v1/audit`;
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(request)
+    });
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+    const data = await response.json();
+    return data;
+}
 /**
  * The main function for the action.
- *
- * @returns Resolves when the action is complete.
  */
 async function run() {
     try {
-        const ms = coreExports.getInput('milliseconds');
-        // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-        coreExports.debug(`Waiting ${ms} milliseconds ...`);
-        // Log the current timestamp, wait, then log the new timestamp
-        coreExports.debug(new Date().toTimeString());
-        await wait(parseInt(ms, 10));
-        coreExports.debug(new Date().toTimeString());
-        // Set outputs for other workflow steps to use
-        coreExports.setOutput('time', new Date().toTimeString());
+        // Get inputs
+        const url = coreExports.getInput('url', { required: true });
+        const token = coreExports.getInput('token', { required: true });
+        const device = coreExports.getInput('device') || 'mobile';
+        const location = coreExports.getInput('location') || 'us-east-1';
+        // Debug logs
+        coreExports.debug(`Auditing URL: ${url}`);
+        coreExports.debug(`Device: ${device}`);
+        coreExports.debug(`Location: ${location}`);
+        coreExports.debug(`API Base URL: ${getApiBaseUrl()}`);
+        // Detect GitHub context
+        const githubContext = detectGitHubContext();
+        if (githubContext) {
+            coreExports.debug(`GitHub Context: ${JSON.stringify(githubContext)}`);
+        }
+        // Prepare request
+        const request = {
+            url,
+            options: {
+                device,
+                location
+            },
+            github: githubContext || undefined
+        };
+        // Call the API
+        coreExports.debug('Calling Xcelera audit API...');
+        const response = await callAuditApi(request, token);
+        // Set outputs
+        coreExports.setOutput('testId', response.testId);
+        coreExports.setOutput('status', response.status);
+        if (response.githubCheckRunId) {
+            coreExports.setOutput('githubCheckRunId', response.githubCheckRunId.toString());
+        }
+        // Log success
+        coreExports.info(`✅ Audit scheduled successfully!`);
+        coreExports.info(`Test ID: ${response.testId}`);
+        coreExports.info(`Status: ${response.status}`);
+        if (response.githubCheckRunId) {
+            coreExports.info(`GitHub Check Run ID: ${response.githubCheckRunId}`);
+        }
     }
     catch (error) {
         // Fail the workflow run if an error occurs
-        if (error instanceof Error)
-            coreExports.setFailed(error.message);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        coreExports.setFailed(errorMessage);
+        coreExports.setOutput('status', 'failed');
     }
 }
 
