@@ -27246,45 +27246,28 @@ function requireCore () {
 
 var coreExports = requireCore();
 
-/**
- * Get the API base URL based on environment
- */
-function getApiBaseUrl() {
-    // Use localhost for local development, production URL for GitHub Actions
-    if (process.env.NODE_ENV === 'development' ||
-        process.env.GITHUB_ACTIONS !== 'true') {
-        return 'http://localhost:3000';
+async function run() {
+    try {
+        const url = coreExports.getInput('url', { required: true });
+        const token = coreExports.getInput('token', { required: true });
+        coreExports.debug(`Auditing URL: ${url}`);
+        coreExports.debug(`API Base URL: ${getApiBaseUrl()}`);
+        coreExports.debug('Calling Xcelera audit API...');
+        const response = await requestAudit(url, token);
+        // Set outputs
+        coreExports.setOutput('auditId', response.auditId);
+        coreExports.setOutput('status', response.status);
+        coreExports.info(`✅ Audit scheduled successfully!`);
+        coreExports.info(`Audit ID: ${response.auditId}`);
+        coreExports.info(`Status: ${response.status}`);
     }
-    return 'https://xcelera.dev';
+    catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        coreExports.setFailed(errorMessage);
+        coreExports.setOutput('status', 'failed');
+    }
 }
-/**
- * Detect GitHub context from environment variables
- */
-function detectGitHubContext() {
-    const repo = process.env.GITHUB_REPOSITORY;
-    const sha = process.env.GITHUB_SHA;
-    const eventName = process.env.GITHUB_EVENT_NAME;
-    const ref = process.env.GITHUB_REF;
-    if (!repo || !sha) {
-        return null;
-    }
-    let pr;
-    if (eventName === 'pull_request' && ref) {
-        const prMatch = ref.match(/refs\/pull\/(\d+)\/merge/);
-        if (prMatch) {
-            pr = parseInt(prMatch[1], 10);
-        }
-    }
-    return {
-        repo,
-        pr,
-        sha
-    };
-}
-/**
- * Call the Xcelera audit API
- */
-async function callAuditApi(request, token) {
+async function requestAudit(url, token) {
     const apiUrl = `${getApiBaseUrl()}/api/v1/audit`;
     const response = await fetch(apiUrl, {
         method: 'POST',
@@ -27292,7 +27275,7 @@ async function callAuditApi(request, token) {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(request)
+        body: JSON.stringify({ url })
     });
     if (!response.ok) {
         const errorText = await response.text();
@@ -27301,58 +27284,12 @@ async function callAuditApi(request, token) {
     const data = await response.json();
     return data;
 }
-/**
- * The main function for the action.
- */
-async function run() {
-    try {
-        // Get inputs
-        const url = coreExports.getInput('url', { required: true });
-        const token = coreExports.getInput('token', { required: true });
-        const device = coreExports.getInput('device') || 'mobile';
-        const location = coreExports.getInput('location') || 'us-east-1';
-        // Debug logs
-        coreExports.debug(`Auditing URL: ${url}`);
-        coreExports.debug(`Device: ${device}`);
-        coreExports.debug(`Location: ${location}`);
-        coreExports.debug(`API Base URL: ${getApiBaseUrl()}`);
-        // Detect GitHub context
-        const githubContext = detectGitHubContext();
-        if (githubContext) {
-            coreExports.debug(`GitHub Context: ${JSON.stringify(githubContext)}`);
-        }
-        // Prepare request
-        const request = {
-            url,
-            options: {
-                device,
-                location
-            },
-            github: githubContext || undefined
-        };
-        // Call the API
-        coreExports.debug('Calling Xcelera audit API...');
-        const response = await callAuditApi(request, token);
-        // Set outputs
-        coreExports.setOutput('testId', response.testId);
-        coreExports.setOutput('status', response.status);
-        if (response.githubCheckRunId) {
-            coreExports.setOutput('githubCheckRunId', response.githubCheckRunId.toString());
-        }
-        // Log success
-        coreExports.info(`✅ Audit scheduled successfully!`);
-        coreExports.info(`Test ID: ${response.testId}`);
-        coreExports.info(`Status: ${response.status}`);
-        if (response.githubCheckRunId) {
-            coreExports.info(`GitHub Check Run ID: ${response.githubCheckRunId}`);
-        }
+function getApiBaseUrl() {
+    if (process.env.NODE_ENV === 'development' ||
+        process.env.GITHUB_ACTIONS !== 'true') {
+        return 'http://localhost:3000';
     }
-    catch (error) {
-        // Fail the workflow run if an error occurs
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-        coreExports.setFailed(errorMessage);
-        coreExports.setOutput('status', 'failed');
-    }
+    return 'https://xcelera.dev';
 }
 
 /**
