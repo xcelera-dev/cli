@@ -57,7 +57,8 @@ jobs:
         id: test-action
         uses: ./
         with:
-          milliseconds: 2000
+          url: https://xcelera.dev
+          token: ${{ secrets.XCELERA_TOKEN }}
 
       - name: Print Output
         id: output
