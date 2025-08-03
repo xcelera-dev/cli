@@ -63,3 +63,9 @@ jobs:
       - name: Print Output
         id: output
         run: echo "${{ steps.test-action.outputs.status }}"
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
