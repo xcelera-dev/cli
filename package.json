@@ -1,7 +1,7 @@
 {
   "name": "@xcelera/cli",
   "description": "CLI for xcelera.dev",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "author": "",
   "type": "module",
   "repository": {
@@ -66,6 +66,7 @@
     "prettier": "^3.6.2",
     "prettier-eslint": "^16.4.2",
     "rollup": "^4.44.2",
+    "semantic-release": "^24.2.7",
     "ts-jest": "^29.4.0",
     "ts-jest-resolver": "^2.0.1",
     "typescript": "^5.8.3"
