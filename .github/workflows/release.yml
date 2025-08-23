@@ -46,6 +46,9 @@ jobs:
           signatures for installed dependencies
         run: npm audit signatures
 
+      - name: package
+        run: npm run package
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
