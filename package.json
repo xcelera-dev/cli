@@ -23,6 +23,11 @@
   "bin": {
     "xcelera": "dist/cli.js"
   },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "engines": {
     "node": ">=20"
   },
