@@ -11,6 +11,9 @@ on:
     workflows: [ci, linter]
     types: [completed]
 
+permissions:
+  contents: read
+
 jobs:
   release:
     name: Release
