@@ -8,7 +8,7 @@ on:
     branches:
       - main
   workflow_run:
-    workflows: [ci]
+    workflows: [Continuous Integration]
     types: [completed]
 
 permissions:
