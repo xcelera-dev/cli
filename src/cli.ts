@@ -3,7 +3,7 @@
 import { parseArgs } from 'node:util'
 
 import { requestAudit } from './api.js'
-import { inferGitContext } from './git.js'
+// import { inferGitContext } from './git.js'
 
 const options = {
   url: {
@@ -56,7 +56,12 @@ if (!token) {
 }
 
 try {
-  const githubContext = inferGitContext()
+  // const _githubContextOld = inferGitContext()
+  const githubContext = {
+    owner: 'xcelera-dev',
+    repo: 'app',
+    sha: 'fc0cb4434f8275ea67931f78dcd19f0f1c8f2366'
+  }
   await requestAudit(url, token, githubContext)
   console.log('✅ Audit scheduled successfully!')
 } catch (error) {
