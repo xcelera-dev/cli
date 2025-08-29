@@ -1,9 +1,9 @@
-type SuccessResponse<T> = {
+export type SuccessResponse<T> = {
   success: true
   data: T
 }
 
-type ErrorResponse<E> = {
+export type ErrorResponse<E> = {
   success: false
   error: E
 }

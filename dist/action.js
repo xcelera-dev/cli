@@ -31285,20 +31285,13 @@ async function requestAudit(url, token, github) {
             // handle expected errors
             if (response.headers.get('content-type')?.includes('application/json')) {
                 const errorResponse = (await response.json());
-                return {
-                    success: false,
-                    error: {
-                        code: response.status,
-                        message: errorResponse.error,
-                        details: errorResponse.details
-                    }
-                };
+                return errorResponse;
             }
             // handle unexpected errors
             const errorText = await response.text();
             throw new Error(`Operation failed: ${response.status} ${response.statusText} - ${errorText}`);
         }
-        const data = (await response.json());
+        const { data } = (await response.json());
         return {
             success: true,
             data
@@ -31329,23 +31322,32 @@ async function run() {
     try {
         const url = coreExports.getInput('url', { required: true });
         const token = coreExports.getInput('token', { required: true });
-        coreExports.debug(`Auditing URL: ${url}`);
-        coreExports.debug('Calling Xcelera audit API...');
         const githubContext = {
             owner: githubExports.context.repo.owner,
             repo: githubExports.context.repo.repo,
             sha: githubExports.context.sha
         };
+        coreExports.debug(`Calling xcelera audit API with URL: ${url}`);
         const response = await requestAudit(url, token, githubContext);
-        // Set outputs
-        coreExports.setOutput('auditId', response.auditId);
-        coreExports.setOutput('status', response.status);
-        coreExports.info(`✅ Audit scheduled successfully!`);
-        coreExports.info(`Audit ID: ${response.auditId}`);
-        coreExports.info(`Status: ${response.status}`);
+        if (!response.success) {
+            const { message, details } = response.error;
+            coreExports.error('❌ Unable to schedule audit :(');
+            coreExports.error(` ↳ ${message}`);
+            if (details) {
+                coreExports.error(` ↳ ${details}`);
+            }
+            coreExports.setFailed(`Failed to schedule audit: ${message}`);
+            coreExports.setOutput('status', 'failed');
+            return;
+        }
+        const { auditId, status } = response.data;
+        coreExports.setOutput('auditId', auditId);
+        coreExports.setOutput('status', status);
+        coreExports.info('✅ Audit scheduled successfully!');
     }
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        coreExports.error(`❌ ${errorMessage}`);
         coreExports.setFailed(errorMessage);
         coreExports.setOutput('status', 'failed');
     }
