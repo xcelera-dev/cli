@@ -64,10 +64,12 @@ try {
 
   const response = await requestAudit(url, token, githubContext)
   if (!response.success) {
-    const { message, details, code } = response.error
-    console.error(`❌ Unabled to schedule audit: ${message}`)
+    console.log(response)
+    const { message, details } = response.error
+    console.error('❌ Unabled to schedule audit :(')
+    console.error(` ↳ ${message}`)
     if (details) {
-      console.error(`↳ ${code ? `[${code}]: ` : ''}${details}`)
+      console.error(` ↳ ${details}`)
     }
     process.exit(1)
   }

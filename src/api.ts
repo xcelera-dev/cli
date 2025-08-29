@@ -1,7 +1,7 @@
 import isNetworkError from 'is-network-error'
 
 import type { GitContext } from './types/git.js'
-import { ApiResponse } from './types/index.js'
+import { ApiResponse, ErrorResponse } from './types/index.js'
 
 type AuditData = {
   auditId: string
@@ -9,7 +9,6 @@ type AuditData = {
 }
 
 type AuditError = {
-  code?: number
   message: string
   details: string
 }
@@ -38,18 +37,9 @@ export async function requestAudit(
     if (!response.ok) {
       // handle expected errors
       if (response.headers.get('content-type')?.includes('application/json')) {
-        const errorResponse = (await response.json()) as {
-          error: string
-          details: string
-        }
-        return {
-          success: false,
-          error: {
-            code: response.status,
-            message: errorResponse.error,
-            details: errorResponse.details
-          }
-        }
+        const errorResponse =
+          (await response.json()) as ErrorResponse<AuditError>
+        return errorResponse
       }
       // handle unexpected errors
       const errorText = await response.text()
@@ -58,9 +48,11 @@ export async function requestAudit(
       )
     }
 
-    const data = (await response.json()) as {
-      auditId: string
-      status: string
+    const { data } = (await response.json()) as {
+      data: {
+        auditId: string
+        status: string
+      }
     }
     return {
       success: true,
