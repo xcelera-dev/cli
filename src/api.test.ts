@@ -11,8 +11,11 @@ test('should be able to request an audit', async () => {
   server.use(
     http.post('https://xcelera.dev/api/v1/audit', () => {
       return HttpResponse.json({
-        auditId: 'abc-123',
-        status: 'scheduled'
+        success: true,
+        data: {
+          auditId: 'abc-123',
+          status: 'scheduled'
+        }
       })
     })
   )
@@ -59,7 +62,11 @@ test('should handle an expected API error', async () => {
     http.post('https://xcelera.dev/api/v1/audit', () => {
       return HttpResponse.json(
         {
-          error: 'Invalid API token'
+          success: false,
+          error: {
+            message: 'Invalid API token',
+            details: 'You must provide a valid Bearer token'
+          }
         },
         { status: 401 }
       )
@@ -76,7 +83,7 @@ test('should handle an expected API error', async () => {
     success: false,
     error: {
       message: 'Invalid API token',
-      code: 401
+      details: 'You must provide a valid Bearer token'
     }
   })
 })
