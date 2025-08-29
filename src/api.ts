@@ -1,11 +1,20 @@
 import isNetworkError from 'is-network-error'
 
 import type { GitContext } from './types/git.js'
+import { ApiResponse } from './types/index.js'
 
-export interface AuditResponse {
+type AuditData = {
   auditId: string
   status: string
 }
+
+type AuditError = {
+  code?: number
+  message: string
+  details: string
+}
+
+type AuditResponse = ApiResponse<AuditData, AuditError>
 
 export async function requestAudit(
   url: string,
@@ -27,17 +36,45 @@ export async function requestAudit(
       })
     })
     if (!response.ok) {
+      // handle expected errors
+      if (response.headers.get('content-type')?.includes('application/json')) {
+        const errorResponse = (await response.json()) as {
+          error: string
+          details: string
+        }
+        return {
+          success: false,
+          error: {
+            code: response.status,
+            message: errorResponse.error,
+            details: errorResponse.details
+          }
+        }
+      }
+      // handle unexpected errors
       const errorText = await response.text()
       throw new Error(
-        `API request failed: ${response.status} ${response.statusText} - ${errorText}`
+        `Operation failed: ${response.status} ${response.statusText} - ${errorText}`
       )
     }
 
-    const data = await response.json()
-    return data as AuditResponse
+    const data = (await response.json()) as {
+      auditId: string
+      status: string
+    }
+    return {
+      success: true,
+      data
+    }
   } catch (error) {
     if (isNetworkError(error)) {
-      throw new Error('Network error', { cause: error })
+      return {
+        success: false,
+        error: {
+          message: 'Network error',
+          details: error.message
+        }
+      }
     }
     throw error
   }

@@ -3,7 +3,7 @@
 import { parseArgs } from 'node:util'
 
 import { requestAudit } from './api.js'
-// import { inferGitContext } from './git.js'
+import { inferGitContext } from './git.js'
 
 const options = {
   url: {
@@ -56,13 +56,22 @@ if (!token) {
 }
 
 try {
-  // const _githubContextOld = inferGitContext()
-  const githubContext = {
-    owner: 'xcelera-dev',
-    repo: 'app',
-    sha: 'fc0cb4434f8275ea67931f78dcd19f0f1c8f2366'
+  const githubContext = inferGitContext()
+  console.log('🔍 Inferred GitHub context:')
+  console.log(`   • repository: ${githubContext.owner}/${githubContext.repo}`)
+  console.log(`   • sha: ${githubContext.sha}`)
+  console.log('')
+
+  const response = await requestAudit(url, token, githubContext)
+  if (!response.success) {
+    const { message, details, code } = response.error
+    console.error(`❌ Unabled to schedule audit: ${message}`)
+    if (details) {
+      console.error(`↳ ${code ? `[${code}]: ` : ''}${details}`)
+    }
+    process.exit(1)
   }
-  await requestAudit(url, token, githubContext)
+
   console.log('✅ Audit scheduled successfully!')
 } catch (error) {
   const errorMessage =
