@@ -31282,15 +31282,37 @@ async function requestAudit(url, token, github) {
             })
         });
         if (!response.ok) {
+            // handle expected errors
+            if (response.headers.get('content-type')?.includes('application/json')) {
+                const errorResponse = (await response.json());
+                return {
+                    success: false,
+                    error: {
+                        code: response.status,
+                        message: errorResponse.error,
+                        details: errorResponse.details
+                    }
+                };
+            }
+            // handle unexpected errors
             const errorText = await response.text();
-            throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+            throw new Error(`Operation failed: ${response.status} ${response.statusText} - ${errorText}`);
         }
-        const data = await response.json();
-        return data;
+        const data = (await response.json());
+        return {
+            success: true,
+            data
+        };
     }
     catch (error) {
         if (isNetworkError(error)) {
-            throw new Error('Network error', { cause: error });
+            return {
+                success: false,
+                error: {
+                    message: 'Network error',
+                    details: error.message
+                }
+            };
         }
         throw error;
     }
