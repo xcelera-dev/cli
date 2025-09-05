@@ -22,7 +22,7 @@ async function run(): Promise<void> {
     if (!response.success) {
       const { message, details } = response.error
 
-      core.setFailed('❌ Failed to schedule audit')
+      core.setFailed('❌ Unable to schedule audit :(')
       core.error(message)
       if (details) {
         core.error(` ↳ ${details}`)
@@ -31,10 +31,24 @@ async function run(): Promise<void> {
       return
     }
 
-    const { auditId, status } = response.data
-    core.setOutput('auditId', auditId)
-    core.setOutput('status', status)
+    const { auditId, status, integrations } = response.data
     core.info('✅ Audit scheduled successfully!')
+    core.debug(`Audit ID: ${auditId}`)
+    core.debug(`Status: ${status}`)
+    if (integrations && integrations.github) {
+      core.info('GitHub integration detected')
+      const { installationId, hasRepoAccess } = integrations.github
+      if (installationId && !hasRepoAccess) {
+        core.warning(
+          'The xcelera.dev Github app is installed, but it does not have repository access.'
+        )
+      }
+      core.debug(` ↳ installation ID: ${integrations.github.installationId}`)
+      core.debug(` ↳ check run ID: ${integrations.github.checkRunId}`)
+      core.debug(
+        ` ↳ installation has repo access: ${integrations.github.hasRepoAccess}`
+      )
+    }
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error occurred'

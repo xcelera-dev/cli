@@ -65,7 +65,7 @@ try {
   const response = await requestAudit(url, token, githubContext)
   if (!response.success) {
     const { message, details } = response.error
-    console.error('❌ Unabled to schedule audit :(')
+    console.error('❌ Unable to schedule audit :(')
     console.error(` ↳ ${message}`)
     if (details) {
       console.error(` ↳ ${details}`)
@@ -75,13 +75,26 @@ try {
   const { auditId, status, integrations } = response.data
 
   console.log('✅ Audit scheduled successfully!')
-  console.log(`Audit ID: ${auditId}`)
-  console.log(`Status: ${status}`)
-  if (integrations) {
-    console.log('Integration detected:')
-    console.log(` ↳ GitHub: ${integrations.github.installationId}`)
-    console.log(` ↳ GitHub: ${integrations.github.checkRunId}`)
-    console.log(` ↳ GitHub: ${integrations.github.hasRepoAccess}`)
+  if (process.env.DEBUG) {
+    console.log(`Audit ID: ${auditId}`)
+    console.log(`Status: ${status}`)
+  }
+  if (integrations && integrations.github) {
+    console.log('GitHub integration detected')
+    const { installationId, hasRepoAccess } = integrations.github
+    if (installationId && !hasRepoAccess) {
+      console.log(
+        'Warning: The xcelera.dev Github app is installed, but it does not have repository access.'
+      )
+    }
+
+    if (process.env.DEBUG) {
+      console.log(` ↳ installation ID: ${integrations.github.installationId}`)
+      console.log(` ↳ check run ID: ${integrations.github.checkRunId}`)
+      console.log(
+        ` ↳ installation has repo access: ${integrations.github.hasRepoAccess}`
+      )
+    }
   }
 } catch (error) {
   const errorMessage =
