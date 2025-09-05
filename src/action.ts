@@ -21,12 +21,12 @@ async function run(): Promise<void> {
 
     if (!response.success) {
       const { message, details } = response.error
-      core.error('❌ Unable to schedule audit :(')
-      core.error(` ↳ ${message}`)
+
+      core.setFailed('❌ Failed to schedule audit')
+      core.error(message)
       if (details) {
         core.error(` ↳ ${details}`)
       }
-      core.setFailed(`Failed to schedule audit: ${message}`)
       core.setOutput('status', 'failed')
       return
     }

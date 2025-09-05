@@ -31331,12 +31331,11 @@ async function run() {
         const response = await requestAudit(url, token, githubContext);
         if (!response.success) {
             const { message, details } = response.error;
-            coreExports.error('❌ Unable to schedule audit :(');
-            coreExports.error(` ↳ ${message}`);
+            coreExports.setFailed('❌ Failed to schedule audit');
+            coreExports.error(message);
             if (details) {
                 coreExports.error(` ↳ ${details}`);
             }
-            coreExports.setFailed(`Failed to schedule audit: ${message}`);
             coreExports.setOutput('status', 'failed');
             return;
         }
