@@ -1,11 +1,18 @@
 import isNetworkError from 'is-network-error'
 
 import type { GitContext } from './types/git.js'
-import { ApiResponse, ErrorResponse } from './types/index.js'
+import { ApiResponse, ErrorResponse, SuccessResponse } from './types/index.js'
 
 type AuditData = {
   auditId: string
   status: string
+  integrations: {
+    github: {
+      installationId?: number
+      checkRunId?: number
+      hasRepoAccess?: boolean
+    }
+  }
 }
 
 type AuditError = {
@@ -48,12 +55,7 @@ export async function requestAudit(
       )
     }
 
-    const { data } = (await response.json()) as {
-      data: {
-        auditId: string
-        status: string
-      }
-    }
+    const { data } = (await response.json()) as SuccessResponse<AuditData>
     return {
       success: true,
       data
