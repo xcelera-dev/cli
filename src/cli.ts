@@ -64,7 +64,6 @@ try {
 
   const response = await requestAudit(url, token, githubContext)
   if (!response.success) {
-    console.log(response)
     const { message, details } = response.error
     console.error('❌ Unabled to schedule audit :(')
     console.error(` ↳ ${message}`)
@@ -73,8 +72,17 @@ try {
     }
     process.exit(1)
   }
+  const { auditId, status, integrations } = response.data
 
   console.log('✅ Audit scheduled successfully!')
+  console.log(`Audit ID: ${auditId}`)
+  console.log(`Status: ${status}`)
+  if (integrations) {
+    console.log('Integration detected:')
+    console.log(` ↳ GitHub: ${integrations.github.installationId}`)
+    console.log(` ↳ GitHub: ${integrations.github.checkRunId}`)
+    console.log(` ↳ GitHub: ${integrations.github.hasRepoAccess}`)
+  }
 } catch (error) {
   const errorMessage =
     error instanceof Error ? error.message : 'Unknown error occurred'
