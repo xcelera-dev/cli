@@ -73,7 +73,7 @@
     "msw": "^2.10.5",
     "prettier": "^3.6.2",
     "prettier-eslint": "^16.4.2",
-    "rollup": "^4.44.2",
+    "rollup": "^4.50.0",
     "semantic-release": "^24.2.7",
     "ts-jest": "^29.4.0",
     "ts-jest-resolver": "^2.0.1",
