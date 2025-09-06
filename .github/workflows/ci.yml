@@ -109,4 +109,9 @@ jobs:
 
   call-release:
     needs: [test-typescript, test-action, test-cli]
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
     uses: ./.github/workflows/release.yml
