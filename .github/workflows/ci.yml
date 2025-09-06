@@ -72,7 +72,8 @@ jobs:
         id: output
         run: echo "${STEPS_TEST_ACTION_OUTPUTS_STATUS}"
         env:
-          STEPS_TEST_ACTION_OUTPUTS_STATUS: ${{ steps.test-action.outputs.status }}
+          STEPS_TEST_ACTION_OUTPUTS_STATUS:
+            ${{ steps.test-action.outputs.status }}
 
   test-cli:
     name: CLI Tests
@@ -105,3 +106,7 @@ jobs:
         run: node dist/cli.js audit --url https://xcelera.dev/login
         env:
           XCELERA_TOKEN: ${{ secrets.XCELERA_TOKEN }}
+
+  call-release:
+    needs: [test-typescript, test-action, test-cli]
+    uses: ./.github/workflows/release.yml
