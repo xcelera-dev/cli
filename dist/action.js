@@ -31242,10 +31242,11 @@ const errorMessages = new Set([
 	'Failed to fetch', // Chrome
 	'NetworkError when attempting to fetch resource.', // Firefox
 	'The Internet connection appears to be offline.', // Safari 16
-	'Load failed', // Safari 17+
 	'Network request failed', // `cross-fetch`
 	'fetch failed', // Undici (Node.js)
 	'terminated', // Undici (Node.js)
+	' A network error occurred.', // Bun (WebKit)
+	'Network connection lost', // Cloudflare Workers (fetch)
 ]);
 
 function isNetworkError(error) {
@@ -31258,13 +31259,22 @@ function isNetworkError(error) {
 		return false;
 	}
 
-	// We do an extra check for Safari 17+ as it has a very generic error message.
-	// Network errors in Safari have no stack.
-	if (error.message === 'Load failed') {
-		return error.stack === undefined;
+	const {message, stack} = error;
+
+	// Safari 17+ has generic message but no stack for network errors
+	if (message === 'Load failed') {
+		return stack === undefined
+			// Sentry adds its own stack trace to the fetch error, so also check for that
+			|| '__sentry_captured__' in error;
 	}
 
-	return errorMessages.has(error.message);
+	// Deno network errors start with specific text
+	if (message.startsWith('error sending request for url')) {
+		return true;
+	}
+
+	// Standard network error messages
+	return errorMessages.has(message);
 }
 
 async function requestAudit(url, token, github) {
