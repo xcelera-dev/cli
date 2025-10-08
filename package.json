@@ -36,28 +36,28 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "is-network-error": "^1.1.0",
+    "is-network-error": "^1.3.0",
     "parse-github-url": "^1.0.3"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.5",
-    "@commitlint/cli": "^19.8.1",
-    "@commitlint/config-conventional": "^19.8.1",
-    "@github/local-action": "^5.2.0",
-    "@jest/globals": "^30.1.2",
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@github/local-action": "^6.0.0",
+    "@jest/globals": "^30.2.0",
     "@rollup/plugin-commonjs": "^28.0.6",
-    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-node-resolve": "^16.0.2",
     "@rollup/plugin-typescript": "^12.1.4",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.18.1",
-    "jest": "^30.1.3",
+    "jest": "^30.2.0",
     "make-coverage-badge": "^1.2.0",
-    "msw": "^2.11.1",
-    "rollup": "^4.50.0",
-    "semantic-release": "^24.2.7",
-    "ts-jest": "^29.4.1",
+    "msw": "^2.11.4",
+    "rollup": "^4.52.4",
+    "semantic-release": "^24.2.9",
+    "ts-jest": "^29.4.4",
     "ts-jest-resolver": "^2.0.1",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*"
