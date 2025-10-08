@@ -28,3 +28,14 @@ A CLI for running Lighthouse performance audits using xcelera.dev
 2. Navigate to "Secrets and variables" → "Actions"
 3. Create a new repository secret named `XCELERA_TOKEN`
 4. Paste your API token as the value
+
+## Development
+
+Github actions are pinned to specific commits. e.g.
+`uses: super-linter/super-linter/slim@7bba2eeb89d01dc9bfd93c497477a57e72c83240 # v8.2.0`
+
+To update the pinned versions, run the following command:
+
+```bash
+pinact run -u
+```
