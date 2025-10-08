@@ -31,7 +31,7 @@ A CLI for running Lighthouse performance audits using xcelera.dev
 
 ## Development
 
-Github actions are pinned to specific commits. e.g.
+GitHub Actions are pinned to specific commits. e.g.
 `uses: super-linter/super-linter/slim@7bba2eeb89d01dc9bfd93c497477a57e72c83240 # v8.2.0`
 
 To update the pinned versions, run the following command:
