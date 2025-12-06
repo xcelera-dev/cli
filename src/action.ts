@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
-import * as github from '@actions/github'
 
 import { requestAudit } from './api.js'
+import { inferBuildContext } from './buildContext.js'
 
 run()
 
@@ -10,14 +10,10 @@ async function run(): Promise<void> {
     const url = core.getInput('url', { required: true })
     const token = core.getInput('token', { required: true })
 
-    const githubContext = {
-      owner: github.context.repo.owner,
-      repo: github.context.repo.repo,
-      sha: github.context.sha
-    }
+    const buildContext = await inferBuildContext()
 
     core.debug(`Calling xcelera audit API with URL: ${url}`)
-    const response = await requestAudit(url, token, githubContext)
+    const response = await requestAudit(url, token, buildContext)
 
     if (!response.success) {
       const { message, details } = response.error
