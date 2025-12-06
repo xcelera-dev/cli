@@ -1,7 +1,11 @@
 import isNetworkError from 'is-network-error'
 
-import type { GitContext } from './types/git.js'
-import { ApiResponse, ErrorResponse, SuccessResponse } from './types/index.js'
+import {
+  ApiResponse,
+  BuildContext,
+  ErrorResponse,
+  SuccessResponse
+} from './types/index.js'
 
 type AuditData = {
   auditId: string
@@ -25,7 +29,7 @@ type AuditResponse = ApiResponse<AuditData, AuditError>
 export async function requestAudit(
   url: string,
   token: string,
-  github: GitContext
+  context: BuildContext
 ): Promise<AuditResponse> {
   const apiUrl = `${getApiBaseUrl()}/api/v1/audit`
 
@@ -38,7 +42,7 @@ export async function requestAudit(
       },
       body: JSON.stringify({
         url,
-        github
+        context
       })
     })
     if (!response.ok) {
