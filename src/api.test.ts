@@ -22,9 +22,18 @@ test('should be able to request an audit', async () => {
   )
 
   const response = await requestAudit('https://xcelera.dev', 'fake-token', {
-    owner: 'xcelera',
-    repo: 'cli',
-    sha: '123'
+    service: 'github',
+    git: {
+      owner: 'xcelera',
+      repo: 'cli',
+      commit: {
+        hash: '123',
+        message: 'test',
+        author: 'test',
+        email: 'test',
+        date: '2021-01-01'
+      }
+    }
   })
 
   expect(response).toEqual({
@@ -44,9 +53,18 @@ test('should handle a network error', async () => {
   )
 
   const response = await requestAudit('https://xcelera.dev', 'fake-token', {
-    owner: 'xcelera',
-    repo: 'cli',
-    sha: '123'
+    service: 'github',
+    git: {
+      owner: 'xcelera',
+      repo: 'cli',
+      commit: {
+        hash: '123',
+        message: 'test',
+        author: 'test',
+        email: 'test',
+        date: '2021-01-01'
+      }
+    }
   })
 
   expect(response).toEqual({
@@ -75,9 +93,18 @@ test('should handle an expected API error', async () => {
   )
 
   const response = await requestAudit('https://xcelera.dev', 'fake-token', {
-    owner: 'xcelera',
-    repo: 'cli',
-    sha: '123'
+    service: 'github',
+    git: {
+      owner: 'xcelera',
+      repo: 'cli',
+      commit: {
+        hash: '123',
+        message: 'test',
+        author: 'test',
+        email: 'test',
+        date: '2021-01-01'
+      }
+    }
   })
 
   expect(response).toEqual({
@@ -97,9 +124,7 @@ test('should handle an unexpected API error', async () => {
   )
 
   const response = requestAudit('https://xcelera.dev', 'fake-token', {
-    owner: 'xcelera',
-    repo: 'cli',
-    sha: '123'
+    service: 'unknown'
   })
 
   await expect(response).rejects.toThrow(
