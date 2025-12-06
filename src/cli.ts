@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
 import { parseArgs } from 'node:util'
-
 import { requestAudit } from './api.js'
-import { inferGitContext } from './git.js'
+import { inferBuildContext } from './buildContext.js'
 
 const options = {
   url: {
@@ -56,13 +55,9 @@ if (!token) {
 }
 
 try {
-  const githubContext = inferGitContext()
-  console.log('🔍 Inferred GitHub context:')
-  console.log(`   • repository: ${githubContext.owner}/${githubContext.repo}`)
-  console.log(`   • sha: ${githubContext.sha}`)
-  console.log('')
+  const buildContext = await inferBuildContext()
 
-  const response = await requestAudit(url, token, githubContext)
+  const response = await requestAudit(url, token, buildContext)
   if (!response.success) {
     const { message, details } = response.error
     console.error('❌ Unable to schedule audit :(')
