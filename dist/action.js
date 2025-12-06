@@ -1,32 +1,41 @@
 import require$$0 from 'os';
 import require$$0$1 from 'crypto';
-import require$$1 from 'fs';
-import require$$1$5 from 'path';
-import require$$2$1 from 'http';
-import require$$3$1 from 'https';
-import require$$0$4 from 'net';
-import require$$1$1 from 'tls';
-import require$$4$1 from 'events';
-import require$$0$3 from 'assert';
-import require$$0$2 from 'util';
-import require$$0$5 from 'stream';
+import require$$0$2 from 'fs';
+import require$$0$b from 'path';
+import require$$2 from 'http';
+import require$$3 from 'https';
+import require$$0$5 from 'net';
+import require$$1 from 'tls';
+import require$$4 from 'events';
+import require$$0$4 from 'assert';
+import require$$0$3 from 'util';
+import require$$0$6 from 'stream';
 import require$$7 from 'buffer';
 import require$$8 from 'querystring';
 import require$$14 from 'stream/web';
-import require$$0$7 from 'node:stream';
-import require$$1$2 from 'node:util';
-import require$$0$6 from 'node:events';
-import require$$0$8 from 'worker_threads';
-import require$$2$2 from 'perf_hooks';
+import require$$0$8 from 'node:stream';
+import require$$1$1, { debuglog } from 'node:util';
+import require$$0$7, { EventEmitter } from 'node:events';
+import require$$0$9 from 'worker_threads';
+import require$$2$1 from 'perf_hooks';
 import require$$5 from 'util/types';
-import require$$4$2 from 'async_hooks';
-import require$$1$3 from 'console';
-import require$$1$4 from 'url';
-import require$$3$2 from 'zlib';
+import require$$4$1 from 'async_hooks';
+import require$$1$2 from 'console';
+import require$$1$3 from 'url';
+import require$$3$1 from 'zlib';
 import require$$6 from 'string_decoder';
-import require$$0$9 from 'diagnostics_channel';
-import require$$2$3 from 'child_process';
+import require$$0$a from 'diagnostics_channel';
+import require$$2$2, { spawn } from 'child_process';
 import require$$6$1 from 'timers';
+import { Buffer as Buffer$1 } from 'node:buffer';
+import path, { normalize } from 'node:path';
+import childProcess from 'node:child_process';
+import process$2 from 'node:process';
+import { fileURLToPath } from 'node:url';
+import { constants as constants$5 } from 'node:os';
+import { readFileSync } from 'node:fs';
+import 'node:timers/promises';
+import require$$1$4 from 'tty';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -34,50 +43,21 @@ function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
 
-function getAugmentedNamespace(n) {
-  if (Object.prototype.hasOwnProperty.call(n, '__esModule')) return n;
-  var f = n.default;
-	if (typeof f == "function") {
-		var a = function a () {
-			var isInstance = false;
-      try {
-        isInstance = this instanceof a;
-      } catch {}
-			if (isInstance) {
-        return Reflect.construct(f, arguments, this.constructor);
-			}
-			return f.apply(this, arguments);
-		};
-		a.prototype = f.prototype;
-  } else a = {};
-  Object.defineProperty(a, '__esModule', {value: true});
-	Object.keys(n).forEach(function (k) {
-		var d = Object.getOwnPropertyDescriptor(n, k);
-		Object.defineProperty(a, k, d.get ? d : {
-			enumerable: true,
-			get: function () {
-				return n[k];
-			}
-		});
-	});
-	return a;
-}
-
 var core = {};
 
 var command = {};
 
-var utils$3 = {};
+var utils$1 = {};
 
-var hasRequiredUtils$3;
+var hasRequiredUtils$1;
 
-function requireUtils$3 () {
-	if (hasRequiredUtils$3) return utils$3;
-	hasRequiredUtils$3 = 1;
+function requireUtils$1 () {
+	if (hasRequiredUtils$1) return utils$1;
+	hasRequiredUtils$1 = 1;
 	// We use any as a valid input type
 	/* eslint-disable @typescript-eslint/no-explicit-any */
-	Object.defineProperty(utils$3, "__esModule", { value: true });
-	utils$3.toCommandProperties = utils$3.toCommandValue = void 0;
+	Object.defineProperty(utils$1, "__esModule", { value: true });
+	utils$1.toCommandProperties = utils$1.toCommandValue = void 0;
 	/**
 	 * Sanitizes an input into a string so it can be passed into issueCommand safely
 	 * @param input input to sanitize into a string
@@ -91,7 +71,7 @@ function requireUtils$3 () {
 	    }
 	    return JSON.stringify(input);
 	}
-	utils$3.toCommandValue = toCommandValue;
+	utils$1.toCommandValue = toCommandValue;
 	/**
 	 *
 	 * @param annotationProperties
@@ -111,9 +91,9 @@ function requireUtils$3 () {
 	        endColumn: annotationProperties.endColumn
 	    };
 	}
-	utils$3.toCommandProperties = toCommandProperties;
+	utils$1.toCommandProperties = toCommandProperties;
 	
-	return utils$3;
+	return utils$1;
 }
 
 var hasRequiredCommand;
@@ -147,7 +127,7 @@ function requireCommand () {
 	Object.defineProperty(command, "__esModule", { value: true });
 	command.issue = command.issueCommand = void 0;
 	const os = __importStar(require$$0);
-	const utils_1 = requireUtils$3();
+	const utils_1 = requireUtils$1();
 	/**
 	 * Commands
 	 *
@@ -255,9 +235,9 @@ function requireFileCommand () {
 	// We use any as a valid input type
 	/* eslint-disable @typescript-eslint/no-explicit-any */
 	const crypto = __importStar(require$$0$1);
-	const fs = __importStar(require$$1);
+	const fs = __importStar(require$$0$2);
 	const os = __importStar(require$$0);
-	const utils_1 = requireUtils$3();
+	const utils_1 = requireUtils$1();
 	function issueFileCommand(command, message) {
 	    const filePath = process.env[`GITHUB_${command}`];
 	    if (!filePath) {
@@ -405,11 +385,11 @@ var hasRequiredTunnel$1;
 function requireTunnel$1 () {
 	if (hasRequiredTunnel$1) return tunnel$1;
 	hasRequiredTunnel$1 = 1;
-	var tls = require$$1$1;
-	var http = require$$2$1;
-	var https = require$$3$1;
-	var events = require$$4$1;
-	var util = require$$0$2;
+	var tls = require$$1;
+	var http = require$$2;
+	var https = require$$3;
+	var events = require$$4;
+	var util = require$$0$3;
 
 
 	tunnel$1.httpOverHttp = httpOverHttp;
@@ -1123,14 +1103,14 @@ function requireUtil$6 () {
 	if (hasRequiredUtil$6) return util$6;
 	hasRequiredUtil$6 = 1;
 
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { kDestroyed, kBodyUsed } = requireSymbols$4();
-	const { IncomingMessage } = require$$2$1;
-	const stream = require$$0$5;
-	const net = require$$0$4;
+	const { IncomingMessage } = require$$2;
+	const stream = require$$0$6;
+	const net = require$$0$5;
 	const { InvalidArgumentError } = requireErrors();
 	const { Blob } = require$$7;
-	const nodeUtil = require$$0$2;
+	const nodeUtil = require$$0$3;
 	const { stringify } = require$$8;
 	const { headerNameLowerCasedRecord } = requireConstants$4();
 
@@ -1786,8 +1766,8 @@ function requireSbmh () {
 	 * Based heavily on the Streaming Boyer-Moore-Horspool C++ implementation
 	 * by Hongli Lai at: https://github.com/FooBarWidget/boyer-moore-horspool
 	 */
-	const EventEmitter = require$$0$6.EventEmitter;
-	const inherits = require$$1$2.inherits;
+	const EventEmitter = require$$0$7.EventEmitter;
+	const inherits = require$$1$1.inherits;
 
 	function SBMH (needle) {
 	  if (typeof needle === 'string') {
@@ -1996,8 +1976,8 @@ function requirePartStream () {
 	if (hasRequiredPartStream) return PartStream_1;
 	hasRequiredPartStream = 1;
 
-	const inherits = require$$1$2.inherits;
-	const ReadableStream = require$$0$7.Readable;
+	const inherits = require$$1$1.inherits;
+	const ReadableStream = require$$0$8.Readable;
 
 	function PartStream (opts) {
 	  ReadableStream.call(this, opts);
@@ -2041,8 +2021,8 @@ function requireHeaderParser () {
 	if (hasRequiredHeaderParser) return HeaderParser_1;
 	hasRequiredHeaderParser = 1;
 
-	const EventEmitter = require$$0$6.EventEmitter;
-	const inherits = require$$1$2.inherits;
+	const EventEmitter = require$$0$7.EventEmitter;
+	const inherits = require$$1$1.inherits;
 	const getLimit = requireGetLimit();
 
 	const StreamSearch = requireSbmh();
@@ -2149,8 +2129,8 @@ function requireDicer () {
 	if (hasRequiredDicer) return Dicer_1;
 	hasRequiredDicer = 1;
 
-	const WritableStream = require$$0$7.Writable;
-	const inherits = require$$1$2.inherits;
+	const WritableStream = require$$0$8.Writable;
+	const inherits = require$$1$1.inherits;
 
 	const StreamSearch = requireSbmh();
 
@@ -2726,8 +2706,8 @@ function requireMultipart () {
 	//  * support limits.fieldNameSize
 	//     -- this will require modifications to utils.parseParams
 
-	const { Readable } = require$$0$7;
-	const { inherits } = require$$1$2;
+	const { Readable } = require$$0$8;
+	const { inherits } = require$$1$1;
 
 	const Dicer = requireDicer();
 
@@ -3292,8 +3272,8 @@ function requireMain () {
 	if (hasRequiredMain) return main.exports;
 	hasRequiredMain = 1;
 
-	const WritableStream = require$$0$7.Writable;
-	const { inherits } = require$$1$2;
+	const WritableStream = require$$0$8.Writable;
+	const { inherits } = require$$1$1;
 	const Dicer = requireDicer();
 
 	const MultipartParser = requireMultipart();
@@ -3385,7 +3365,7 @@ function requireConstants$3 () {
 	if (hasRequiredConstants$3) return constants$3;
 	hasRequiredConstants$3 = 1;
 
-	const { MessageChannel, receiveMessageOnPort } = require$$0$8;
+	const { MessageChannel, receiveMessageOnPort } = require$$0$9;
 
 	const corsSafeListedMethods = ['GET', 'HEAD', 'POST'];
 	const corsSafeListedMethodsSet = new Set(corsSafeListedMethods);
@@ -3537,11 +3517,11 @@ function requireConstants$3 () {
 	return constants$3;
 }
 
-var global$2;
+var global$3;
 var hasRequiredGlobal$1;
 
 function requireGlobal$1 () {
-	if (hasRequiredGlobal$1) return global$2;
+	if (hasRequiredGlobal$1) return global$3;
 	hasRequiredGlobal$1 = 1;
 
 	// In case of breaking changes, increase the version
@@ -3578,11 +3558,11 @@ function requireGlobal$1 () {
 	  });
 	}
 
-	global$2 = {
+	global$3 = {
 	  getGlobalOrigin,
 	  setGlobalOrigin
 	};
-	return global$2;
+	return global$3;
 }
 
 var util$5;
@@ -3594,9 +3574,9 @@ function requireUtil$5 () {
 
 	const { redirectStatusSet, referrerPolicySet: referrerPolicyTokens, badPortsSet } = requireConstants$3();
 	const { getGlobalOrigin } = requireGlobal$1();
-	const { performance } = require$$2$2;
+	const { performance } = require$$2$1;
 	const { isBlobLike, toUSVString, ReadableStreamFrom } = requireUtil$6();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { isUint8Array } = require$$5;
 
 	let supportedHashes = [];
@@ -4761,7 +4741,7 @@ function requireWebidl () {
 	if (hasRequiredWebidl) return webidl_1;
 	hasRequiredWebidl = 1;
 
-	const { types } = require$$0$2;
+	const { types } = require$$0$3;
 	const { hasOwn, toUSVString } = requireUtil$5();
 
 	/** @type {import('../../types/webidl').Webidl} */
@@ -5414,7 +5394,7 @@ var hasRequiredDataURL;
 function requireDataURL () {
 	if (hasRequiredDataURL) return dataURL;
 	hasRequiredDataURL = 1;
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { atob } = require$$7;
 	const { isomorphicDecode } = requireUtil$5();
 
@@ -6052,7 +6032,7 @@ function requireFile () {
 	hasRequiredFile = 1;
 
 	const { Blob, File: NativeFile } = require$$7;
-	const { types } = require$$0$2;
+	const { types } = require$$0$3;
 	const { kState } = requireSymbols$3();
 	const { isBlobLike } = requireUtil$5();
 	const { webidl } = requireWebidl();
@@ -6692,7 +6672,7 @@ function requireBody () {
 	const { DOMException, structuredClone } = requireConstants$3();
 	const { Blob, File: NativeFile } = require$$7;
 	const { kBodyUsed } = requireSymbols$4();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { isErrored } = requireUtil$6();
 	const { isUint8Array, isArrayBuffer } = require$$5;
 	const { File: UndiciFile } = requireFile();
@@ -7290,18 +7270,18 @@ function requireBody () {
 	return body;
 }
 
-var request$2;
+var request$1;
 var hasRequiredRequest$1;
 
 function requireRequest$1 () {
-	if (hasRequiredRequest$1) return request$2;
+	if (hasRequiredRequest$1) return request$1;
 	hasRequiredRequest$1 = 1;
 
 	const {
 	  InvalidArgumentError,
 	  NotSupportedError
 	} = requireErrors();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { kHTTP2BuildRequest, kHTTP2CopyHeaders, kHTTP1BuildRequest } = requireSymbols$4();
 	const util = requireUtil$6();
 
@@ -7793,8 +7773,8 @@ function requireRequest$1 () {
 	  }
 	}
 
-	request$2 = Request;
-	return request$2;
+	request$1 = Request;
+	return request$1;
 }
 
 var dispatcher;
@@ -7804,7 +7784,7 @@ function requireDispatcher () {
 	if (hasRequiredDispatcher) return dispatcher;
 	hasRequiredDispatcher = 1;
 
-	const EventEmitter = require$$4$1;
+	const EventEmitter = require$$4;
 
 	class Dispatcher extends EventEmitter {
 	  dispatch () {
@@ -8031,8 +8011,8 @@ function requireConnect () {
 	if (hasRequiredConnect) return connect;
 	hasRequiredConnect = 1;
 
-	const net = require$$0$4;
-	const assert = require$$0$3;
+	const net = require$$0$5;
+	const assert = require$$0$4;
 	const util = requireUtil$6();
 	const { InvalidArgumentError, ConnectTimeoutError } = requireErrors();
 
@@ -8117,7 +8097,7 @@ function requireConnect () {
 	    let socket;
 	    if (protocol === 'https:') {
 	      if (!tls) {
-	        tls = require$$1$1;
+	        tls = require$$1;
 	      }
 	      servername = servername || options.servername || util.getServerName(host) || null;
 
@@ -8223,15 +8203,15 @@ function requireConnect () {
 
 var constants$2 = {};
 
-var utils$2 = {};
+var utils = {};
 
-var hasRequiredUtils$2;
+var hasRequiredUtils;
 
-function requireUtils$2 () {
-	if (hasRequiredUtils$2) return utils$2;
-	hasRequiredUtils$2 = 1;
-	Object.defineProperty(utils$2, "__esModule", { value: true });
-	utils$2.enumToMap = void 0;
+function requireUtils () {
+	if (hasRequiredUtils) return utils;
+	hasRequiredUtils = 1;
+	Object.defineProperty(utils, "__esModule", { value: true });
+	utils.enumToMap = void 0;
 	function enumToMap(obj) {
 	    const res = {};
 	    Object.keys(obj).forEach((key) => {
@@ -8242,9 +8222,9 @@ function requireUtils$2 () {
 	    });
 	    return res;
 	}
-	utils$2.enumToMap = enumToMap;
+	utils.enumToMap = enumToMap;
 	
-	return utils$2;
+	return utils;
 }
 
 var hasRequiredConstants$2;
@@ -8255,7 +8235,7 @@ function requireConstants$2 () {
 	(function (exports$1) {
 		Object.defineProperty(exports$1, "__esModule", { value: true });
 		exports$1.SPECIAL_HEADERS = exports$1.HEADER_STATE = exports$1.MINOR = exports$1.MAJOR = exports$1.CONNECTION_TOKEN_CHARS = exports$1.HEADER_CHARS = exports$1.TOKEN = exports$1.STRICT_TOKEN = exports$1.HEX = exports$1.URL_CHAR = exports$1.STRICT_URL_CHAR = exports$1.USERINFO_CHARS = exports$1.MARK = exports$1.ALPHANUM = exports$1.NUM = exports$1.HEX_MAP = exports$1.NUM_MAP = exports$1.ALPHA = exports$1.FINISH = exports$1.H_METHOD_MAP = exports$1.METHOD_MAP = exports$1.METHODS_RTSP = exports$1.METHODS_ICE = exports$1.METHODS_HTTP = exports$1.METHODS = exports$1.LENIENT_FLAGS = exports$1.FLAGS = exports$1.TYPE = exports$1.ERROR = void 0;
-		const utils_1 = requireUtils$2();
+		const utils_1 = requireUtils();
 		(function (ERROR) {
 		    ERROR[ERROR["OK"] = 0] = "OK";
 		    ERROR[ERROR["INTERNAL"] = 1] = "INTERNAL";
@@ -8537,9 +8517,9 @@ function requireRedirectHandler () {
 
 	const util = requireUtil$6();
 	const { kBodyUsed } = requireSymbols$4();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { InvalidArgumentError } = requireErrors();
-	const EE = require$$4$1;
+	const EE = require$$4;
 
 	const redirectableStatusCodes = [300, 301, 302, 303, 307, 308];
 
@@ -8797,10 +8777,10 @@ function requireClient () {
 
 	/* global WebAssembly */
 
-	const assert = require$$0$3;
-	const net = require$$0$4;
-	const http = require$$2$1;
-	const { pipeline } = require$$0$5;
+	const assert = require$$0$4;
+	const net = require$$0$5;
+	const http = require$$2;
+	const { pipeline } = require$$0$6;
 	const util = requireUtil$6();
 	const timers = requireTimers();
 	const Request = requireRequest$1();
@@ -11982,8 +11962,8 @@ function requireReadable () {
 	if (hasRequiredReadable) return readable;
 	hasRequiredReadable = 1;
 
-	const assert = require$$0$3;
-	const { Readable } = require$$0$5;
+	const assert = require$$0$4;
+	const { Readable } = require$$0$6;
 	const { RequestAbortedError, NotSupportedError, InvalidArgumentError } = requireErrors();
 	const util = requireUtil$6();
 	const { ReadableStreamFrom, toUSVString } = requireUtil$6();
@@ -12309,7 +12289,7 @@ var hasRequiredUtil$4;
 function requireUtil$4 () {
 	if (hasRequiredUtil$4) return util$4;
 	hasRequiredUtil$4 = 1;
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const {
 	  ResponseStatusCodeError
 	} = requireErrors();
@@ -12434,7 +12414,7 @@ function requireApiRequest () {
 	} = requireErrors();
 	const util = requireUtil$6();
 	const { getResolveErrorBodyCallback } = requireUtil$4();
-	const { AsyncResource } = require$$4$2;
+	const { AsyncResource } = require$$4$1;
 	const { addSignal, removeSignal } = requireAbortSignal();
 
 	class RequestHandler extends AsyncResource {
@@ -12615,7 +12595,7 @@ function requireApiStream () {
 	if (hasRequiredApiStream) return apiStream;
 	hasRequiredApiStream = 1;
 
-	const { finished, PassThrough } = require$$0$5;
+	const { finished, PassThrough } = require$$0$6;
 	const {
 	  InvalidArgumentError,
 	  InvalidReturnValueError,
@@ -12623,7 +12603,7 @@ function requireApiStream () {
 	} = requireErrors();
 	const util = requireUtil$6();
 	const { getResolveErrorBodyCallback } = requireUtil$4();
-	const { AsyncResource } = require$$4$2;
+	const { AsyncResource } = require$$4$1;
 	const { addSignal, removeSignal } = requireAbortSignal();
 
 	class StreamHandler extends AsyncResource {
@@ -12847,16 +12827,16 @@ function requireApiPipeline () {
 	  Readable,
 	  Duplex,
 	  PassThrough
-	} = require$$0$5;
+	} = require$$0$6;
 	const {
 	  InvalidArgumentError,
 	  InvalidReturnValueError,
 	  RequestAbortedError
 	} = requireErrors();
 	const util = requireUtil$6();
-	const { AsyncResource } = require$$4$2;
+	const { AsyncResource } = require$$4$1;
 	const { addSignal, removeSignal } = requireAbortSignal();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 
 	const kResume = Symbol('resume');
 
@@ -13101,10 +13081,10 @@ function requireApiUpgrade () {
 	hasRequiredApiUpgrade = 1;
 
 	const { InvalidArgumentError, RequestAbortedError, SocketError } = requireErrors();
-	const { AsyncResource } = require$$4$2;
+	const { AsyncResource } = require$$4$1;
 	const util = requireUtil$6();
 	const { addSignal, removeSignal } = requireAbortSignal();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 
 	class UpgradeHandler extends AsyncResource {
 	  constructor (opts, callback) {
@@ -13213,7 +13193,7 @@ function requireApiConnect () {
 	if (hasRequiredApiConnect) return apiConnect;
 	hasRequiredApiConnect = 1;
 
-	const { AsyncResource } = require$$4$2;
+	const { AsyncResource } = require$$4$1;
 	const { InvalidArgumentError, RequestAbortedError, SocketError } = requireErrors();
 	const util = requireUtil$6();
 	const { addSignal, removeSignal } = requireAbortSignal();
@@ -13404,12 +13384,12 @@ function requireMockUtils () {
 	  kGetNetConnect
 	} = requireMockSymbols();
 	const { buildURL, nop } = requireUtil$6();
-	const { STATUS_CODES } = require$$2$1;
+	const { STATUS_CODES } = require$$2;
 	const {
 	  types: {
 	    isPromise
 	  }
-	} = require$$0$2;
+	} = require$$0$3;
 
 	function matchValue (match, value) {
 	  if (typeof match === 'string') {
@@ -13969,7 +13949,7 @@ function requireMockClient () {
 	if (hasRequiredMockClient) return mockClient;
 	hasRequiredMockClient = 1;
 
-	const { promisify } = require$$0$2;
+	const { promisify } = require$$0$3;
 	const Client = requireClient();
 	const { buildMockDispatch } = requireMockUtils();
 	const {
@@ -14036,7 +14016,7 @@ function requireMockPool () {
 	if (hasRequiredMockPool) return mockPool;
 	hasRequiredMockPool = 1;
 
-	const { promisify } = require$$0$2;
+	const { promisify } = require$$0$3;
 	const Pool = requirePool();
 	const { buildMockDispatch } = requireMockUtils();
 	const {
@@ -14140,8 +14120,8 @@ function requirePendingInterceptorsFormatter () {
 	if (hasRequiredPendingInterceptorsFormatter) return pendingInterceptorsFormatter;
 	hasRequiredPendingInterceptorsFormatter = 1;
 
-	const { Transform } = require$$0$5;
-	const { Console } = require$$1$3;
+	const { Transform } = require$$0$6;
+	const { Console } = require$$1$2;
 
 	/**
 	 * Gets the output of `console.table(…)` as a string.
@@ -14368,7 +14348,7 @@ function requireProxyAgent () {
 	hasRequiredProxyAgent = 1;
 
 	const { kProxy, kClose, kDestroy, kInterceptors } = requireSymbols$4();
-	const { URL } = require$$1$4;
+	const { URL } = require$$1$3;
 	const Agent = requireAgent();
 	const Pool = requirePool();
 	const DispatcherBase = requireDispatcherBase();
@@ -14563,7 +14543,7 @@ var hasRequiredRetryHandler;
 function requireRetryHandler () {
 	if (hasRequiredRetryHandler) return RetryHandler_1;
 	hasRequiredRetryHandler = 1;
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 
 	const { kRetryHandlerDefaultRetry } = requireSymbols$4();
 	const { RequestRetryError } = requireErrors();
@@ -14902,11 +14882,11 @@ function requireRetryHandler () {
 	return RetryHandler_1;
 }
 
-var global$1;
+var global$2;
 var hasRequiredGlobal;
 
 function requireGlobal () {
-	if (hasRequiredGlobal) return global$1;
+	if (hasRequiredGlobal) return global$2;
 	hasRequiredGlobal = 1;
 
 	// We include a version number for the Dispatcher API. In case of breaking changes,
@@ -14935,11 +14915,11 @@ function requireGlobal () {
 	  return globalThis[globalDispatcher]
 	}
 
-	global$1 = {
+	global$2 = {
 	  setGlobalDispatcher,
 	  getGlobalDispatcher
 	};
-	return global$1;
+	return global$2;
 }
 
 var DecoratorHandler_1;
@@ -15000,9 +14980,9 @@ function requireHeaders () {
 	  isValidHeaderName,
 	  isValidHeaderValue
 	} = requireUtil$5();
-	const util = require$$0$2;
+	const util = require$$0$3;
 	const { webidl } = requireWebidl();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 
 	const kHeadersMap = Symbol('headers map');
 	const kHeadersSortedMap = Symbol('headers map sorted');
@@ -15608,8 +15588,8 @@ function requireResponse () {
 	const { getGlobalOrigin } = requireGlobal$1();
 	const { URLSerializer } = requireDataURL();
 	const { kHeadersList, kConstruct } = requireSymbols$4();
-	const assert = require$$0$3;
-	const { types } = require$$0$2;
+	const assert = require$$0$4;
+	const { types } = require$$0$3;
 
 	const ReadableStream = globalThis.ReadableStream || require$$14.ReadableStream;
 	const textEncoder = new TextEncoder('utf-8');
@@ -16158,11 +16138,11 @@ function requireResponse () {
 
 /* globals AbortController */
 
-var request$1;
+var request;
 var hasRequiredRequest;
 
 function requireRequest () {
-	if (hasRequiredRequest) return request$1;
+	if (hasRequiredRequest) return request;
 	hasRequiredRequest = 1;
 
 	const { extractBody, mixinBody, cloneBody } = requireBody();
@@ -16192,8 +16172,8 @@ function requireRequest () {
 	const { getGlobalOrigin } = requireGlobal$1();
 	const { URLSerializer } = requireDataURL();
 	const { kHeadersList, kConstruct } = requireSymbols$4();
-	const assert = require$$0$3;
-	const { getMaxListeners, setMaxListeners, getEventListeners, defaultMaxListeners } = require$$4$1;
+	const assert = require$$0$4;
+	const { getMaxListeners, setMaxListeners, getEventListeners, defaultMaxListeners } = require$$4;
 
 	let TransformStream = globalThis.TransformStream;
 
@@ -17106,8 +17086,8 @@ function requireRequest () {
 	  }
 	]);
 
-	request$1 = { Request, makeRequest };
-	return request$1;
+	request = { Request, makeRequest };
+	return request;
 }
 
 var fetch_1;
@@ -17126,7 +17106,7 @@ function requireFetch () {
 	} = requireResponse();
 	const { Headers } = requireHeaders();
 	const { Request, makeRequest } = requireRequest();
-	const zlib = require$$3$2;
+	const zlib = require$$3$1;
 	const {
 	  bytesMatch,
 	  makePolicyContainer,
@@ -17158,7 +17138,7 @@ function requireFetch () {
 	  urlHasHttpsScheme
 	} = requireUtil$5();
 	const { kState, kHeaders, kGuard, kRealm } = requireSymbols$3();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { safelyExtractBody } = requireBody();
 	const {
 	  redirectStatusSet,
@@ -17169,14 +17149,14 @@ function requireFetch () {
 	  DOMException
 	} = requireConstants$3();
 	const { kHeadersList } = requireSymbols$4();
-	const EE = require$$4$1;
-	const { Readable, pipeline } = require$$0$5;
+	const EE = require$$4;
+	const { Readable, pipeline } = require$$0$6;
 	const { addAbortListener, isErrored, isReadable, nodeMajor, nodeMinor } = requireUtil$6();
 	const { dataURLProcessor, serializeAMimeType } = requireDataURL();
 	const { TransformStream } = require$$14;
 	const { getGlobalDispatcher } = requireGlobal();
 	const { webidl } = requireWebidl();
-	const { STATUS_CODES } = require$$2$1;
+	const { STATUS_CODES } = require$$2;
 	const GET_OR_HEAD = ['GET', 'HEAD'];
 
 	/** @type {import('buffer').resolveObjectURL} */
@@ -19610,7 +19590,7 @@ function requireUtil$3 () {
 	const { getEncoding } = requireEncoding();
 	const { DOMException } = requireConstants$3();
 	const { serializeAMimeType, parseMIMEType } = requireDataURL();
-	const { types } = require$$0$2;
+	const { types } = require$$0$3;
 	const { StringDecoder } = require$$6;
 	const { btoa } = require$$7;
 
@@ -20364,7 +20344,7 @@ function requireUtil$2 () {
 	if (hasRequiredUtil$2) return util$2;
 	hasRequiredUtil$2 = 1;
 
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { URLSerializer } = requireDataURL();
 	const { isValidHeaderName } = requireUtil$5();
 
@@ -20414,11 +20394,11 @@ function requireUtil$2 () {
 	return util$2;
 }
 
-var cache;
+var cache$1;
 var hasRequiredCache;
 
 function requireCache () {
-	if (hasRequiredCache) return cache;
+	if (hasRequiredCache) return cache$1;
 	hasRequiredCache = 1;
 
 	const { kConstruct } = requireSymbols$1();
@@ -20431,7 +20411,7 @@ function requireCache () {
 	const { kState, kHeaders, kGuard, kRealm } = requireSymbols$3();
 	const { fetching } = requireFetch();
 	const { urlIsHttpHttpsScheme, createDeferredPromise, readAllBytes } = requireUtil$5();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { getGlobalDispatcher } = requireGlobal();
 
 	/**
@@ -21254,10 +21234,10 @@ function requireCache () {
 	  webidl.converters.RequestInfo
 	);
 
-	cache = {
+	cache$1 = {
 	  Cache
 	};
-	return cache;
+	return cache$1;
 }
 
 var cachestorage;
@@ -21714,17 +21694,17 @@ function requireUtil$1 () {
 	return util$1;
 }
 
-var parse$1;
-var hasRequiredParse;
+var parse;
+var hasRequiredParse$1;
 
-function requireParse () {
-	if (hasRequiredParse) return parse$1;
-	hasRequiredParse = 1;
+function requireParse$1 () {
+	if (hasRequiredParse$1) return parse;
+	hasRequiredParse$1 = 1;
 
 	const { maxNameValuePairSize, maxAttributeValueSize } = requireConstants$1();
 	const { isCTLExcludingHtab } = requireUtil$1();
 	const { collectASequenceOfCodePointsFast } = requireDataURL();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 
 	/**
 	 * @description Parses the field-value attributes of a set-cookie header string.
@@ -22032,11 +22012,11 @@ function requireParse () {
 	  return parseUnparsedAttributes(unparsedAttributes, cookieAttributeList)
 	}
 
-	parse$1 = {
+	parse = {
 	  parseSetCookie,
 	  parseUnparsedAttributes
 	};
-	return parse$1;
+	return parse;
 }
 
 var cookies;
@@ -22046,7 +22026,7 @@ function requireCookies () {
 	if (hasRequiredCookies) return cookies;
 	hasRequiredCookies = 1;
 
-	const { parseSetCookie } = requireParse();
+	const { parseSetCookie } = requireParse$1();
 	const { stringify } = requireUtil$1();
 	const { webidl } = requireWebidl();
 	const { Headers } = requireHeaders();
@@ -22318,7 +22298,7 @@ function requireEvents () {
 
 	const { webidl } = requireWebidl();
 	const { kEnumerableProperty } = requireUtil$6();
-	const { MessagePort } = require$$0$8;
+	const { MessagePort } = require$$0$9;
 
 	/**
 	 * @see https://html.spec.whatwg.org/multipage/comms.html#messageevent
@@ -22835,7 +22815,7 @@ function requireConnection () {
 	if (hasRequiredConnection) return connection;
 	hasRequiredConnection = 1;
 
-	const diagnosticsChannel = require$$0$9;
+	const diagnosticsChannel = require$$0$a;
 	const { uid, states } = requireConstants();
 	const {
 	  kReadyState,
@@ -23215,8 +23195,8 @@ function requireReceiver () {
 	if (hasRequiredReceiver) return receiver;
 	hasRequiredReceiver = 1;
 
-	const { Writable } = require$$0$5;
-	const diagnosticsChannel = require$$0$9;
+	const { Writable } = require$$0$6;
+	const diagnosticsChannel = require$$0$a;
 	const { parserStates, opcodes, states, emptyBuffer } = requireConstants();
 	const { kReadyState, kSentClose, kResponse, kReceivedClose } = requireSymbols();
 	const { isValidStatusCode, failWebsocketConnection, websocketMessageReceived } = requireUtil();
@@ -23587,7 +23567,7 @@ function requireWebsocket () {
 	const { ByteParser } = requireReceiver();
 	const { kEnumerableProperty, isBlobLike } = requireUtil$6();
 	const { getGlobalDispatcher } = requireGlobal();
-	const { types } = require$$0$2;
+	const { types } = require$$0$3;
 
 	let experimentalWarned = false;
 
@@ -24420,8 +24400,8 @@ function requireLib () {
 	};
 	Object.defineProperty(lib, "__esModule", { value: true });
 	lib.HttpClient = lib.isHttps = lib.HttpClientResponse = lib.HttpClientError = lib.getProxyUrl = lib.MediaTypes = lib.Headers = lib.HttpCodes = void 0;
-	const http = __importStar(require$$2$1);
-	const https = __importStar(require$$3$1);
+	const http = __importStar(require$$2);
+	const https = __importStar(require$$3);
 	const pm = __importStar(requireProxy());
 	const tunnel = __importStar(requireTunnel());
 	const undici_1 = requireUndici();
@@ -25039,14 +25019,14 @@ function requireLib () {
 	return lib;
 }
 
-var auth$1 = {};
+var auth = {};
 
 var hasRequiredAuth;
 
 function requireAuth () {
-	if (hasRequiredAuth) return auth$1;
+	if (hasRequiredAuth) return auth;
 	hasRequiredAuth = 1;
-	var __awaiter = (auth$1 && auth$1.__awaiter) || function (thisArg, _arguments, P, generator) {
+	var __awaiter = (auth && auth.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -25055,8 +25035,8 @@ function requireAuth () {
 	        step((generator = generator.apply(thisArg, _arguments || [])).next());
 	    });
 	};
-	Object.defineProperty(auth$1, "__esModule", { value: true });
-	auth$1.PersonalAccessTokenCredentialHandler = auth$1.BearerCredentialHandler = auth$1.BasicCredentialHandler = void 0;
+	Object.defineProperty(auth, "__esModule", { value: true });
+	auth.PersonalAccessTokenCredentialHandler = auth.BearerCredentialHandler = auth.BasicCredentialHandler = void 0;
 	class BasicCredentialHandler {
 	    constructor(username, password) {
 	        this.username = username;
@@ -25078,7 +25058,7 @@ function requireAuth () {
 	        });
 	    }
 	}
-	auth$1.BasicCredentialHandler = BasicCredentialHandler;
+	auth.BasicCredentialHandler = BasicCredentialHandler;
 	class BearerCredentialHandler {
 	    constructor(token) {
 	        this.token = token;
@@ -25101,7 +25081,7 @@ function requireAuth () {
 	        });
 	    }
 	}
-	auth$1.BearerCredentialHandler = BearerCredentialHandler;
+	auth.BearerCredentialHandler = BearerCredentialHandler;
 	class PersonalAccessTokenCredentialHandler {
 	    constructor(token) {
 	        this.token = token;
@@ -25124,9 +25104,9 @@ function requireAuth () {
 	        });
 	    }
 	}
-	auth$1.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHandler;
+	auth.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHandler;
 	
-	return auth$1;
+	return auth;
 }
 
 var hasRequiredOidcUtils;
@@ -25233,7 +25213,7 @@ function requireSummary () {
 		Object.defineProperty(exports$1, "__esModule", { value: true });
 		exports$1.summary = exports$1.markdownSummary = exports$1.SUMMARY_DOCS_URL = exports$1.SUMMARY_ENV_VAR = void 0;
 		const os_1 = require$$0;
-		const fs_1 = require$$1;
+		const fs_1 = require$$0$2;
 		const { access, appendFile, writeFile } = fs_1.promises;
 		exports$1.SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
 		exports$1.SUMMARY_DOCS_URL = 'https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary';
@@ -25539,7 +25519,7 @@ function requirePathUtils () {
 	};
 	Object.defineProperty(pathUtils, "__esModule", { value: true });
 	pathUtils.toPlatformPath = pathUtils.toWin32Path = pathUtils.toPosixPath = void 0;
-	const path = __importStar(require$$1$5);
+	const path = __importStar(require$$0$b);
 	/**
 	 * toPosixPath converts the given path to the posix form. On Windows, \\ will be
 	 * replaced with /.
@@ -25625,8 +25605,8 @@ function requireIoUtil () {
 		var _a;
 		Object.defineProperty(exports$1, "__esModule", { value: true });
 		exports$1.getCmdPath = exports$1.tryGetExecutablePath = exports$1.isRooted = exports$1.isDirectory = exports$1.exists = exports$1.READONLY = exports$1.UV_FS_O_EXLOCK = exports$1.IS_WINDOWS = exports$1.unlink = exports$1.symlink = exports$1.stat = exports$1.rmdir = exports$1.rm = exports$1.rename = exports$1.readlink = exports$1.readdir = exports$1.open = exports$1.mkdir = exports$1.lstat = exports$1.copyFile = exports$1.chmod = void 0;
-		const fs = __importStar(require$$1);
-		const path = __importStar(require$$1$5);
+		const fs = __importStar(require$$0$2);
+		const path = __importStar(require$$0$b);
 		_a = fs.promises
 		// export const {open} = 'fs'
 		, exports$1.chmod = _a.chmod, exports$1.copyFile = _a.copyFile, exports$1.lstat = _a.lstat, exports$1.mkdir = _a.mkdir, exports$1.open = _a.open, exports$1.readdir = _a.readdir, exports$1.readlink = _a.readlink, exports$1.rename = _a.rename, exports$1.rm = _a.rm, exports$1.rmdir = _a.rmdir, exports$1.stat = _a.stat, exports$1.symlink = _a.symlink, exports$1.unlink = _a.unlink;
@@ -25815,8 +25795,8 @@ function requireIo () {
 	};
 	Object.defineProperty(io, "__esModule", { value: true });
 	io.findInPath = io.which = io.mkdirP = io.rmRF = io.mv = io.cp = void 0;
-	const assert_1 = require$$0$3;
-	const path = __importStar(require$$1$5);
+	const assert_1 = require$$0$4;
+	const path = __importStar(require$$0$b);
 	const ioUtil = __importStar(requireIoUtil());
 	/**
 	 * Copies a file or folder.
@@ -26122,9 +26102,9 @@ function requireToolrunner () {
 	Object.defineProperty(toolrunner, "__esModule", { value: true });
 	toolrunner.argStringToArray = toolrunner.ToolRunner = void 0;
 	const os = __importStar(require$$0);
-	const events = __importStar(require$$4$1);
-	const child = __importStar(require$$2$3);
-	const path = __importStar(require$$1$5);
+	const events = __importStar(require$$4);
+	const child = __importStar(require$$2$2);
+	const path = __importStar(require$$0$b);
 	const io = __importStar(requireIo());
 	const ioUtil = __importStar(requireIoUtil());
 	const timers_1 = require$$6$1;
@@ -26966,9 +26946,9 @@ function requireCore () {
 		exports$1.platform = exports$1.toPlatformPath = exports$1.toWin32Path = exports$1.toPosixPath = exports$1.markdownSummary = exports$1.summary = exports$1.getIDToken = exports$1.getState = exports$1.saveState = exports$1.group = exports$1.endGroup = exports$1.startGroup = exports$1.info = exports$1.notice = exports$1.warning = exports$1.error = exports$1.debug = exports$1.isDebug = exports$1.setFailed = exports$1.setCommandEcho = exports$1.setOutput = exports$1.getBooleanInput = exports$1.getMultilineInput = exports$1.getInput = exports$1.addPath = exports$1.setSecret = exports$1.exportVariable = exports$1.ExitCode = void 0;
 		const command_1 = requireCommand();
 		const file_command_1 = requireFileCommand();
-		const utils_1 = requireUtils$3();
+		const utils_1 = requireUtils$1();
 		const os = __importStar(require$$0);
-		const path = __importStar(require$$1$5);
+		const path = __importStar(require$$0$b);
 		const oidc_utils_1 = requireOidcUtils();
 		/**
 		 * The code to exit an action
@@ -27279,3971 +27259,9 @@ function requireCore () {
 
 var coreExports = requireCore();
 
-var github = {};
+const objectToString$1 = Object.prototype.toString;
 
-var context = {};
-
-var hasRequiredContext;
-
-function requireContext () {
-	if (hasRequiredContext) return context;
-	hasRequiredContext = 1;
-	Object.defineProperty(context, "__esModule", { value: true });
-	context.Context = void 0;
-	const fs_1 = require$$1;
-	const os_1 = require$$0;
-	class Context {
-	    /**
-	     * Hydrate the context from the environment
-	     */
-	    constructor() {
-	        var _a, _b, _c;
-	        this.payload = {};
-	        if (process.env.GITHUB_EVENT_PATH) {
-	            if ((0, fs_1.existsSync)(process.env.GITHUB_EVENT_PATH)) {
-	                this.payload = JSON.parse((0, fs_1.readFileSync)(process.env.GITHUB_EVENT_PATH, { encoding: 'utf8' }));
-	            }
-	            else {
-	                const path = process.env.GITHUB_EVENT_PATH;
-	                process.stdout.write(`GITHUB_EVENT_PATH ${path} does not exist${os_1.EOL}`);
-	            }
-	        }
-	        this.eventName = process.env.GITHUB_EVENT_NAME;
-	        this.sha = process.env.GITHUB_SHA;
-	        this.ref = process.env.GITHUB_REF;
-	        this.workflow = process.env.GITHUB_WORKFLOW;
-	        this.action = process.env.GITHUB_ACTION;
-	        this.actor = process.env.GITHUB_ACTOR;
-	        this.job = process.env.GITHUB_JOB;
-	        this.runAttempt = parseInt(process.env.GITHUB_RUN_ATTEMPT, 10);
-	        this.runNumber = parseInt(process.env.GITHUB_RUN_NUMBER, 10);
-	        this.runId = parseInt(process.env.GITHUB_RUN_ID, 10);
-	        this.apiUrl = (_a = process.env.GITHUB_API_URL) !== null && _a !== void 0 ? _a : `https://api.github.com`;
-	        this.serverUrl = (_b = process.env.GITHUB_SERVER_URL) !== null && _b !== void 0 ? _b : `https://github.com`;
-	        this.graphqlUrl =
-	            (_c = process.env.GITHUB_GRAPHQL_URL) !== null && _c !== void 0 ? _c : `https://api.github.com/graphql`;
-	    }
-	    get issue() {
-	        const payload = this.payload;
-	        return Object.assign(Object.assign({}, this.repo), { number: (payload.issue || payload.pull_request || payload).number });
-	    }
-	    get repo() {
-	        if (process.env.GITHUB_REPOSITORY) {
-	            const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
-	            return { owner, repo };
-	        }
-	        if (this.payload.repository) {
-	            return {
-	                owner: this.payload.repository.owner.login,
-	                repo: this.payload.repository.name
-	            };
-	        }
-	        throw new Error("context.repo requires a GITHUB_REPOSITORY environment variable like 'owner/repo'");
-	    }
-	}
-	context.Context = Context;
-	
-	return context;
-}
-
-var utils$1 = {};
-
-var utils = {};
-
-var hasRequiredUtils$1;
-
-function requireUtils$1 () {
-	if (hasRequiredUtils$1) return utils;
-	hasRequiredUtils$1 = 1;
-	var __createBinding = (utils && utils.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-	    if (k2 === undefined) k2 = k;
-	    var desc = Object.getOwnPropertyDescriptor(m, k);
-	    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-	      desc = { enumerable: true, get: function() { return m[k]; } };
-	    }
-	    Object.defineProperty(o, k2, desc);
-	}) : (function(o, m, k, k2) {
-	    if (k2 === undefined) k2 = k;
-	    o[k2] = m[k];
-	}));
-	var __setModuleDefault = (utils && utils.__setModuleDefault) || (Object.create ? (function(o, v) {
-	    Object.defineProperty(o, "default", { enumerable: true, value: v });
-	}) : function(o, v) {
-	    o["default"] = v;
-	});
-	var __importStar = (utils && utils.__importStar) || function (mod) {
-	    if (mod && mod.__esModule) return mod;
-	    var result = {};
-	    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-	    __setModuleDefault(result, mod);
-	    return result;
-	};
-	var __awaiter = (utils && utils.__awaiter) || function (thisArg, _arguments, P, generator) {
-	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-	    return new (P || (P = Promise))(function (resolve, reject) {
-	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-	        step((generator = generator.apply(thisArg, _arguments || [])).next());
-	    });
-	};
-	Object.defineProperty(utils, "__esModule", { value: true });
-	utils.getApiBaseUrl = utils.getProxyFetch = utils.getProxyAgentDispatcher = utils.getProxyAgent = utils.getAuthString = void 0;
-	const httpClient = __importStar(requireLib());
-	const undici_1 = requireUndici();
-	function getAuthString(token, options) {
-	    if (!token && !options.auth) {
-	        throw new Error('Parameter token or opts.auth is required');
-	    }
-	    else if (token && options.auth) {
-	        throw new Error('Parameters token and opts.auth may not both be specified');
-	    }
-	    return typeof options.auth === 'string' ? options.auth : `token ${token}`;
-	}
-	utils.getAuthString = getAuthString;
-	function getProxyAgent(destinationUrl) {
-	    const hc = new httpClient.HttpClient();
-	    return hc.getAgent(destinationUrl);
-	}
-	utils.getProxyAgent = getProxyAgent;
-	function getProxyAgentDispatcher(destinationUrl) {
-	    const hc = new httpClient.HttpClient();
-	    return hc.getAgentDispatcher(destinationUrl);
-	}
-	utils.getProxyAgentDispatcher = getProxyAgentDispatcher;
-	function getProxyFetch(destinationUrl) {
-	    const httpDispatcher = getProxyAgentDispatcher(destinationUrl);
-	    const proxyFetch = (url, opts) => __awaiter(this, void 0, void 0, function* () {
-	        return (0, undici_1.fetch)(url, Object.assign(Object.assign({}, opts), { dispatcher: httpDispatcher }));
-	    });
-	    return proxyFetch;
-	}
-	utils.getProxyFetch = getProxyFetch;
-	function getApiBaseUrl() {
-	    return process.env['GITHUB_API_URL'] || 'https://api.github.com';
-	}
-	utils.getApiBaseUrl = getApiBaseUrl;
-	
-	return utils;
-}
-
-function getUserAgent() {
-    if (typeof navigator === "object" && "userAgent" in navigator) {
-        return navigator.userAgent;
-    }
-    if (typeof process === "object" && process.version !== undefined) {
-        return `Node.js/${process.version.substr(1)} (${process.platform}; ${process.arch})`;
-    }
-    return "<environment undetectable>";
-}
-
-var beforeAfterHook = {exports: {}};
-
-var register_1;
-var hasRequiredRegister;
-
-function requireRegister () {
-	if (hasRequiredRegister) return register_1;
-	hasRequiredRegister = 1;
-	register_1 = register;
-
-	function register(state, name, method, options) {
-	  if (typeof method !== "function") {
-	    throw new Error("method for before hook must be a function");
-	  }
-
-	  if (!options) {
-	    options = {};
-	  }
-
-	  if (Array.isArray(name)) {
-	    return name.reverse().reduce(function (callback, name) {
-	      return register.bind(null, state, name, callback, options);
-	    }, method)();
-	  }
-
-	  return Promise.resolve().then(function () {
-	    if (!state.registry[name]) {
-	      return method(options);
-	    }
-
-	    return state.registry[name].reduce(function (method, registered) {
-	      return registered.hook.bind(null, method, options);
-	    }, method)();
-	  });
-	}
-	return register_1;
-}
-
-var add;
-var hasRequiredAdd;
-
-function requireAdd () {
-	if (hasRequiredAdd) return add;
-	hasRequiredAdd = 1;
-	add = addHook;
-
-	function addHook(state, kind, name, hook) {
-	  var orig = hook;
-	  if (!state.registry[name]) {
-	    state.registry[name] = [];
-	  }
-
-	  if (kind === "before") {
-	    hook = function (method, options) {
-	      return Promise.resolve()
-	        .then(orig.bind(null, options))
-	        .then(method.bind(null, options));
-	    };
-	  }
-
-	  if (kind === "after") {
-	    hook = function (method, options) {
-	      var result;
-	      return Promise.resolve()
-	        .then(method.bind(null, options))
-	        .then(function (result_) {
-	          result = result_;
-	          return orig(result, options);
-	        })
-	        .then(function () {
-	          return result;
-	        });
-	    };
-	  }
-
-	  if (kind === "error") {
-	    hook = function (method, options) {
-	      return Promise.resolve()
-	        .then(method.bind(null, options))
-	        .catch(function (error) {
-	          return orig(error, options);
-	        });
-	    };
-	  }
-
-	  state.registry[name].push({
-	    hook: hook,
-	    orig: orig,
-	  });
-	}
-	return add;
-}
-
-var remove;
-var hasRequiredRemove;
-
-function requireRemove () {
-	if (hasRequiredRemove) return remove;
-	hasRequiredRemove = 1;
-	remove = removeHook;
-
-	function removeHook(state, name, method) {
-	  if (!state.registry[name]) {
-	    return;
-	  }
-
-	  var index = state.registry[name]
-	    .map(function (registered) {
-	      return registered.orig;
-	    })
-	    .indexOf(method);
-
-	  if (index === -1) {
-	    return;
-	  }
-
-	  state.registry[name].splice(index, 1);
-	}
-	return remove;
-}
-
-var hasRequiredBeforeAfterHook;
-
-function requireBeforeAfterHook () {
-	if (hasRequiredBeforeAfterHook) return beforeAfterHook.exports;
-	hasRequiredBeforeAfterHook = 1;
-	var register = requireRegister();
-	var addHook = requireAdd();
-	var removeHook = requireRemove();
-
-	// bind with array of arguments: https://stackoverflow.com/a/21792913
-	var bind = Function.bind;
-	var bindable = bind.bind(bind);
-
-	function bindApi(hook, state, name) {
-	  var removeHookRef = bindable(removeHook, null).apply(
-	    null,
-	    name ? [state, name] : [state]
-	  );
-	  hook.api = { remove: removeHookRef };
-	  hook.remove = removeHookRef;
-	  ["before", "error", "after", "wrap"].forEach(function (kind) {
-	    var args = name ? [state, kind, name] : [state, kind];
-	    hook[kind] = hook.api[kind] = bindable(addHook, null).apply(null, args);
-	  });
-	}
-
-	function HookSingular() {
-	  var singularHookName = "h";
-	  var singularHookState = {
-	    registry: {},
-	  };
-	  var singularHook = register.bind(null, singularHookState, singularHookName);
-	  bindApi(singularHook, singularHookState, singularHookName);
-	  return singularHook;
-	}
-
-	function HookCollection() {
-	  var state = {
-	    registry: {},
-	  };
-
-	  var hook = register.bind(null, state);
-	  bindApi(hook, state);
-
-	  return hook;
-	}
-
-	var collectionHookDeprecationMessageDisplayed = false;
-	function Hook() {
-	  if (!collectionHookDeprecationMessageDisplayed) {
-	    console.warn(
-	      '[before-after-hook]: "Hook()" repurposing warning, use "Hook.Collection()". Read more: https://git.io/upgrade-before-after-hook-to-1.4'
-	    );
-	    collectionHookDeprecationMessageDisplayed = true;
-	  }
-	  return HookCollection();
-	}
-
-	Hook.Singular = HookSingular.bind();
-	Hook.Collection = HookCollection.bind();
-
-	beforeAfterHook.exports = Hook;
-	// expose constructors as a named property for TypeScript
-	beforeAfterHook.exports.Hook = Hook;
-	beforeAfterHook.exports.Singular = Hook.Singular;
-	beforeAfterHook.exports.Collection = Hook.Collection;
-	return beforeAfterHook.exports;
-}
-
-var beforeAfterHookExports = requireBeforeAfterHook();
-
-const VERSION$5 = "9.0.6";
-
-const userAgent = `octokit-endpoint.js/${VERSION$5} ${getUserAgent()}`;
-const DEFAULTS = {
-  method: "GET",
-  baseUrl: "https://api.github.com",
-  headers: {
-    accept: "application/vnd.github.v3+json",
-    "user-agent": userAgent
-  },
-  mediaType: {
-    format: ""
-  }
-};
-
-function lowercaseKeys(object) {
-  if (!object) {
-    return {};
-  }
-  return Object.keys(object).reduce((newObj, key) => {
-    newObj[key.toLowerCase()] = object[key];
-    return newObj;
-  }, {});
-}
-
-function isPlainObject$1(value) {
-  if (typeof value !== "object" || value === null)
-    return false;
-  if (Object.prototype.toString.call(value) !== "[object Object]")
-    return false;
-  const proto = Object.getPrototypeOf(value);
-  if (proto === null)
-    return true;
-  const Ctor = Object.prototype.hasOwnProperty.call(proto, "constructor") && proto.constructor;
-  return typeof Ctor === "function" && Ctor instanceof Ctor && Function.prototype.call(Ctor) === Function.prototype.call(value);
-}
-
-function mergeDeep(defaults, options) {
-  const result = Object.assign({}, defaults);
-  Object.keys(options).forEach((key) => {
-    if (isPlainObject$1(options[key])) {
-      if (!(key in defaults))
-        Object.assign(result, { [key]: options[key] });
-      else
-        result[key] = mergeDeep(defaults[key], options[key]);
-    } else {
-      Object.assign(result, { [key]: options[key] });
-    }
-  });
-  return result;
-}
-
-function removeUndefinedProperties(obj) {
-  for (const key in obj) {
-    if (obj[key] === void 0) {
-      delete obj[key];
-    }
-  }
-  return obj;
-}
-
-function merge(defaults, route, options) {
-  if (typeof route === "string") {
-    let [method, url] = route.split(" ");
-    options = Object.assign(url ? { method, url } : { url: method }, options);
-  } else {
-    options = Object.assign({}, route);
-  }
-  options.headers = lowercaseKeys(options.headers);
-  removeUndefinedProperties(options);
-  removeUndefinedProperties(options.headers);
-  const mergedOptions = mergeDeep(defaults || {}, options);
-  if (options.url === "/graphql") {
-    if (defaults && defaults.mediaType.previews?.length) {
-      mergedOptions.mediaType.previews = defaults.mediaType.previews.filter(
-        (preview) => !mergedOptions.mediaType.previews.includes(preview)
-      ).concat(mergedOptions.mediaType.previews);
-    }
-    mergedOptions.mediaType.previews = (mergedOptions.mediaType.previews || []).map((preview) => preview.replace(/-preview/, ""));
-  }
-  return mergedOptions;
-}
-
-function addQueryParameters(url, parameters) {
-  const separator = /\?/.test(url) ? "&" : "?";
-  const names = Object.keys(parameters);
-  if (names.length === 0) {
-    return url;
-  }
-  return url + separator + names.map((name) => {
-    if (name === "q") {
-      return "q=" + parameters.q.split("+").map(encodeURIComponent).join("+");
-    }
-    return `${name}=${encodeURIComponent(parameters[name])}`;
-  }).join("&");
-}
-
-const urlVariableRegex = /\{[^{}}]+\}/g;
-function removeNonChars(variableName) {
-  return variableName.replace(/(?:^\W+)|(?:(?<!\W)\W+$)/g, "").split(/,/);
-}
-function extractUrlVariableNames(url) {
-  const matches = url.match(urlVariableRegex);
-  if (!matches) {
-    return [];
-  }
-  return matches.map(removeNonChars).reduce((a, b) => a.concat(b), []);
-}
-
-function omit(object, keysToOmit) {
-  const result = { __proto__: null };
-  for (const key of Object.keys(object)) {
-    if (keysToOmit.indexOf(key) === -1) {
-      result[key] = object[key];
-    }
-  }
-  return result;
-}
-
-function encodeReserved(str) {
-  return str.split(/(%[0-9A-Fa-f]{2})/g).map(function(part) {
-    if (!/%[0-9A-Fa-f]/.test(part)) {
-      part = encodeURI(part).replace(/%5B/g, "[").replace(/%5D/g, "]");
-    }
-    return part;
-  }).join("");
-}
-function encodeUnreserved(str) {
-  return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
-    return "%" + c.charCodeAt(0).toString(16).toUpperCase();
-  });
-}
-function encodeValue(operator, value, key) {
-  value = operator === "+" || operator === "#" ? encodeReserved(value) : encodeUnreserved(value);
-  if (key) {
-    return encodeUnreserved(key) + "=" + value;
-  } else {
-    return value;
-  }
-}
-function isDefined(value) {
-  return value !== void 0 && value !== null;
-}
-function isKeyOperator(operator) {
-  return operator === ";" || operator === "&" || operator === "?";
-}
-function getValues(context, operator, key, modifier) {
-  var value = context[key], result = [];
-  if (isDefined(value) && value !== "") {
-    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-      value = value.toString();
-      if (modifier && modifier !== "*") {
-        value = value.substring(0, parseInt(modifier, 10));
-      }
-      result.push(
-        encodeValue(operator, value, isKeyOperator(operator) ? key : "")
-      );
-    } else {
-      if (modifier === "*") {
-        if (Array.isArray(value)) {
-          value.filter(isDefined).forEach(function(value2) {
-            result.push(
-              encodeValue(operator, value2, isKeyOperator(operator) ? key : "")
-            );
-          });
-        } else {
-          Object.keys(value).forEach(function(k) {
-            if (isDefined(value[k])) {
-              result.push(encodeValue(operator, value[k], k));
-            }
-          });
-        }
-      } else {
-        const tmp = [];
-        if (Array.isArray(value)) {
-          value.filter(isDefined).forEach(function(value2) {
-            tmp.push(encodeValue(operator, value2));
-          });
-        } else {
-          Object.keys(value).forEach(function(k) {
-            if (isDefined(value[k])) {
-              tmp.push(encodeUnreserved(k));
-              tmp.push(encodeValue(operator, value[k].toString()));
-            }
-          });
-        }
-        if (isKeyOperator(operator)) {
-          result.push(encodeUnreserved(key) + "=" + tmp.join(","));
-        } else if (tmp.length !== 0) {
-          result.push(tmp.join(","));
-        }
-      }
-    }
-  } else {
-    if (operator === ";") {
-      if (isDefined(value)) {
-        result.push(encodeUnreserved(key));
-      }
-    } else if (value === "" && (operator === "&" || operator === "?")) {
-      result.push(encodeUnreserved(key) + "=");
-    } else if (value === "") {
-      result.push("");
-    }
-  }
-  return result;
-}
-function parseUrl(template) {
-  return {
-    expand: expand.bind(null, template)
-  };
-}
-function expand(template, context) {
-  var operators = ["+", "#", ".", "/", ";", "?", "&"];
-  template = template.replace(
-    /\{([^\{\}]+)\}|([^\{\}]+)/g,
-    function(_, expression, literal) {
-      if (expression) {
-        let operator = "";
-        const values = [];
-        if (operators.indexOf(expression.charAt(0)) !== -1) {
-          operator = expression.charAt(0);
-          expression = expression.substr(1);
-        }
-        expression.split(/,/g).forEach(function(variable) {
-          var tmp = /([^:\*]*)(?::(\d+)|(\*))?/.exec(variable);
-          values.push(getValues(context, operator, tmp[1], tmp[2] || tmp[3]));
-        });
-        if (operator && operator !== "+") {
-          var separator = ",";
-          if (operator === "?") {
-            separator = "&";
-          } else if (operator !== "#") {
-            separator = operator;
-          }
-          return (values.length !== 0 ? operator : "") + values.join(separator);
-        } else {
-          return values.join(",");
-        }
-      } else {
-        return encodeReserved(literal);
-      }
-    }
-  );
-  if (template === "/") {
-    return template;
-  } else {
-    return template.replace(/\/$/, "");
-  }
-}
-
-function parse(options) {
-  let method = options.method.toUpperCase();
-  let url = (options.url || "/").replace(/:([a-z]\w+)/g, "{$1}");
-  let headers = Object.assign({}, options.headers);
-  let body;
-  let parameters = omit(options, [
-    "method",
-    "baseUrl",
-    "url",
-    "headers",
-    "request",
-    "mediaType"
-  ]);
-  const urlVariableNames = extractUrlVariableNames(url);
-  url = parseUrl(url).expand(parameters);
-  if (!/^http/.test(url)) {
-    url = options.baseUrl + url;
-  }
-  const omittedParameters = Object.keys(options).filter((option) => urlVariableNames.includes(option)).concat("baseUrl");
-  const remainingParameters = omit(parameters, omittedParameters);
-  const isBinaryRequest = /application\/octet-stream/i.test(headers.accept);
-  if (!isBinaryRequest) {
-    if (options.mediaType.format) {
-      headers.accept = headers.accept.split(/,/).map(
-        (format) => format.replace(
-          /application\/vnd(\.\w+)(\.v3)?(\.\w+)?(\+json)?$/,
-          `application/vnd$1$2.${options.mediaType.format}`
-        )
-      ).join(",");
-    }
-    if (url.endsWith("/graphql")) {
-      if (options.mediaType.previews?.length) {
-        const previewsFromAcceptHeader = headers.accept.match(/(?<![\w-])[\w-]+(?=-preview)/g) || [];
-        headers.accept = previewsFromAcceptHeader.concat(options.mediaType.previews).map((preview) => {
-          const format = options.mediaType.format ? `.${options.mediaType.format}` : "+json";
-          return `application/vnd.github.${preview}-preview${format}`;
-        }).join(",");
-      }
-    }
-  }
-  if (["GET", "HEAD"].includes(method)) {
-    url = addQueryParameters(url, remainingParameters);
-  } else {
-    if ("data" in remainingParameters) {
-      body = remainingParameters.data;
-    } else {
-      if (Object.keys(remainingParameters).length) {
-        body = remainingParameters;
-      }
-    }
-  }
-  if (!headers["content-type"] && typeof body !== "undefined") {
-    headers["content-type"] = "application/json; charset=utf-8";
-  }
-  if (["PATCH", "PUT"].includes(method) && typeof body === "undefined") {
-    body = "";
-  }
-  return Object.assign(
-    { method, url, headers },
-    typeof body !== "undefined" ? { body } : null,
-    options.request ? { request: options.request } : null
-  );
-}
-
-function endpointWithDefaults(defaults, route, options) {
-  return parse(merge(defaults, route, options));
-}
-
-function withDefaults$2(oldDefaults, newDefaults) {
-  const DEFAULTS = merge(oldDefaults, newDefaults);
-  const endpoint = endpointWithDefaults.bind(null, DEFAULTS);
-  return Object.assign(endpoint, {
-    DEFAULTS,
-    defaults: withDefaults$2.bind(null, DEFAULTS),
-    merge: merge.bind(null, DEFAULTS),
-    parse
-  });
-}
-
-const endpoint = withDefaults$2(null, DEFAULTS);
-
-const VERSION$4 = "8.4.1";
-
-function isPlainObject(value) {
-  if (typeof value !== "object" || value === null)
-    return false;
-  if (Object.prototype.toString.call(value) !== "[object Object]")
-    return false;
-  const proto = Object.getPrototypeOf(value);
-  if (proto === null)
-    return true;
-  const Ctor = Object.prototype.hasOwnProperty.call(proto, "constructor") && proto.constructor;
-  return typeof Ctor === "function" && Ctor instanceof Ctor && Function.prototype.call(Ctor) === Function.prototype.call(value);
-}
-
-class Deprecation extends Error {
-  constructor(message) {
-    super(message); // Maintains proper stack trace (only available on V8)
-
-    /* istanbul ignore next */
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-
-    this.name = 'Deprecation';
-  }
-
-}
-
-var once$1 = {exports: {}};
-
-var wrappy_1;
-var hasRequiredWrappy;
-
-function requireWrappy () {
-	if (hasRequiredWrappy) return wrappy_1;
-	hasRequiredWrappy = 1;
-	// Returns a wrapper function that returns a wrapped callback
-	// The wrapper function should do some stuff, and return a
-	// presumably different callback function.
-	// This makes sure that own properties are retained, so that
-	// decorations and such are not lost along the way.
-	wrappy_1 = wrappy;
-	function wrappy (fn, cb) {
-	  if (fn && cb) return wrappy(fn)(cb)
-
-	  if (typeof fn !== 'function')
-	    throw new TypeError('need wrapper function')
-
-	  Object.keys(fn).forEach(function (k) {
-	    wrapper[k] = fn[k];
-	  });
-
-	  return wrapper
-
-	  function wrapper() {
-	    var args = new Array(arguments.length);
-	    for (var i = 0; i < args.length; i++) {
-	      args[i] = arguments[i];
-	    }
-	    var ret = fn.apply(this, args);
-	    var cb = args[args.length-1];
-	    if (typeof ret === 'function' && ret !== cb) {
-	      Object.keys(cb).forEach(function (k) {
-	        ret[k] = cb[k];
-	      });
-	    }
-	    return ret
-	  }
-	}
-	return wrappy_1;
-}
-
-var hasRequiredOnce;
-
-function requireOnce () {
-	if (hasRequiredOnce) return once$1.exports;
-	hasRequiredOnce = 1;
-	var wrappy = requireWrappy();
-	once$1.exports = wrappy(once);
-	once$1.exports.strict = wrappy(onceStrict);
-
-	once.proto = once(function () {
-	  Object.defineProperty(Function.prototype, 'once', {
-	    value: function () {
-	      return once(this)
-	    },
-	    configurable: true
-	  });
-
-	  Object.defineProperty(Function.prototype, 'onceStrict', {
-	    value: function () {
-	      return onceStrict(this)
-	    },
-	    configurable: true
-	  });
-	});
-
-	function once (fn) {
-	  var f = function () {
-	    if (f.called) return f.value
-	    f.called = true;
-	    return f.value = fn.apply(this, arguments)
-	  };
-	  f.called = false;
-	  return f
-	}
-
-	function onceStrict (fn) {
-	  var f = function () {
-	    if (f.called)
-	      throw new Error(f.onceError)
-	    f.called = true;
-	    return f.value = fn.apply(this, arguments)
-	  };
-	  var name = fn.name || 'Function wrapped with `once`';
-	  f.onceError = name + " shouldn't be called more than once";
-	  f.called = false;
-	  return f
-	}
-	return once$1.exports;
-}
-
-var onceExports = requireOnce();
-var once = /*@__PURE__*/getDefaultExportFromCjs(onceExports);
-
-const logOnceCode = once((deprecation) => console.warn(deprecation));
-const logOnceHeaders = once((deprecation) => console.warn(deprecation));
-class RequestError extends Error {
-  constructor(message, statusCode, options) {
-    super(message);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-    this.name = "HttpError";
-    this.status = statusCode;
-    let headers;
-    if ("headers" in options && typeof options.headers !== "undefined") {
-      headers = options.headers;
-    }
-    if ("response" in options) {
-      this.response = options.response;
-      headers = options.response.headers;
-    }
-    const requestCopy = Object.assign({}, options.request);
-    if (options.request.headers.authorization) {
-      requestCopy.headers = Object.assign({}, options.request.headers, {
-        authorization: options.request.headers.authorization.replace(
-          /(?<! ) .*$/,
-          " [REDACTED]"
-        )
-      });
-    }
-    requestCopy.url = requestCopy.url.replace(/\bclient_secret=\w+/g, "client_secret=[REDACTED]").replace(/\baccess_token=\w+/g, "access_token=[REDACTED]");
-    this.request = requestCopy;
-    Object.defineProperty(this, "code", {
-      get() {
-        logOnceCode(
-          new Deprecation(
-            "[@octokit/request-error] `error.code` is deprecated, use `error.status`."
-          )
-        );
-        return statusCode;
-      }
-    });
-    Object.defineProperty(this, "headers", {
-      get() {
-        logOnceHeaders(
-          new Deprecation(
-            "[@octokit/request-error] `error.headers` is deprecated, use `error.response.headers`."
-          )
-        );
-        return headers || {};
-      }
-    });
-  }
-}
-
-function getBufferResponse(response) {
-  return response.arrayBuffer();
-}
-
-function fetchWrapper(requestOptions) {
-  const log = requestOptions.request && requestOptions.request.log ? requestOptions.request.log : console;
-  const parseSuccessResponseBody = requestOptions.request?.parseSuccessResponseBody !== false;
-  if (isPlainObject(requestOptions.body) || Array.isArray(requestOptions.body)) {
-    requestOptions.body = JSON.stringify(requestOptions.body);
-  }
-  let headers = {};
-  let status;
-  let url;
-  let { fetch } = globalThis;
-  if (requestOptions.request?.fetch) {
-    fetch = requestOptions.request.fetch;
-  }
-  if (!fetch) {
-    throw new Error(
-      "fetch is not set. Please pass a fetch implementation as new Octokit({ request: { fetch }}). Learn more at https://github.com/octokit/octokit.js/#fetch-missing"
-    );
-  }
-  return fetch(requestOptions.url, {
-    method: requestOptions.method,
-    body: requestOptions.body,
-    redirect: requestOptions.request?.redirect,
-    headers: requestOptions.headers,
-    signal: requestOptions.request?.signal,
-    // duplex must be set if request.body is ReadableStream or Async Iterables.
-    // See https://fetch.spec.whatwg.org/#dom-requestinit-duplex.
-    ...requestOptions.body && { duplex: "half" }
-  }).then(async (response) => {
-    url = response.url;
-    status = response.status;
-    for (const keyAndValue of response.headers) {
-      headers[keyAndValue[0]] = keyAndValue[1];
-    }
-    if ("deprecation" in headers) {
-      const matches = headers.link && headers.link.match(/<([^<>]+)>; rel="deprecation"/);
-      const deprecationLink = matches && matches.pop();
-      log.warn(
-        `[@octokit/request] "${requestOptions.method} ${requestOptions.url}" is deprecated. It is scheduled to be removed on ${headers.sunset}${deprecationLink ? `. See ${deprecationLink}` : ""}`
-      );
-    }
-    if (status === 204 || status === 205) {
-      return;
-    }
-    if (requestOptions.method === "HEAD") {
-      if (status < 400) {
-        return;
-      }
-      throw new RequestError(response.statusText, status, {
-        response: {
-          url,
-          status,
-          headers,
-          data: void 0
-        },
-        request: requestOptions
-      });
-    }
-    if (status === 304) {
-      throw new RequestError("Not modified", status, {
-        response: {
-          url,
-          status,
-          headers,
-          data: await getResponseData(response)
-        },
-        request: requestOptions
-      });
-    }
-    if (status >= 400) {
-      const data = await getResponseData(response);
-      const error = new RequestError(toErrorMessage(data), status, {
-        response: {
-          url,
-          status,
-          headers,
-          data
-        },
-        request: requestOptions
-      });
-      throw error;
-    }
-    return parseSuccessResponseBody ? await getResponseData(response) : response.body;
-  }).then((data) => {
-    return {
-      status,
-      url,
-      headers,
-      data
-    };
-  }).catch((error) => {
-    if (error instanceof RequestError)
-      throw error;
-    else if (error.name === "AbortError")
-      throw error;
-    let message = error.message;
-    if (error.name === "TypeError" && "cause" in error) {
-      if (error.cause instanceof Error) {
-        message = error.cause.message;
-      } else if (typeof error.cause === "string") {
-        message = error.cause;
-      }
-    }
-    throw new RequestError(message, 500, {
-      request: requestOptions
-    });
-  });
-}
-async function getResponseData(response) {
-  const contentType = response.headers.get("content-type");
-  if (/application\/json/.test(contentType)) {
-    return response.json().catch(() => response.text()).catch(() => "");
-  }
-  if (!contentType || /^text\/|charset=utf-8$/.test(contentType)) {
-    return response.text();
-  }
-  return getBufferResponse(response);
-}
-function toErrorMessage(data) {
-  if (typeof data === "string")
-    return data;
-  let suffix;
-  if ("documentation_url" in data) {
-    suffix = ` - ${data.documentation_url}`;
-  } else {
-    suffix = "";
-  }
-  if ("message" in data) {
-    if (Array.isArray(data.errors)) {
-      return `${data.message}: ${data.errors.map(JSON.stringify).join(", ")}${suffix}`;
-    }
-    return `${data.message}${suffix}`;
-  }
-  return `Unknown error: ${JSON.stringify(data)}`;
-}
-
-function withDefaults$1(oldEndpoint, newDefaults) {
-  const endpoint = oldEndpoint.defaults(newDefaults);
-  const newApi = function(route, parameters) {
-    const endpointOptions = endpoint.merge(route, parameters);
-    if (!endpointOptions.request || !endpointOptions.request.hook) {
-      return fetchWrapper(endpoint.parse(endpointOptions));
-    }
-    const request = (route2, parameters2) => {
-      return fetchWrapper(
-        endpoint.parse(endpoint.merge(route2, parameters2))
-      );
-    };
-    Object.assign(request, {
-      endpoint,
-      defaults: withDefaults$1.bind(null, endpoint)
-    });
-    return endpointOptions.request.hook(request, endpointOptions);
-  };
-  return Object.assign(newApi, {
-    endpoint,
-    defaults: withDefaults$1.bind(null, endpoint)
-  });
-}
-
-const request = withDefaults$1(endpoint, {
-  headers: {
-    "user-agent": `octokit-request.js/${VERSION$4} ${getUserAgent()}`
-  }
-});
-
-// pkg/dist-src/index.js
-
-// pkg/dist-src/version.js
-var VERSION$3 = "7.1.1";
-
-// pkg/dist-src/error.js
-function _buildMessageForResponseErrors(data) {
-  return `Request failed due to following response errors:
-` + data.errors.map((e) => ` - ${e.message}`).join("\n");
-}
-var GraphqlResponseError = class extends Error {
-  constructor(request2, headers, response) {
-    super(_buildMessageForResponseErrors(response));
-    this.request = request2;
-    this.headers = headers;
-    this.response = response;
-    this.name = "GraphqlResponseError";
-    this.errors = response.errors;
-    this.data = response.data;
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-  }
-};
-
-// pkg/dist-src/graphql.js
-var NON_VARIABLE_OPTIONS = [
-  "method",
-  "baseUrl",
-  "url",
-  "headers",
-  "request",
-  "query",
-  "mediaType"
-];
-var FORBIDDEN_VARIABLE_OPTIONS = ["query", "method", "url"];
-var GHES_V3_SUFFIX_REGEX = /\/api\/v3\/?$/;
-function graphql(request2, query, options) {
-  if (options) {
-    if (typeof query === "string" && "query" in options) {
-      return Promise.reject(
-        new Error(`[@octokit/graphql] "query" cannot be used as variable name`)
-      );
-    }
-    for (const key in options) {
-      if (!FORBIDDEN_VARIABLE_OPTIONS.includes(key)) continue;
-      return Promise.reject(
-        new Error(
-          `[@octokit/graphql] "${key}" cannot be used as variable name`
-        )
-      );
-    }
-  }
-  const parsedOptions = typeof query === "string" ? Object.assign({ query }, options) : query;
-  const requestOptions = Object.keys(
-    parsedOptions
-  ).reduce((result, key) => {
-    if (NON_VARIABLE_OPTIONS.includes(key)) {
-      result[key] = parsedOptions[key];
-      return result;
-    }
-    if (!result.variables) {
-      result.variables = {};
-    }
-    result.variables[key] = parsedOptions[key];
-    return result;
-  }, {});
-  const baseUrl = parsedOptions.baseUrl || request2.endpoint.DEFAULTS.baseUrl;
-  if (GHES_V3_SUFFIX_REGEX.test(baseUrl)) {
-    requestOptions.url = baseUrl.replace(GHES_V3_SUFFIX_REGEX, "/api/graphql");
-  }
-  return request2(requestOptions).then((response) => {
-    if (response.data.errors) {
-      const headers = {};
-      for (const key of Object.keys(response.headers)) {
-        headers[key] = response.headers[key];
-      }
-      throw new GraphqlResponseError(
-        requestOptions,
-        headers,
-        response.data
-      );
-    }
-    return response.data.data;
-  });
-}
-
-// pkg/dist-src/with-defaults.js
-function withDefaults(request2, newDefaults) {
-  const newRequest = request2.defaults(newDefaults);
-  const newApi = (query, options) => {
-    return graphql(newRequest, query, options);
-  };
-  return Object.assign(newApi, {
-    defaults: withDefaults.bind(null, newRequest),
-    endpoint: newRequest.endpoint
-  });
-}
-
-// pkg/dist-src/index.js
-withDefaults(request, {
-  headers: {
-    "user-agent": `octokit-graphql.js/${VERSION$3} ${getUserAgent()}`
-  },
-  method: "POST",
-  url: "/graphql"
-});
-function withCustomRequest(customRequest) {
-  return withDefaults(customRequest, {
-    method: "POST",
-    url: "/graphql"
-  });
-}
-
-const REGEX_IS_INSTALLATION_LEGACY = /^v1\./;
-const REGEX_IS_INSTALLATION = /^ghs_/;
-const REGEX_IS_USER_TO_SERVER = /^ghu_/;
-async function auth(token) {
-  const isApp = token.split(/\./).length === 3;
-  const isInstallation = REGEX_IS_INSTALLATION_LEGACY.test(token) || REGEX_IS_INSTALLATION.test(token);
-  const isUserToServer = REGEX_IS_USER_TO_SERVER.test(token);
-  const tokenType = isApp ? "app" : isInstallation ? "installation" : isUserToServer ? "user-to-server" : "oauth";
-  return {
-    type: "token",
-    token,
-    tokenType
-  };
-}
-
-function withAuthorizationPrefix(token) {
-  if (token.split(/\./).length === 3) {
-    return `bearer ${token}`;
-  }
-  return `token ${token}`;
-}
-
-async function hook(token, request, route, parameters) {
-  const endpoint = request.endpoint.merge(
-    route,
-    parameters
-  );
-  endpoint.headers.authorization = withAuthorizationPrefix(token);
-  return request(endpoint);
-}
-
-const createTokenAuth = function createTokenAuth2(token) {
-  if (!token) {
-    throw new Error("[@octokit/auth-token] No token passed to createTokenAuth");
-  }
-  if (typeof token !== "string") {
-    throw new Error(
-      "[@octokit/auth-token] Token passed to createTokenAuth is not a string"
-    );
-  }
-  token = token.replace(/^(token|bearer) +/i, "");
-  return Object.assign(auth.bind(null, token), {
-    hook: hook.bind(null, token)
-  });
-};
-
-// pkg/dist-src/index.js
-
-// pkg/dist-src/version.js
-var VERSION$2 = "5.2.2";
-
-// pkg/dist-src/index.js
-var noop = () => {
-};
-var consoleWarn = console.warn.bind(console);
-var consoleError = console.error.bind(console);
-function createLogger(logger = {}) {
-  if (typeof logger.debug !== "function") {
-    logger.debug = noop;
-  }
-  if (typeof logger.info !== "function") {
-    logger.info = noop;
-  }
-  if (typeof logger.warn !== "function") {
-    logger.warn = consoleWarn;
-  }
-  if (typeof logger.error !== "function") {
-    logger.error = consoleError;
-  }
-  return logger;
-}
-var userAgentTrail = `octokit-core.js/${VERSION$2} ${getUserAgent()}`;
-var Octokit = class {
-  static {
-    this.VERSION = VERSION$2;
-  }
-  static defaults(defaults) {
-    const OctokitWithDefaults = class extends this {
-      constructor(...args) {
-        const options = args[0] || {};
-        if (typeof defaults === "function") {
-          super(defaults(options));
-          return;
-        }
-        super(
-          Object.assign(
-            {},
-            defaults,
-            options,
-            options.userAgent && defaults.userAgent ? {
-              userAgent: `${options.userAgent} ${defaults.userAgent}`
-            } : null
-          )
-        );
-      }
-    };
-    return OctokitWithDefaults;
-  }
-  static {
-    this.plugins = [];
-  }
-  /**
-   * Attach a plugin (or many) to your Octokit instance.
-   *
-   * @example
-   * const API = Octokit.plugin(plugin1, plugin2, plugin3, ...)
-   */
-  static plugin(...newPlugins) {
-    const currentPlugins = this.plugins;
-    const NewOctokit = class extends this {
-      static {
-        this.plugins = currentPlugins.concat(
-          newPlugins.filter((plugin) => !currentPlugins.includes(plugin))
-        );
-      }
-    };
-    return NewOctokit;
-  }
-  constructor(options = {}) {
-    const hook = new beforeAfterHookExports.Collection();
-    const requestDefaults = {
-      baseUrl: request.endpoint.DEFAULTS.baseUrl,
-      headers: {},
-      request: Object.assign({}, options.request, {
-        // @ts-ignore internal usage only, no need to type
-        hook: hook.bind(null, "request")
-      }),
-      mediaType: {
-        previews: [],
-        format: ""
-      }
-    };
-    requestDefaults.headers["user-agent"] = options.userAgent ? `${options.userAgent} ${userAgentTrail}` : userAgentTrail;
-    if (options.baseUrl) {
-      requestDefaults.baseUrl = options.baseUrl;
-    }
-    if (options.previews) {
-      requestDefaults.mediaType.previews = options.previews;
-    }
-    if (options.timeZone) {
-      requestDefaults.headers["time-zone"] = options.timeZone;
-    }
-    this.request = request.defaults(requestDefaults);
-    this.graphql = withCustomRequest(this.request).defaults(requestDefaults);
-    this.log = createLogger(options.log);
-    this.hook = hook;
-    if (!options.authStrategy) {
-      if (!options.auth) {
-        this.auth = async () => ({
-          type: "unauthenticated"
-        });
-      } else {
-        const auth = createTokenAuth(options.auth);
-        hook.wrap("request", auth.hook);
-        this.auth = auth;
-      }
-    } else {
-      const { authStrategy, ...otherOptions } = options;
-      const auth = authStrategy(
-        Object.assign(
-          {
-            request: this.request,
-            log: this.log,
-            // we pass the current octokit instance as well as its constructor options
-            // to allow for authentication strategies that return a new octokit instance
-            // that shares the same internal state as the current one. The original
-            // requirement for this was the "event-octokit" authentication strategy
-            // of https://github.com/probot/octokit-auth-probot.
-            octokit: this,
-            octokitOptions: otherOptions
-          },
-          options.auth
-        )
-      );
-      hook.wrap("request", auth.hook);
-      this.auth = auth;
-    }
-    const classConstructor = this.constructor;
-    for (let i = 0; i < classConstructor.plugins.length; ++i) {
-      Object.assign(this, classConstructor.plugins[i](this, options));
-    }
-  }
-};
-
-var distWeb$1 = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	Octokit: Octokit
-});
-
-var require$$2 = /*@__PURE__*/getAugmentedNamespace(distWeb$1);
-
-const VERSION$1 = "10.4.1";
-
-const Endpoints = {
-  actions: {
-    addCustomLabelsToSelfHostedRunnerForOrg: [
-      "POST /orgs/{org}/actions/runners/{runner_id}/labels"
-    ],
-    addCustomLabelsToSelfHostedRunnerForRepo: [
-      "POST /repos/{owner}/{repo}/actions/runners/{runner_id}/labels"
-    ],
-    addSelectedRepoToOrgSecret: [
-      "PUT /orgs/{org}/actions/secrets/{secret_name}/repositories/{repository_id}"
-    ],
-    addSelectedRepoToOrgVariable: [
-      "PUT /orgs/{org}/actions/variables/{name}/repositories/{repository_id}"
-    ],
-    approveWorkflowRun: [
-      "POST /repos/{owner}/{repo}/actions/runs/{run_id}/approve"
-    ],
-    cancelWorkflowRun: [
-      "POST /repos/{owner}/{repo}/actions/runs/{run_id}/cancel"
-    ],
-    createEnvironmentVariable: [
-      "POST /repositories/{repository_id}/environments/{environment_name}/variables"
-    ],
-    createOrUpdateEnvironmentSecret: [
-      "PUT /repositories/{repository_id}/environments/{environment_name}/secrets/{secret_name}"
-    ],
-    createOrUpdateOrgSecret: ["PUT /orgs/{org}/actions/secrets/{secret_name}"],
-    createOrUpdateRepoSecret: [
-      "PUT /repos/{owner}/{repo}/actions/secrets/{secret_name}"
-    ],
-    createOrgVariable: ["POST /orgs/{org}/actions/variables"],
-    createRegistrationTokenForOrg: [
-      "POST /orgs/{org}/actions/runners/registration-token"
-    ],
-    createRegistrationTokenForRepo: [
-      "POST /repos/{owner}/{repo}/actions/runners/registration-token"
-    ],
-    createRemoveTokenForOrg: ["POST /orgs/{org}/actions/runners/remove-token"],
-    createRemoveTokenForRepo: [
-      "POST /repos/{owner}/{repo}/actions/runners/remove-token"
-    ],
-    createRepoVariable: ["POST /repos/{owner}/{repo}/actions/variables"],
-    createWorkflowDispatch: [
-      "POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches"
-    ],
-    deleteActionsCacheById: [
-      "DELETE /repos/{owner}/{repo}/actions/caches/{cache_id}"
-    ],
-    deleteActionsCacheByKey: [
-      "DELETE /repos/{owner}/{repo}/actions/caches{?key,ref}"
-    ],
-    deleteArtifact: [
-      "DELETE /repos/{owner}/{repo}/actions/artifacts/{artifact_id}"
-    ],
-    deleteEnvironmentSecret: [
-      "DELETE /repositories/{repository_id}/environments/{environment_name}/secrets/{secret_name}"
-    ],
-    deleteEnvironmentVariable: [
-      "DELETE /repositories/{repository_id}/environments/{environment_name}/variables/{name}"
-    ],
-    deleteOrgSecret: ["DELETE /orgs/{org}/actions/secrets/{secret_name}"],
-    deleteOrgVariable: ["DELETE /orgs/{org}/actions/variables/{name}"],
-    deleteRepoSecret: [
-      "DELETE /repos/{owner}/{repo}/actions/secrets/{secret_name}"
-    ],
-    deleteRepoVariable: [
-      "DELETE /repos/{owner}/{repo}/actions/variables/{name}"
-    ],
-    deleteSelfHostedRunnerFromOrg: [
-      "DELETE /orgs/{org}/actions/runners/{runner_id}"
-    ],
-    deleteSelfHostedRunnerFromRepo: [
-      "DELETE /repos/{owner}/{repo}/actions/runners/{runner_id}"
-    ],
-    deleteWorkflowRun: ["DELETE /repos/{owner}/{repo}/actions/runs/{run_id}"],
-    deleteWorkflowRunLogs: [
-      "DELETE /repos/{owner}/{repo}/actions/runs/{run_id}/logs"
-    ],
-    disableSelectedRepositoryGithubActionsOrganization: [
-      "DELETE /orgs/{org}/actions/permissions/repositories/{repository_id}"
-    ],
-    disableWorkflow: [
-      "PUT /repos/{owner}/{repo}/actions/workflows/{workflow_id}/disable"
-    ],
-    downloadArtifact: [
-      "GET /repos/{owner}/{repo}/actions/artifacts/{artifact_id}/{archive_format}"
-    ],
-    downloadJobLogsForWorkflowRun: [
-      "GET /repos/{owner}/{repo}/actions/jobs/{job_id}/logs"
-    ],
-    downloadWorkflowRunAttemptLogs: [
-      "GET /repos/{owner}/{repo}/actions/runs/{run_id}/attempts/{attempt_number}/logs"
-    ],
-    downloadWorkflowRunLogs: [
-      "GET /repos/{owner}/{repo}/actions/runs/{run_id}/logs"
-    ],
-    enableSelectedRepositoryGithubActionsOrganization: [
-      "PUT /orgs/{org}/actions/permissions/repositories/{repository_id}"
-    ],
-    enableWorkflow: [
-      "PUT /repos/{owner}/{repo}/actions/workflows/{workflow_id}/enable"
-    ],
-    forceCancelWorkflowRun: [
-      "POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel"
-    ],
-    generateRunnerJitconfigForOrg: [
-      "POST /orgs/{org}/actions/runners/generate-jitconfig"
-    ],
-    generateRunnerJitconfigForRepo: [
-      "POST /repos/{owner}/{repo}/actions/runners/generate-jitconfig"
-    ],
-    getActionsCacheList: ["GET /repos/{owner}/{repo}/actions/caches"],
-    getActionsCacheUsage: ["GET /repos/{owner}/{repo}/actions/cache/usage"],
-    getActionsCacheUsageByRepoForOrg: [
-      "GET /orgs/{org}/actions/cache/usage-by-repository"
-    ],
-    getActionsCacheUsageForOrg: ["GET /orgs/{org}/actions/cache/usage"],
-    getAllowedActionsOrganization: [
-      "GET /orgs/{org}/actions/permissions/selected-actions"
-    ],
-    getAllowedActionsRepository: [
-      "GET /repos/{owner}/{repo}/actions/permissions/selected-actions"
-    ],
-    getArtifact: ["GET /repos/{owner}/{repo}/actions/artifacts/{artifact_id}"],
-    getCustomOidcSubClaimForRepo: [
-      "GET /repos/{owner}/{repo}/actions/oidc/customization/sub"
-    ],
-    getEnvironmentPublicKey: [
-      "GET /repositories/{repository_id}/environments/{environment_name}/secrets/public-key"
-    ],
-    getEnvironmentSecret: [
-      "GET /repositories/{repository_id}/environments/{environment_name}/secrets/{secret_name}"
-    ],
-    getEnvironmentVariable: [
-      "GET /repositories/{repository_id}/environments/{environment_name}/variables/{name}"
-    ],
-    getGithubActionsDefaultWorkflowPermissionsOrganization: [
-      "GET /orgs/{org}/actions/permissions/workflow"
-    ],
-    getGithubActionsDefaultWorkflowPermissionsRepository: [
-      "GET /repos/{owner}/{repo}/actions/permissions/workflow"
-    ],
-    getGithubActionsPermissionsOrganization: [
-      "GET /orgs/{org}/actions/permissions"
-    ],
-    getGithubActionsPermissionsRepository: [
-      "GET /repos/{owner}/{repo}/actions/permissions"
-    ],
-    getJobForWorkflowRun: ["GET /repos/{owner}/{repo}/actions/jobs/{job_id}"],
-    getOrgPublicKey: ["GET /orgs/{org}/actions/secrets/public-key"],
-    getOrgSecret: ["GET /orgs/{org}/actions/secrets/{secret_name}"],
-    getOrgVariable: ["GET /orgs/{org}/actions/variables/{name}"],
-    getPendingDeploymentsForRun: [
-      "GET /repos/{owner}/{repo}/actions/runs/{run_id}/pending_deployments"
-    ],
-    getRepoPermissions: [
-      "GET /repos/{owner}/{repo}/actions/permissions",
-      {},
-      { renamed: ["actions", "getGithubActionsPermissionsRepository"] }
-    ],
-    getRepoPublicKey: ["GET /repos/{owner}/{repo}/actions/secrets/public-key"],
-    getRepoSecret: ["GET /repos/{owner}/{repo}/actions/secrets/{secret_name}"],
-    getRepoVariable: ["GET /repos/{owner}/{repo}/actions/variables/{name}"],
-    getReviewsForRun: [
-      "GET /repos/{owner}/{repo}/actions/runs/{run_id}/approvals"
-    ],
-    getSelfHostedRunnerForOrg: ["GET /orgs/{org}/actions/runners/{runner_id}"],
-    getSelfHostedRunnerForRepo: [
-      "GET /repos/{owner}/{repo}/actions/runners/{runner_id}"
-    ],
-    getWorkflow: ["GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}"],
-    getWorkflowAccessToRepository: [
-      "GET /repos/{owner}/{repo}/actions/permissions/access"
-    ],
-    getWorkflowRun: ["GET /repos/{owner}/{repo}/actions/runs/{run_id}"],
-    getWorkflowRunAttempt: [
-      "GET /repos/{owner}/{repo}/actions/runs/{run_id}/attempts/{attempt_number}"
-    ],
-    getWorkflowRunUsage: [
-      "GET /repos/{owner}/{repo}/actions/runs/{run_id}/timing"
-    ],
-    getWorkflowUsage: [
-      "GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/timing"
-    ],
-    listArtifactsForRepo: ["GET /repos/{owner}/{repo}/actions/artifacts"],
-    listEnvironmentSecrets: [
-      "GET /repositories/{repository_id}/environments/{environment_name}/secrets"
-    ],
-    listEnvironmentVariables: [
-      "GET /repositories/{repository_id}/environments/{environment_name}/variables"
-    ],
-    listJobsForWorkflowRun: [
-      "GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs"
-    ],
-    listJobsForWorkflowRunAttempt: [
-      "GET /repos/{owner}/{repo}/actions/runs/{run_id}/attempts/{attempt_number}/jobs"
-    ],
-    listLabelsForSelfHostedRunnerForOrg: [
-      "GET /orgs/{org}/actions/runners/{runner_id}/labels"
-    ],
-    listLabelsForSelfHostedRunnerForRepo: [
-      "GET /repos/{owner}/{repo}/actions/runners/{runner_id}/labels"
-    ],
-    listOrgSecrets: ["GET /orgs/{org}/actions/secrets"],
-    listOrgVariables: ["GET /orgs/{org}/actions/variables"],
-    listRepoOrganizationSecrets: [
-      "GET /repos/{owner}/{repo}/actions/organization-secrets"
-    ],
-    listRepoOrganizationVariables: [
-      "GET /repos/{owner}/{repo}/actions/organization-variables"
-    ],
-    listRepoSecrets: ["GET /repos/{owner}/{repo}/actions/secrets"],
-    listRepoVariables: ["GET /repos/{owner}/{repo}/actions/variables"],
-    listRepoWorkflows: ["GET /repos/{owner}/{repo}/actions/workflows"],
-    listRunnerApplicationsForOrg: ["GET /orgs/{org}/actions/runners/downloads"],
-    listRunnerApplicationsForRepo: [
-      "GET /repos/{owner}/{repo}/actions/runners/downloads"
-    ],
-    listSelectedReposForOrgSecret: [
-      "GET /orgs/{org}/actions/secrets/{secret_name}/repositories"
-    ],
-    listSelectedReposForOrgVariable: [
-      "GET /orgs/{org}/actions/variables/{name}/repositories"
-    ],
-    listSelectedRepositoriesEnabledGithubActionsOrganization: [
-      "GET /orgs/{org}/actions/permissions/repositories"
-    ],
-    listSelfHostedRunnersForOrg: ["GET /orgs/{org}/actions/runners"],
-    listSelfHostedRunnersForRepo: ["GET /repos/{owner}/{repo}/actions/runners"],
-    listWorkflowRunArtifacts: [
-      "GET /repos/{owner}/{repo}/actions/runs/{run_id}/artifacts"
-    ],
-    listWorkflowRuns: [
-      "GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs"
-    ],
-    listWorkflowRunsForRepo: ["GET /repos/{owner}/{repo}/actions/runs"],
-    reRunJobForWorkflowRun: [
-      "POST /repos/{owner}/{repo}/actions/jobs/{job_id}/rerun"
-    ],
-    reRunWorkflow: ["POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun"],
-    reRunWorkflowFailedJobs: [
-      "POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun-failed-jobs"
-    ],
-    removeAllCustomLabelsFromSelfHostedRunnerForOrg: [
-      "DELETE /orgs/{org}/actions/runners/{runner_id}/labels"
-    ],
-    removeAllCustomLabelsFromSelfHostedRunnerForRepo: [
-      "DELETE /repos/{owner}/{repo}/actions/runners/{runner_id}/labels"
-    ],
-    removeCustomLabelFromSelfHostedRunnerForOrg: [
-      "DELETE /orgs/{org}/actions/runners/{runner_id}/labels/{name}"
-    ],
-    removeCustomLabelFromSelfHostedRunnerForRepo: [
-      "DELETE /repos/{owner}/{repo}/actions/runners/{runner_id}/labels/{name}"
-    ],
-    removeSelectedRepoFromOrgSecret: [
-      "DELETE /orgs/{org}/actions/secrets/{secret_name}/repositories/{repository_id}"
-    ],
-    removeSelectedRepoFromOrgVariable: [
-      "DELETE /orgs/{org}/actions/variables/{name}/repositories/{repository_id}"
-    ],
-    reviewCustomGatesForRun: [
-      "POST /repos/{owner}/{repo}/actions/runs/{run_id}/deployment_protection_rule"
-    ],
-    reviewPendingDeploymentsForRun: [
-      "POST /repos/{owner}/{repo}/actions/runs/{run_id}/pending_deployments"
-    ],
-    setAllowedActionsOrganization: [
-      "PUT /orgs/{org}/actions/permissions/selected-actions"
-    ],
-    setAllowedActionsRepository: [
-      "PUT /repos/{owner}/{repo}/actions/permissions/selected-actions"
-    ],
-    setCustomLabelsForSelfHostedRunnerForOrg: [
-      "PUT /orgs/{org}/actions/runners/{runner_id}/labels"
-    ],
-    setCustomLabelsForSelfHostedRunnerForRepo: [
-      "PUT /repos/{owner}/{repo}/actions/runners/{runner_id}/labels"
-    ],
-    setCustomOidcSubClaimForRepo: [
-      "PUT /repos/{owner}/{repo}/actions/oidc/customization/sub"
-    ],
-    setGithubActionsDefaultWorkflowPermissionsOrganization: [
-      "PUT /orgs/{org}/actions/permissions/workflow"
-    ],
-    setGithubActionsDefaultWorkflowPermissionsRepository: [
-      "PUT /repos/{owner}/{repo}/actions/permissions/workflow"
-    ],
-    setGithubActionsPermissionsOrganization: [
-      "PUT /orgs/{org}/actions/permissions"
-    ],
-    setGithubActionsPermissionsRepository: [
-      "PUT /repos/{owner}/{repo}/actions/permissions"
-    ],
-    setSelectedReposForOrgSecret: [
-      "PUT /orgs/{org}/actions/secrets/{secret_name}/repositories"
-    ],
-    setSelectedReposForOrgVariable: [
-      "PUT /orgs/{org}/actions/variables/{name}/repositories"
-    ],
-    setSelectedRepositoriesEnabledGithubActionsOrganization: [
-      "PUT /orgs/{org}/actions/permissions/repositories"
-    ],
-    setWorkflowAccessToRepository: [
-      "PUT /repos/{owner}/{repo}/actions/permissions/access"
-    ],
-    updateEnvironmentVariable: [
-      "PATCH /repositories/{repository_id}/environments/{environment_name}/variables/{name}"
-    ],
-    updateOrgVariable: ["PATCH /orgs/{org}/actions/variables/{name}"],
-    updateRepoVariable: [
-      "PATCH /repos/{owner}/{repo}/actions/variables/{name}"
-    ]
-  },
-  activity: {
-    checkRepoIsStarredByAuthenticatedUser: ["GET /user/starred/{owner}/{repo}"],
-    deleteRepoSubscription: ["DELETE /repos/{owner}/{repo}/subscription"],
-    deleteThreadSubscription: [
-      "DELETE /notifications/threads/{thread_id}/subscription"
-    ],
-    getFeeds: ["GET /feeds"],
-    getRepoSubscription: ["GET /repos/{owner}/{repo}/subscription"],
-    getThread: ["GET /notifications/threads/{thread_id}"],
-    getThreadSubscriptionForAuthenticatedUser: [
-      "GET /notifications/threads/{thread_id}/subscription"
-    ],
-    listEventsForAuthenticatedUser: ["GET /users/{username}/events"],
-    listNotificationsForAuthenticatedUser: ["GET /notifications"],
-    listOrgEventsForAuthenticatedUser: [
-      "GET /users/{username}/events/orgs/{org}"
-    ],
-    listPublicEvents: ["GET /events"],
-    listPublicEventsForRepoNetwork: ["GET /networks/{owner}/{repo}/events"],
-    listPublicEventsForUser: ["GET /users/{username}/events/public"],
-    listPublicOrgEvents: ["GET /orgs/{org}/events"],
-    listReceivedEventsForUser: ["GET /users/{username}/received_events"],
-    listReceivedPublicEventsForUser: [
-      "GET /users/{username}/received_events/public"
-    ],
-    listRepoEvents: ["GET /repos/{owner}/{repo}/events"],
-    listRepoNotificationsForAuthenticatedUser: [
-      "GET /repos/{owner}/{repo}/notifications"
-    ],
-    listReposStarredByAuthenticatedUser: ["GET /user/starred"],
-    listReposStarredByUser: ["GET /users/{username}/starred"],
-    listReposWatchedByUser: ["GET /users/{username}/subscriptions"],
-    listStargazersForRepo: ["GET /repos/{owner}/{repo}/stargazers"],
-    listWatchedReposForAuthenticatedUser: ["GET /user/subscriptions"],
-    listWatchersForRepo: ["GET /repos/{owner}/{repo}/subscribers"],
-    markNotificationsAsRead: ["PUT /notifications"],
-    markRepoNotificationsAsRead: ["PUT /repos/{owner}/{repo}/notifications"],
-    markThreadAsDone: ["DELETE /notifications/threads/{thread_id}"],
-    markThreadAsRead: ["PATCH /notifications/threads/{thread_id}"],
-    setRepoSubscription: ["PUT /repos/{owner}/{repo}/subscription"],
-    setThreadSubscription: [
-      "PUT /notifications/threads/{thread_id}/subscription"
-    ],
-    starRepoForAuthenticatedUser: ["PUT /user/starred/{owner}/{repo}"],
-    unstarRepoForAuthenticatedUser: ["DELETE /user/starred/{owner}/{repo}"]
-  },
-  apps: {
-    addRepoToInstallation: [
-      "PUT /user/installations/{installation_id}/repositories/{repository_id}",
-      {},
-      { renamed: ["apps", "addRepoToInstallationForAuthenticatedUser"] }
-    ],
-    addRepoToInstallationForAuthenticatedUser: [
-      "PUT /user/installations/{installation_id}/repositories/{repository_id}"
-    ],
-    checkToken: ["POST /applications/{client_id}/token"],
-    createFromManifest: ["POST /app-manifests/{code}/conversions"],
-    createInstallationAccessToken: [
-      "POST /app/installations/{installation_id}/access_tokens"
-    ],
-    deleteAuthorization: ["DELETE /applications/{client_id}/grant"],
-    deleteInstallation: ["DELETE /app/installations/{installation_id}"],
-    deleteToken: ["DELETE /applications/{client_id}/token"],
-    getAuthenticated: ["GET /app"],
-    getBySlug: ["GET /apps/{app_slug}"],
-    getInstallation: ["GET /app/installations/{installation_id}"],
-    getOrgInstallation: ["GET /orgs/{org}/installation"],
-    getRepoInstallation: ["GET /repos/{owner}/{repo}/installation"],
-    getSubscriptionPlanForAccount: [
-      "GET /marketplace_listing/accounts/{account_id}"
-    ],
-    getSubscriptionPlanForAccountStubbed: [
-      "GET /marketplace_listing/stubbed/accounts/{account_id}"
-    ],
-    getUserInstallation: ["GET /users/{username}/installation"],
-    getWebhookConfigForApp: ["GET /app/hook/config"],
-    getWebhookDelivery: ["GET /app/hook/deliveries/{delivery_id}"],
-    listAccountsForPlan: ["GET /marketplace_listing/plans/{plan_id}/accounts"],
-    listAccountsForPlanStubbed: [
-      "GET /marketplace_listing/stubbed/plans/{plan_id}/accounts"
-    ],
-    listInstallationReposForAuthenticatedUser: [
-      "GET /user/installations/{installation_id}/repositories"
-    ],
-    listInstallationRequestsForAuthenticatedApp: [
-      "GET /app/installation-requests"
-    ],
-    listInstallations: ["GET /app/installations"],
-    listInstallationsForAuthenticatedUser: ["GET /user/installations"],
-    listPlans: ["GET /marketplace_listing/plans"],
-    listPlansStubbed: ["GET /marketplace_listing/stubbed/plans"],
-    listReposAccessibleToInstallation: ["GET /installation/repositories"],
-    listSubscriptionsForAuthenticatedUser: ["GET /user/marketplace_purchases"],
-    listSubscriptionsForAuthenticatedUserStubbed: [
-      "GET /user/marketplace_purchases/stubbed"
-    ],
-    listWebhookDeliveries: ["GET /app/hook/deliveries"],
-    redeliverWebhookDelivery: [
-      "POST /app/hook/deliveries/{delivery_id}/attempts"
-    ],
-    removeRepoFromInstallation: [
-      "DELETE /user/installations/{installation_id}/repositories/{repository_id}",
-      {},
-      { renamed: ["apps", "removeRepoFromInstallationForAuthenticatedUser"] }
-    ],
-    removeRepoFromInstallationForAuthenticatedUser: [
-      "DELETE /user/installations/{installation_id}/repositories/{repository_id}"
-    ],
-    resetToken: ["PATCH /applications/{client_id}/token"],
-    revokeInstallationAccessToken: ["DELETE /installation/token"],
-    scopeToken: ["POST /applications/{client_id}/token/scoped"],
-    suspendInstallation: ["PUT /app/installations/{installation_id}/suspended"],
-    unsuspendInstallation: [
-      "DELETE /app/installations/{installation_id}/suspended"
-    ],
-    updateWebhookConfigForApp: ["PATCH /app/hook/config"]
-  },
-  billing: {
-    getGithubActionsBillingOrg: ["GET /orgs/{org}/settings/billing/actions"],
-    getGithubActionsBillingUser: [
-      "GET /users/{username}/settings/billing/actions"
-    ],
-    getGithubPackagesBillingOrg: ["GET /orgs/{org}/settings/billing/packages"],
-    getGithubPackagesBillingUser: [
-      "GET /users/{username}/settings/billing/packages"
-    ],
-    getSharedStorageBillingOrg: [
-      "GET /orgs/{org}/settings/billing/shared-storage"
-    ],
-    getSharedStorageBillingUser: [
-      "GET /users/{username}/settings/billing/shared-storage"
-    ]
-  },
-  checks: {
-    create: ["POST /repos/{owner}/{repo}/check-runs"],
-    createSuite: ["POST /repos/{owner}/{repo}/check-suites"],
-    get: ["GET /repos/{owner}/{repo}/check-runs/{check_run_id}"],
-    getSuite: ["GET /repos/{owner}/{repo}/check-suites/{check_suite_id}"],
-    listAnnotations: [
-      "GET /repos/{owner}/{repo}/check-runs/{check_run_id}/annotations"
-    ],
-    listForRef: ["GET /repos/{owner}/{repo}/commits/{ref}/check-runs"],
-    listForSuite: [
-      "GET /repos/{owner}/{repo}/check-suites/{check_suite_id}/check-runs"
-    ],
-    listSuitesForRef: ["GET /repos/{owner}/{repo}/commits/{ref}/check-suites"],
-    rerequestRun: [
-      "POST /repos/{owner}/{repo}/check-runs/{check_run_id}/rerequest"
-    ],
-    rerequestSuite: [
-      "POST /repos/{owner}/{repo}/check-suites/{check_suite_id}/rerequest"
-    ],
-    setSuitesPreferences: [
-      "PATCH /repos/{owner}/{repo}/check-suites/preferences"
-    ],
-    update: ["PATCH /repos/{owner}/{repo}/check-runs/{check_run_id}"]
-  },
-  codeScanning: {
-    deleteAnalysis: [
-      "DELETE /repos/{owner}/{repo}/code-scanning/analyses/{analysis_id}{?confirm_delete}"
-    ],
-    getAlert: [
-      "GET /repos/{owner}/{repo}/code-scanning/alerts/{alert_number}",
-      {},
-      { renamedParameters: { alert_id: "alert_number" } }
-    ],
-    getAnalysis: [
-      "GET /repos/{owner}/{repo}/code-scanning/analyses/{analysis_id}"
-    ],
-    getCodeqlDatabase: [
-      "GET /repos/{owner}/{repo}/code-scanning/codeql/databases/{language}"
-    ],
-    getDefaultSetup: ["GET /repos/{owner}/{repo}/code-scanning/default-setup"],
-    getSarif: ["GET /repos/{owner}/{repo}/code-scanning/sarifs/{sarif_id}"],
-    listAlertInstances: [
-      "GET /repos/{owner}/{repo}/code-scanning/alerts/{alert_number}/instances"
-    ],
-    listAlertsForOrg: ["GET /orgs/{org}/code-scanning/alerts"],
-    listAlertsForRepo: ["GET /repos/{owner}/{repo}/code-scanning/alerts"],
-    listAlertsInstances: [
-      "GET /repos/{owner}/{repo}/code-scanning/alerts/{alert_number}/instances",
-      {},
-      { renamed: ["codeScanning", "listAlertInstances"] }
-    ],
-    listCodeqlDatabases: [
-      "GET /repos/{owner}/{repo}/code-scanning/codeql/databases"
-    ],
-    listRecentAnalyses: ["GET /repos/{owner}/{repo}/code-scanning/analyses"],
-    updateAlert: [
-      "PATCH /repos/{owner}/{repo}/code-scanning/alerts/{alert_number}"
-    ],
-    updateDefaultSetup: [
-      "PATCH /repos/{owner}/{repo}/code-scanning/default-setup"
-    ],
-    uploadSarif: ["POST /repos/{owner}/{repo}/code-scanning/sarifs"]
-  },
-  codesOfConduct: {
-    getAllCodesOfConduct: ["GET /codes_of_conduct"],
-    getConductCode: ["GET /codes_of_conduct/{key}"]
-  },
-  codespaces: {
-    addRepositoryForSecretForAuthenticatedUser: [
-      "PUT /user/codespaces/secrets/{secret_name}/repositories/{repository_id}"
-    ],
-    addSelectedRepoToOrgSecret: [
-      "PUT /orgs/{org}/codespaces/secrets/{secret_name}/repositories/{repository_id}"
-    ],
-    checkPermissionsForDevcontainer: [
-      "GET /repos/{owner}/{repo}/codespaces/permissions_check"
-    ],
-    codespaceMachinesForAuthenticatedUser: [
-      "GET /user/codespaces/{codespace_name}/machines"
-    ],
-    createForAuthenticatedUser: ["POST /user/codespaces"],
-    createOrUpdateOrgSecret: [
-      "PUT /orgs/{org}/codespaces/secrets/{secret_name}"
-    ],
-    createOrUpdateRepoSecret: [
-      "PUT /repos/{owner}/{repo}/codespaces/secrets/{secret_name}"
-    ],
-    createOrUpdateSecretForAuthenticatedUser: [
-      "PUT /user/codespaces/secrets/{secret_name}"
-    ],
-    createWithPrForAuthenticatedUser: [
-      "POST /repos/{owner}/{repo}/pulls/{pull_number}/codespaces"
-    ],
-    createWithRepoForAuthenticatedUser: [
-      "POST /repos/{owner}/{repo}/codespaces"
-    ],
-    deleteForAuthenticatedUser: ["DELETE /user/codespaces/{codespace_name}"],
-    deleteFromOrganization: [
-      "DELETE /orgs/{org}/members/{username}/codespaces/{codespace_name}"
-    ],
-    deleteOrgSecret: ["DELETE /orgs/{org}/codespaces/secrets/{secret_name}"],
-    deleteRepoSecret: [
-      "DELETE /repos/{owner}/{repo}/codespaces/secrets/{secret_name}"
-    ],
-    deleteSecretForAuthenticatedUser: [
-      "DELETE /user/codespaces/secrets/{secret_name}"
-    ],
-    exportForAuthenticatedUser: [
-      "POST /user/codespaces/{codespace_name}/exports"
-    ],
-    getCodespacesForUserInOrg: [
-      "GET /orgs/{org}/members/{username}/codespaces"
-    ],
-    getExportDetailsForAuthenticatedUser: [
-      "GET /user/codespaces/{codespace_name}/exports/{export_id}"
-    ],
-    getForAuthenticatedUser: ["GET /user/codespaces/{codespace_name}"],
-    getOrgPublicKey: ["GET /orgs/{org}/codespaces/secrets/public-key"],
-    getOrgSecret: ["GET /orgs/{org}/codespaces/secrets/{secret_name}"],
-    getPublicKeyForAuthenticatedUser: [
-      "GET /user/codespaces/secrets/public-key"
-    ],
-    getRepoPublicKey: [
-      "GET /repos/{owner}/{repo}/codespaces/secrets/public-key"
-    ],
-    getRepoSecret: [
-      "GET /repos/{owner}/{repo}/codespaces/secrets/{secret_name}"
-    ],
-    getSecretForAuthenticatedUser: [
-      "GET /user/codespaces/secrets/{secret_name}"
-    ],
-    listDevcontainersInRepositoryForAuthenticatedUser: [
-      "GET /repos/{owner}/{repo}/codespaces/devcontainers"
-    ],
-    listForAuthenticatedUser: ["GET /user/codespaces"],
-    listInOrganization: [
-      "GET /orgs/{org}/codespaces",
-      {},
-      { renamedParameters: { org_id: "org" } }
-    ],
-    listInRepositoryForAuthenticatedUser: [
-      "GET /repos/{owner}/{repo}/codespaces"
-    ],
-    listOrgSecrets: ["GET /orgs/{org}/codespaces/secrets"],
-    listRepoSecrets: ["GET /repos/{owner}/{repo}/codespaces/secrets"],
-    listRepositoriesForSecretForAuthenticatedUser: [
-      "GET /user/codespaces/secrets/{secret_name}/repositories"
-    ],
-    listSecretsForAuthenticatedUser: ["GET /user/codespaces/secrets"],
-    listSelectedReposForOrgSecret: [
-      "GET /orgs/{org}/codespaces/secrets/{secret_name}/repositories"
-    ],
-    preFlightWithRepoForAuthenticatedUser: [
-      "GET /repos/{owner}/{repo}/codespaces/new"
-    ],
-    publishForAuthenticatedUser: [
-      "POST /user/codespaces/{codespace_name}/publish"
-    ],
-    removeRepositoryForSecretForAuthenticatedUser: [
-      "DELETE /user/codespaces/secrets/{secret_name}/repositories/{repository_id}"
-    ],
-    removeSelectedRepoFromOrgSecret: [
-      "DELETE /orgs/{org}/codespaces/secrets/{secret_name}/repositories/{repository_id}"
-    ],
-    repoMachinesForAuthenticatedUser: [
-      "GET /repos/{owner}/{repo}/codespaces/machines"
-    ],
-    setRepositoriesForSecretForAuthenticatedUser: [
-      "PUT /user/codespaces/secrets/{secret_name}/repositories"
-    ],
-    setSelectedReposForOrgSecret: [
-      "PUT /orgs/{org}/codespaces/secrets/{secret_name}/repositories"
-    ],
-    startForAuthenticatedUser: ["POST /user/codespaces/{codespace_name}/start"],
-    stopForAuthenticatedUser: ["POST /user/codespaces/{codespace_name}/stop"],
-    stopInOrganization: [
-      "POST /orgs/{org}/members/{username}/codespaces/{codespace_name}/stop"
-    ],
-    updateForAuthenticatedUser: ["PATCH /user/codespaces/{codespace_name}"]
-  },
-  copilot: {
-    addCopilotSeatsForTeams: [
-      "POST /orgs/{org}/copilot/billing/selected_teams"
-    ],
-    addCopilotSeatsForUsers: [
-      "POST /orgs/{org}/copilot/billing/selected_users"
-    ],
-    cancelCopilotSeatAssignmentForTeams: [
-      "DELETE /orgs/{org}/copilot/billing/selected_teams"
-    ],
-    cancelCopilotSeatAssignmentForUsers: [
-      "DELETE /orgs/{org}/copilot/billing/selected_users"
-    ],
-    getCopilotOrganizationDetails: ["GET /orgs/{org}/copilot/billing"],
-    getCopilotSeatDetailsForUser: [
-      "GET /orgs/{org}/members/{username}/copilot"
-    ],
-    listCopilotSeats: ["GET /orgs/{org}/copilot/billing/seats"]
-  },
-  dependabot: {
-    addSelectedRepoToOrgSecret: [
-      "PUT /orgs/{org}/dependabot/secrets/{secret_name}/repositories/{repository_id}"
-    ],
-    createOrUpdateOrgSecret: [
-      "PUT /orgs/{org}/dependabot/secrets/{secret_name}"
-    ],
-    createOrUpdateRepoSecret: [
-      "PUT /repos/{owner}/{repo}/dependabot/secrets/{secret_name}"
-    ],
-    deleteOrgSecret: ["DELETE /orgs/{org}/dependabot/secrets/{secret_name}"],
-    deleteRepoSecret: [
-      "DELETE /repos/{owner}/{repo}/dependabot/secrets/{secret_name}"
-    ],
-    getAlert: ["GET /repos/{owner}/{repo}/dependabot/alerts/{alert_number}"],
-    getOrgPublicKey: ["GET /orgs/{org}/dependabot/secrets/public-key"],
-    getOrgSecret: ["GET /orgs/{org}/dependabot/secrets/{secret_name}"],
-    getRepoPublicKey: [
-      "GET /repos/{owner}/{repo}/dependabot/secrets/public-key"
-    ],
-    getRepoSecret: [
-      "GET /repos/{owner}/{repo}/dependabot/secrets/{secret_name}"
-    ],
-    listAlertsForEnterprise: [
-      "GET /enterprises/{enterprise}/dependabot/alerts"
-    ],
-    listAlertsForOrg: ["GET /orgs/{org}/dependabot/alerts"],
-    listAlertsForRepo: ["GET /repos/{owner}/{repo}/dependabot/alerts"],
-    listOrgSecrets: ["GET /orgs/{org}/dependabot/secrets"],
-    listRepoSecrets: ["GET /repos/{owner}/{repo}/dependabot/secrets"],
-    listSelectedReposForOrgSecret: [
-      "GET /orgs/{org}/dependabot/secrets/{secret_name}/repositories"
-    ],
-    removeSelectedRepoFromOrgSecret: [
-      "DELETE /orgs/{org}/dependabot/secrets/{secret_name}/repositories/{repository_id}"
-    ],
-    setSelectedReposForOrgSecret: [
-      "PUT /orgs/{org}/dependabot/secrets/{secret_name}/repositories"
-    ],
-    updateAlert: [
-      "PATCH /repos/{owner}/{repo}/dependabot/alerts/{alert_number}"
-    ]
-  },
-  dependencyGraph: {
-    createRepositorySnapshot: [
-      "POST /repos/{owner}/{repo}/dependency-graph/snapshots"
-    ],
-    diffRange: [
-      "GET /repos/{owner}/{repo}/dependency-graph/compare/{basehead}"
-    ],
-    exportSbom: ["GET /repos/{owner}/{repo}/dependency-graph/sbom"]
-  },
-  emojis: { get: ["GET /emojis"] },
-  gists: {
-    checkIsStarred: ["GET /gists/{gist_id}/star"],
-    create: ["POST /gists"],
-    createComment: ["POST /gists/{gist_id}/comments"],
-    delete: ["DELETE /gists/{gist_id}"],
-    deleteComment: ["DELETE /gists/{gist_id}/comments/{comment_id}"],
-    fork: ["POST /gists/{gist_id}/forks"],
-    get: ["GET /gists/{gist_id}"],
-    getComment: ["GET /gists/{gist_id}/comments/{comment_id}"],
-    getRevision: ["GET /gists/{gist_id}/{sha}"],
-    list: ["GET /gists"],
-    listComments: ["GET /gists/{gist_id}/comments"],
-    listCommits: ["GET /gists/{gist_id}/commits"],
-    listForUser: ["GET /users/{username}/gists"],
-    listForks: ["GET /gists/{gist_id}/forks"],
-    listPublic: ["GET /gists/public"],
-    listStarred: ["GET /gists/starred"],
-    star: ["PUT /gists/{gist_id}/star"],
-    unstar: ["DELETE /gists/{gist_id}/star"],
-    update: ["PATCH /gists/{gist_id}"],
-    updateComment: ["PATCH /gists/{gist_id}/comments/{comment_id}"]
-  },
-  git: {
-    createBlob: ["POST /repos/{owner}/{repo}/git/blobs"],
-    createCommit: ["POST /repos/{owner}/{repo}/git/commits"],
-    createRef: ["POST /repos/{owner}/{repo}/git/refs"],
-    createTag: ["POST /repos/{owner}/{repo}/git/tags"],
-    createTree: ["POST /repos/{owner}/{repo}/git/trees"],
-    deleteRef: ["DELETE /repos/{owner}/{repo}/git/refs/{ref}"],
-    getBlob: ["GET /repos/{owner}/{repo}/git/blobs/{file_sha}"],
-    getCommit: ["GET /repos/{owner}/{repo}/git/commits/{commit_sha}"],
-    getRef: ["GET /repos/{owner}/{repo}/git/ref/{ref}"],
-    getTag: ["GET /repos/{owner}/{repo}/git/tags/{tag_sha}"],
-    getTree: ["GET /repos/{owner}/{repo}/git/trees/{tree_sha}"],
-    listMatchingRefs: ["GET /repos/{owner}/{repo}/git/matching-refs/{ref}"],
-    updateRef: ["PATCH /repos/{owner}/{repo}/git/refs/{ref}"]
-  },
-  gitignore: {
-    getAllTemplates: ["GET /gitignore/templates"],
-    getTemplate: ["GET /gitignore/templates/{name}"]
-  },
-  interactions: {
-    getRestrictionsForAuthenticatedUser: ["GET /user/interaction-limits"],
-    getRestrictionsForOrg: ["GET /orgs/{org}/interaction-limits"],
-    getRestrictionsForRepo: ["GET /repos/{owner}/{repo}/interaction-limits"],
-    getRestrictionsForYourPublicRepos: [
-      "GET /user/interaction-limits",
-      {},
-      { renamed: ["interactions", "getRestrictionsForAuthenticatedUser"] }
-    ],
-    removeRestrictionsForAuthenticatedUser: ["DELETE /user/interaction-limits"],
-    removeRestrictionsForOrg: ["DELETE /orgs/{org}/interaction-limits"],
-    removeRestrictionsForRepo: [
-      "DELETE /repos/{owner}/{repo}/interaction-limits"
-    ],
-    removeRestrictionsForYourPublicRepos: [
-      "DELETE /user/interaction-limits",
-      {},
-      { renamed: ["interactions", "removeRestrictionsForAuthenticatedUser"] }
-    ],
-    setRestrictionsForAuthenticatedUser: ["PUT /user/interaction-limits"],
-    setRestrictionsForOrg: ["PUT /orgs/{org}/interaction-limits"],
-    setRestrictionsForRepo: ["PUT /repos/{owner}/{repo}/interaction-limits"],
-    setRestrictionsForYourPublicRepos: [
-      "PUT /user/interaction-limits",
-      {},
-      { renamed: ["interactions", "setRestrictionsForAuthenticatedUser"] }
-    ]
-  },
-  issues: {
-    addAssignees: [
-      "POST /repos/{owner}/{repo}/issues/{issue_number}/assignees"
-    ],
-    addLabels: ["POST /repos/{owner}/{repo}/issues/{issue_number}/labels"],
-    checkUserCanBeAssigned: ["GET /repos/{owner}/{repo}/assignees/{assignee}"],
-    checkUserCanBeAssignedToIssue: [
-      "GET /repos/{owner}/{repo}/issues/{issue_number}/assignees/{assignee}"
-    ],
-    create: ["POST /repos/{owner}/{repo}/issues"],
-    createComment: [
-      "POST /repos/{owner}/{repo}/issues/{issue_number}/comments"
-    ],
-    createLabel: ["POST /repos/{owner}/{repo}/labels"],
-    createMilestone: ["POST /repos/{owner}/{repo}/milestones"],
-    deleteComment: [
-      "DELETE /repos/{owner}/{repo}/issues/comments/{comment_id}"
-    ],
-    deleteLabel: ["DELETE /repos/{owner}/{repo}/labels/{name}"],
-    deleteMilestone: [
-      "DELETE /repos/{owner}/{repo}/milestones/{milestone_number}"
-    ],
-    get: ["GET /repos/{owner}/{repo}/issues/{issue_number}"],
-    getComment: ["GET /repos/{owner}/{repo}/issues/comments/{comment_id}"],
-    getEvent: ["GET /repos/{owner}/{repo}/issues/events/{event_id}"],
-    getLabel: ["GET /repos/{owner}/{repo}/labels/{name}"],
-    getMilestone: ["GET /repos/{owner}/{repo}/milestones/{milestone_number}"],
-    list: ["GET /issues"],
-    listAssignees: ["GET /repos/{owner}/{repo}/assignees"],
-    listComments: ["GET /repos/{owner}/{repo}/issues/{issue_number}/comments"],
-    listCommentsForRepo: ["GET /repos/{owner}/{repo}/issues/comments"],
-    listEvents: ["GET /repos/{owner}/{repo}/issues/{issue_number}/events"],
-    listEventsForRepo: ["GET /repos/{owner}/{repo}/issues/events"],
-    listEventsForTimeline: [
-      "GET /repos/{owner}/{repo}/issues/{issue_number}/timeline"
-    ],
-    listForAuthenticatedUser: ["GET /user/issues"],
-    listForOrg: ["GET /orgs/{org}/issues"],
-    listForRepo: ["GET /repos/{owner}/{repo}/issues"],
-    listLabelsForMilestone: [
-      "GET /repos/{owner}/{repo}/milestones/{milestone_number}/labels"
-    ],
-    listLabelsForRepo: ["GET /repos/{owner}/{repo}/labels"],
-    listLabelsOnIssue: [
-      "GET /repos/{owner}/{repo}/issues/{issue_number}/labels"
-    ],
-    listMilestones: ["GET /repos/{owner}/{repo}/milestones"],
-    lock: ["PUT /repos/{owner}/{repo}/issues/{issue_number}/lock"],
-    removeAllLabels: [
-      "DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels"
-    ],
-    removeAssignees: [
-      "DELETE /repos/{owner}/{repo}/issues/{issue_number}/assignees"
-    ],
-    removeLabel: [
-      "DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}"
-    ],
-    setLabels: ["PUT /repos/{owner}/{repo}/issues/{issue_number}/labels"],
-    unlock: ["DELETE /repos/{owner}/{repo}/issues/{issue_number}/lock"],
-    update: ["PATCH /repos/{owner}/{repo}/issues/{issue_number}"],
-    updateComment: ["PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}"],
-    updateLabel: ["PATCH /repos/{owner}/{repo}/labels/{name}"],
-    updateMilestone: [
-      "PATCH /repos/{owner}/{repo}/milestones/{milestone_number}"
-    ]
-  },
-  licenses: {
-    get: ["GET /licenses/{license}"],
-    getAllCommonlyUsed: ["GET /licenses"],
-    getForRepo: ["GET /repos/{owner}/{repo}/license"]
-  },
-  markdown: {
-    render: ["POST /markdown"],
-    renderRaw: [
-      "POST /markdown/raw",
-      { headers: { "content-type": "text/plain; charset=utf-8" } }
-    ]
-  },
-  meta: {
-    get: ["GET /meta"],
-    getAllVersions: ["GET /versions"],
-    getOctocat: ["GET /octocat"],
-    getZen: ["GET /zen"],
-    root: ["GET /"]
-  },
-  migrations: {
-    cancelImport: [
-      "DELETE /repos/{owner}/{repo}/import",
-      {},
-      {
-        deprecated: "octokit.rest.migrations.cancelImport() is deprecated, see https://docs.github.com/rest/migrations/source-imports#cancel-an-import"
-      }
-    ],
-    deleteArchiveForAuthenticatedUser: [
-      "DELETE /user/migrations/{migration_id}/archive"
-    ],
-    deleteArchiveForOrg: [
-      "DELETE /orgs/{org}/migrations/{migration_id}/archive"
-    ],
-    downloadArchiveForOrg: [
-      "GET /orgs/{org}/migrations/{migration_id}/archive"
-    ],
-    getArchiveForAuthenticatedUser: [
-      "GET /user/migrations/{migration_id}/archive"
-    ],
-    getCommitAuthors: [
-      "GET /repos/{owner}/{repo}/import/authors",
-      {},
-      {
-        deprecated: "octokit.rest.migrations.getCommitAuthors() is deprecated, see https://docs.github.com/rest/migrations/source-imports#get-commit-authors"
-      }
-    ],
-    getImportStatus: [
-      "GET /repos/{owner}/{repo}/import",
-      {},
-      {
-        deprecated: "octokit.rest.migrations.getImportStatus() is deprecated, see https://docs.github.com/rest/migrations/source-imports#get-an-import-status"
-      }
-    ],
-    getLargeFiles: [
-      "GET /repos/{owner}/{repo}/import/large_files",
-      {},
-      {
-        deprecated: "octokit.rest.migrations.getLargeFiles() is deprecated, see https://docs.github.com/rest/migrations/source-imports#get-large-files"
-      }
-    ],
-    getStatusForAuthenticatedUser: ["GET /user/migrations/{migration_id}"],
-    getStatusForOrg: ["GET /orgs/{org}/migrations/{migration_id}"],
-    listForAuthenticatedUser: ["GET /user/migrations"],
-    listForOrg: ["GET /orgs/{org}/migrations"],
-    listReposForAuthenticatedUser: [
-      "GET /user/migrations/{migration_id}/repositories"
-    ],
-    listReposForOrg: ["GET /orgs/{org}/migrations/{migration_id}/repositories"],
-    listReposForUser: [
-      "GET /user/migrations/{migration_id}/repositories",
-      {},
-      { renamed: ["migrations", "listReposForAuthenticatedUser"] }
-    ],
-    mapCommitAuthor: [
-      "PATCH /repos/{owner}/{repo}/import/authors/{author_id}",
-      {},
-      {
-        deprecated: "octokit.rest.migrations.mapCommitAuthor() is deprecated, see https://docs.github.com/rest/migrations/source-imports#map-a-commit-author"
-      }
-    ],
-    setLfsPreference: [
-      "PATCH /repos/{owner}/{repo}/import/lfs",
-      {},
-      {
-        deprecated: "octokit.rest.migrations.setLfsPreference() is deprecated, see https://docs.github.com/rest/migrations/source-imports#update-git-lfs-preference"
-      }
-    ],
-    startForAuthenticatedUser: ["POST /user/migrations"],
-    startForOrg: ["POST /orgs/{org}/migrations"],
-    startImport: [
-      "PUT /repos/{owner}/{repo}/import",
-      {},
-      {
-        deprecated: "octokit.rest.migrations.startImport() is deprecated, see https://docs.github.com/rest/migrations/source-imports#start-an-import"
-      }
-    ],
-    unlockRepoForAuthenticatedUser: [
-      "DELETE /user/migrations/{migration_id}/repos/{repo_name}/lock"
-    ],
-    unlockRepoForOrg: [
-      "DELETE /orgs/{org}/migrations/{migration_id}/repos/{repo_name}/lock"
-    ],
-    updateImport: [
-      "PATCH /repos/{owner}/{repo}/import",
-      {},
-      {
-        deprecated: "octokit.rest.migrations.updateImport() is deprecated, see https://docs.github.com/rest/migrations/source-imports#update-an-import"
-      }
-    ]
-  },
-  oidc: {
-    getOidcCustomSubTemplateForOrg: [
-      "GET /orgs/{org}/actions/oidc/customization/sub"
-    ],
-    updateOidcCustomSubTemplateForOrg: [
-      "PUT /orgs/{org}/actions/oidc/customization/sub"
-    ]
-  },
-  orgs: {
-    addSecurityManagerTeam: [
-      "PUT /orgs/{org}/security-managers/teams/{team_slug}"
-    ],
-    assignTeamToOrgRole: [
-      "PUT /orgs/{org}/organization-roles/teams/{team_slug}/{role_id}"
-    ],
-    assignUserToOrgRole: [
-      "PUT /orgs/{org}/organization-roles/users/{username}/{role_id}"
-    ],
-    blockUser: ["PUT /orgs/{org}/blocks/{username}"],
-    cancelInvitation: ["DELETE /orgs/{org}/invitations/{invitation_id}"],
-    checkBlockedUser: ["GET /orgs/{org}/blocks/{username}"],
-    checkMembershipForUser: ["GET /orgs/{org}/members/{username}"],
-    checkPublicMembershipForUser: ["GET /orgs/{org}/public_members/{username}"],
-    convertMemberToOutsideCollaborator: [
-      "PUT /orgs/{org}/outside_collaborators/{username}"
-    ],
-    createCustomOrganizationRole: ["POST /orgs/{org}/organization-roles"],
-    createInvitation: ["POST /orgs/{org}/invitations"],
-    createOrUpdateCustomProperties: ["PATCH /orgs/{org}/properties/schema"],
-    createOrUpdateCustomPropertiesValuesForRepos: [
-      "PATCH /orgs/{org}/properties/values"
-    ],
-    createOrUpdateCustomProperty: [
-      "PUT /orgs/{org}/properties/schema/{custom_property_name}"
-    ],
-    createWebhook: ["POST /orgs/{org}/hooks"],
-    delete: ["DELETE /orgs/{org}"],
-    deleteCustomOrganizationRole: [
-      "DELETE /orgs/{org}/organization-roles/{role_id}"
-    ],
-    deleteWebhook: ["DELETE /orgs/{org}/hooks/{hook_id}"],
-    enableOrDisableSecurityProductOnAllOrgRepos: [
-      "POST /orgs/{org}/{security_product}/{enablement}"
-    ],
-    get: ["GET /orgs/{org}"],
-    getAllCustomProperties: ["GET /orgs/{org}/properties/schema"],
-    getCustomProperty: [
-      "GET /orgs/{org}/properties/schema/{custom_property_name}"
-    ],
-    getMembershipForAuthenticatedUser: ["GET /user/memberships/orgs/{org}"],
-    getMembershipForUser: ["GET /orgs/{org}/memberships/{username}"],
-    getOrgRole: ["GET /orgs/{org}/organization-roles/{role_id}"],
-    getWebhook: ["GET /orgs/{org}/hooks/{hook_id}"],
-    getWebhookConfigForOrg: ["GET /orgs/{org}/hooks/{hook_id}/config"],
-    getWebhookDelivery: [
-      "GET /orgs/{org}/hooks/{hook_id}/deliveries/{delivery_id}"
-    ],
-    list: ["GET /organizations"],
-    listAppInstallations: ["GET /orgs/{org}/installations"],
-    listBlockedUsers: ["GET /orgs/{org}/blocks"],
-    listCustomPropertiesValuesForRepos: ["GET /orgs/{org}/properties/values"],
-    listFailedInvitations: ["GET /orgs/{org}/failed_invitations"],
-    listForAuthenticatedUser: ["GET /user/orgs"],
-    listForUser: ["GET /users/{username}/orgs"],
-    listInvitationTeams: ["GET /orgs/{org}/invitations/{invitation_id}/teams"],
-    listMembers: ["GET /orgs/{org}/members"],
-    listMembershipsForAuthenticatedUser: ["GET /user/memberships/orgs"],
-    listOrgRoleTeams: ["GET /orgs/{org}/organization-roles/{role_id}/teams"],
-    listOrgRoleUsers: ["GET /orgs/{org}/organization-roles/{role_id}/users"],
-    listOrgRoles: ["GET /orgs/{org}/organization-roles"],
-    listOrganizationFineGrainedPermissions: [
-      "GET /orgs/{org}/organization-fine-grained-permissions"
-    ],
-    listOutsideCollaborators: ["GET /orgs/{org}/outside_collaborators"],
-    listPatGrantRepositories: [
-      "GET /orgs/{org}/personal-access-tokens/{pat_id}/repositories"
-    ],
-    listPatGrantRequestRepositories: [
-      "GET /orgs/{org}/personal-access-token-requests/{pat_request_id}/repositories"
-    ],
-    listPatGrantRequests: ["GET /orgs/{org}/personal-access-token-requests"],
-    listPatGrants: ["GET /orgs/{org}/personal-access-tokens"],
-    listPendingInvitations: ["GET /orgs/{org}/invitations"],
-    listPublicMembers: ["GET /orgs/{org}/public_members"],
-    listSecurityManagerTeams: ["GET /orgs/{org}/security-managers"],
-    listWebhookDeliveries: ["GET /orgs/{org}/hooks/{hook_id}/deliveries"],
-    listWebhooks: ["GET /orgs/{org}/hooks"],
-    patchCustomOrganizationRole: [
-      "PATCH /orgs/{org}/organization-roles/{role_id}"
-    ],
-    pingWebhook: ["POST /orgs/{org}/hooks/{hook_id}/pings"],
-    redeliverWebhookDelivery: [
-      "POST /orgs/{org}/hooks/{hook_id}/deliveries/{delivery_id}/attempts"
-    ],
-    removeCustomProperty: [
-      "DELETE /orgs/{org}/properties/schema/{custom_property_name}"
-    ],
-    removeMember: ["DELETE /orgs/{org}/members/{username}"],
-    removeMembershipForUser: ["DELETE /orgs/{org}/memberships/{username}"],
-    removeOutsideCollaborator: [
-      "DELETE /orgs/{org}/outside_collaborators/{username}"
-    ],
-    removePublicMembershipForAuthenticatedUser: [
-      "DELETE /orgs/{org}/public_members/{username}"
-    ],
-    removeSecurityManagerTeam: [
-      "DELETE /orgs/{org}/security-managers/teams/{team_slug}"
-    ],
-    reviewPatGrantRequest: [
-      "POST /orgs/{org}/personal-access-token-requests/{pat_request_id}"
-    ],
-    reviewPatGrantRequestsInBulk: [
-      "POST /orgs/{org}/personal-access-token-requests"
-    ],
-    revokeAllOrgRolesTeam: [
-      "DELETE /orgs/{org}/organization-roles/teams/{team_slug}"
-    ],
-    revokeAllOrgRolesUser: [
-      "DELETE /orgs/{org}/organization-roles/users/{username}"
-    ],
-    revokeOrgRoleTeam: [
-      "DELETE /orgs/{org}/organization-roles/teams/{team_slug}/{role_id}"
-    ],
-    revokeOrgRoleUser: [
-      "DELETE /orgs/{org}/organization-roles/users/{username}/{role_id}"
-    ],
-    setMembershipForUser: ["PUT /orgs/{org}/memberships/{username}"],
-    setPublicMembershipForAuthenticatedUser: [
-      "PUT /orgs/{org}/public_members/{username}"
-    ],
-    unblockUser: ["DELETE /orgs/{org}/blocks/{username}"],
-    update: ["PATCH /orgs/{org}"],
-    updateMembershipForAuthenticatedUser: [
-      "PATCH /user/memberships/orgs/{org}"
-    ],
-    updatePatAccess: ["POST /orgs/{org}/personal-access-tokens/{pat_id}"],
-    updatePatAccesses: ["POST /orgs/{org}/personal-access-tokens"],
-    updateWebhook: ["PATCH /orgs/{org}/hooks/{hook_id}"],
-    updateWebhookConfigForOrg: ["PATCH /orgs/{org}/hooks/{hook_id}/config"]
-  },
-  packages: {
-    deletePackageForAuthenticatedUser: [
-      "DELETE /user/packages/{package_type}/{package_name}"
-    ],
-    deletePackageForOrg: [
-      "DELETE /orgs/{org}/packages/{package_type}/{package_name}"
-    ],
-    deletePackageForUser: [
-      "DELETE /users/{username}/packages/{package_type}/{package_name}"
-    ],
-    deletePackageVersionForAuthenticatedUser: [
-      "DELETE /user/packages/{package_type}/{package_name}/versions/{package_version_id}"
-    ],
-    deletePackageVersionForOrg: [
-      "DELETE /orgs/{org}/packages/{package_type}/{package_name}/versions/{package_version_id}"
-    ],
-    deletePackageVersionForUser: [
-      "DELETE /users/{username}/packages/{package_type}/{package_name}/versions/{package_version_id}"
-    ],
-    getAllPackageVersionsForAPackageOwnedByAnOrg: [
-      "GET /orgs/{org}/packages/{package_type}/{package_name}/versions",
-      {},
-      { renamed: ["packages", "getAllPackageVersionsForPackageOwnedByOrg"] }
-    ],
-    getAllPackageVersionsForAPackageOwnedByTheAuthenticatedUser: [
-      "GET /user/packages/{package_type}/{package_name}/versions",
-      {},
-      {
-        renamed: [
-          "packages",
-          "getAllPackageVersionsForPackageOwnedByAuthenticatedUser"
-        ]
-      }
-    ],
-    getAllPackageVersionsForPackageOwnedByAuthenticatedUser: [
-      "GET /user/packages/{package_type}/{package_name}/versions"
-    ],
-    getAllPackageVersionsForPackageOwnedByOrg: [
-      "GET /orgs/{org}/packages/{package_type}/{package_name}/versions"
-    ],
-    getAllPackageVersionsForPackageOwnedByUser: [
-      "GET /users/{username}/packages/{package_type}/{package_name}/versions"
-    ],
-    getPackageForAuthenticatedUser: [
-      "GET /user/packages/{package_type}/{package_name}"
-    ],
-    getPackageForOrganization: [
-      "GET /orgs/{org}/packages/{package_type}/{package_name}"
-    ],
-    getPackageForUser: [
-      "GET /users/{username}/packages/{package_type}/{package_name}"
-    ],
-    getPackageVersionForAuthenticatedUser: [
-      "GET /user/packages/{package_type}/{package_name}/versions/{package_version_id}"
-    ],
-    getPackageVersionForOrganization: [
-      "GET /orgs/{org}/packages/{package_type}/{package_name}/versions/{package_version_id}"
-    ],
-    getPackageVersionForUser: [
-      "GET /users/{username}/packages/{package_type}/{package_name}/versions/{package_version_id}"
-    ],
-    listDockerMigrationConflictingPackagesForAuthenticatedUser: [
-      "GET /user/docker/conflicts"
-    ],
-    listDockerMigrationConflictingPackagesForOrganization: [
-      "GET /orgs/{org}/docker/conflicts"
-    ],
-    listDockerMigrationConflictingPackagesForUser: [
-      "GET /users/{username}/docker/conflicts"
-    ],
-    listPackagesForAuthenticatedUser: ["GET /user/packages"],
-    listPackagesForOrganization: ["GET /orgs/{org}/packages"],
-    listPackagesForUser: ["GET /users/{username}/packages"],
-    restorePackageForAuthenticatedUser: [
-      "POST /user/packages/{package_type}/{package_name}/restore{?token}"
-    ],
-    restorePackageForOrg: [
-      "POST /orgs/{org}/packages/{package_type}/{package_name}/restore{?token}"
-    ],
-    restorePackageForUser: [
-      "POST /users/{username}/packages/{package_type}/{package_name}/restore{?token}"
-    ],
-    restorePackageVersionForAuthenticatedUser: [
-      "POST /user/packages/{package_type}/{package_name}/versions/{package_version_id}/restore"
-    ],
-    restorePackageVersionForOrg: [
-      "POST /orgs/{org}/packages/{package_type}/{package_name}/versions/{package_version_id}/restore"
-    ],
-    restorePackageVersionForUser: [
-      "POST /users/{username}/packages/{package_type}/{package_name}/versions/{package_version_id}/restore"
-    ]
-  },
-  projects: {
-    addCollaborator: ["PUT /projects/{project_id}/collaborators/{username}"],
-    createCard: ["POST /projects/columns/{column_id}/cards"],
-    createColumn: ["POST /projects/{project_id}/columns"],
-    createForAuthenticatedUser: ["POST /user/projects"],
-    createForOrg: ["POST /orgs/{org}/projects"],
-    createForRepo: ["POST /repos/{owner}/{repo}/projects"],
-    delete: ["DELETE /projects/{project_id}"],
-    deleteCard: ["DELETE /projects/columns/cards/{card_id}"],
-    deleteColumn: ["DELETE /projects/columns/{column_id}"],
-    get: ["GET /projects/{project_id}"],
-    getCard: ["GET /projects/columns/cards/{card_id}"],
-    getColumn: ["GET /projects/columns/{column_id}"],
-    getPermissionForUser: [
-      "GET /projects/{project_id}/collaborators/{username}/permission"
-    ],
-    listCards: ["GET /projects/columns/{column_id}/cards"],
-    listCollaborators: ["GET /projects/{project_id}/collaborators"],
-    listColumns: ["GET /projects/{project_id}/columns"],
-    listForOrg: ["GET /orgs/{org}/projects"],
-    listForRepo: ["GET /repos/{owner}/{repo}/projects"],
-    listForUser: ["GET /users/{username}/projects"],
-    moveCard: ["POST /projects/columns/cards/{card_id}/moves"],
-    moveColumn: ["POST /projects/columns/{column_id}/moves"],
-    removeCollaborator: [
-      "DELETE /projects/{project_id}/collaborators/{username}"
-    ],
-    update: ["PATCH /projects/{project_id}"],
-    updateCard: ["PATCH /projects/columns/cards/{card_id}"],
-    updateColumn: ["PATCH /projects/columns/{column_id}"]
-  },
-  pulls: {
-    checkIfMerged: ["GET /repos/{owner}/{repo}/pulls/{pull_number}/merge"],
-    create: ["POST /repos/{owner}/{repo}/pulls"],
-    createReplyForReviewComment: [
-      "POST /repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies"
-    ],
-    createReview: ["POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews"],
-    createReviewComment: [
-      "POST /repos/{owner}/{repo}/pulls/{pull_number}/comments"
-    ],
-    deletePendingReview: [
-      "DELETE /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}"
-    ],
-    deleteReviewComment: [
-      "DELETE /repos/{owner}/{repo}/pulls/comments/{comment_id}"
-    ],
-    dismissReview: [
-      "PUT /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/dismissals"
-    ],
-    get: ["GET /repos/{owner}/{repo}/pulls/{pull_number}"],
-    getReview: [
-      "GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}"
-    ],
-    getReviewComment: ["GET /repos/{owner}/{repo}/pulls/comments/{comment_id}"],
-    list: ["GET /repos/{owner}/{repo}/pulls"],
-    listCommentsForReview: [
-      "GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/comments"
-    ],
-    listCommits: ["GET /repos/{owner}/{repo}/pulls/{pull_number}/commits"],
-    listFiles: ["GET /repos/{owner}/{repo}/pulls/{pull_number}/files"],
-    listRequestedReviewers: [
-      "GET /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers"
-    ],
-    listReviewComments: [
-      "GET /repos/{owner}/{repo}/pulls/{pull_number}/comments"
-    ],
-    listReviewCommentsForRepo: ["GET /repos/{owner}/{repo}/pulls/comments"],
-    listReviews: ["GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews"],
-    merge: ["PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge"],
-    removeRequestedReviewers: [
-      "DELETE /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers"
-    ],
-    requestReviewers: [
-      "POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers"
-    ],
-    submitReview: [
-      "POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/events"
-    ],
-    update: ["PATCH /repos/{owner}/{repo}/pulls/{pull_number}"],
-    updateBranch: [
-      "PUT /repos/{owner}/{repo}/pulls/{pull_number}/update-branch"
-    ],
-    updateReview: [
-      "PUT /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}"
-    ],
-    updateReviewComment: [
-      "PATCH /repos/{owner}/{repo}/pulls/comments/{comment_id}"
-    ]
-  },
-  rateLimit: { get: ["GET /rate_limit"] },
-  reactions: {
-    createForCommitComment: [
-      "POST /repos/{owner}/{repo}/comments/{comment_id}/reactions"
-    ],
-    createForIssue: [
-      "POST /repos/{owner}/{repo}/issues/{issue_number}/reactions"
-    ],
-    createForIssueComment: [
-      "POST /repos/{owner}/{repo}/issues/comments/{comment_id}/reactions"
-    ],
-    createForPullRequestReviewComment: [
-      "POST /repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions"
-    ],
-    createForRelease: [
-      "POST /repos/{owner}/{repo}/releases/{release_id}/reactions"
-    ],
-    createForTeamDiscussionCommentInOrg: [
-      "POST /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/comments/{comment_number}/reactions"
-    ],
-    createForTeamDiscussionInOrg: [
-      "POST /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/reactions"
-    ],
-    deleteForCommitComment: [
-      "DELETE /repos/{owner}/{repo}/comments/{comment_id}/reactions/{reaction_id}"
-    ],
-    deleteForIssue: [
-      "DELETE /repos/{owner}/{repo}/issues/{issue_number}/reactions/{reaction_id}"
-    ],
-    deleteForIssueComment: [
-      "DELETE /repos/{owner}/{repo}/issues/comments/{comment_id}/reactions/{reaction_id}"
-    ],
-    deleteForPullRequestComment: [
-      "DELETE /repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions/{reaction_id}"
-    ],
-    deleteForRelease: [
-      "DELETE /repos/{owner}/{repo}/releases/{release_id}/reactions/{reaction_id}"
-    ],
-    deleteForTeamDiscussion: [
-      "DELETE /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/reactions/{reaction_id}"
-    ],
-    deleteForTeamDiscussionComment: [
-      "DELETE /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/comments/{comment_number}/reactions/{reaction_id}"
-    ],
-    listForCommitComment: [
-      "GET /repos/{owner}/{repo}/comments/{comment_id}/reactions"
-    ],
-    listForIssue: ["GET /repos/{owner}/{repo}/issues/{issue_number}/reactions"],
-    listForIssueComment: [
-      "GET /repos/{owner}/{repo}/issues/comments/{comment_id}/reactions"
-    ],
-    listForPullRequestReviewComment: [
-      "GET /repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions"
-    ],
-    listForRelease: [
-      "GET /repos/{owner}/{repo}/releases/{release_id}/reactions"
-    ],
-    listForTeamDiscussionCommentInOrg: [
-      "GET /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/comments/{comment_number}/reactions"
-    ],
-    listForTeamDiscussionInOrg: [
-      "GET /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/reactions"
-    ]
-  },
-  repos: {
-    acceptInvitation: [
-      "PATCH /user/repository_invitations/{invitation_id}",
-      {},
-      { renamed: ["repos", "acceptInvitationForAuthenticatedUser"] }
-    ],
-    acceptInvitationForAuthenticatedUser: [
-      "PATCH /user/repository_invitations/{invitation_id}"
-    ],
-    addAppAccessRestrictions: [
-      "POST /repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps",
-      {},
-      { mapToData: "apps" }
-    ],
-    addCollaborator: ["PUT /repos/{owner}/{repo}/collaborators/{username}"],
-    addStatusCheckContexts: [
-      "POST /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts",
-      {},
-      { mapToData: "contexts" }
-    ],
-    addTeamAccessRestrictions: [
-      "POST /repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams",
-      {},
-      { mapToData: "teams" }
-    ],
-    addUserAccessRestrictions: [
-      "POST /repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users",
-      {},
-      { mapToData: "users" }
-    ],
-    cancelPagesDeployment: [
-      "POST /repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}/cancel"
-    ],
-    checkAutomatedSecurityFixes: [
-      "GET /repos/{owner}/{repo}/automated-security-fixes"
-    ],
-    checkCollaborator: ["GET /repos/{owner}/{repo}/collaborators/{username}"],
-    checkVulnerabilityAlerts: [
-      "GET /repos/{owner}/{repo}/vulnerability-alerts"
-    ],
-    codeownersErrors: ["GET /repos/{owner}/{repo}/codeowners/errors"],
-    compareCommits: ["GET /repos/{owner}/{repo}/compare/{base}...{head}"],
-    compareCommitsWithBasehead: [
-      "GET /repos/{owner}/{repo}/compare/{basehead}"
-    ],
-    createAutolink: ["POST /repos/{owner}/{repo}/autolinks"],
-    createCommitComment: [
-      "POST /repos/{owner}/{repo}/commits/{commit_sha}/comments"
-    ],
-    createCommitSignatureProtection: [
-      "POST /repos/{owner}/{repo}/branches/{branch}/protection/required_signatures"
-    ],
-    createCommitStatus: ["POST /repos/{owner}/{repo}/statuses/{sha}"],
-    createDeployKey: ["POST /repos/{owner}/{repo}/keys"],
-    createDeployment: ["POST /repos/{owner}/{repo}/deployments"],
-    createDeploymentBranchPolicy: [
-      "POST /repos/{owner}/{repo}/environments/{environment_name}/deployment-branch-policies"
-    ],
-    createDeploymentProtectionRule: [
-      "POST /repos/{owner}/{repo}/environments/{environment_name}/deployment_protection_rules"
-    ],
-    createDeploymentStatus: [
-      "POST /repos/{owner}/{repo}/deployments/{deployment_id}/statuses"
-    ],
-    createDispatchEvent: ["POST /repos/{owner}/{repo}/dispatches"],
-    createForAuthenticatedUser: ["POST /user/repos"],
-    createFork: ["POST /repos/{owner}/{repo}/forks"],
-    createInOrg: ["POST /orgs/{org}/repos"],
-    createOrUpdateCustomPropertiesValues: [
-      "PATCH /repos/{owner}/{repo}/properties/values"
-    ],
-    createOrUpdateEnvironment: [
-      "PUT /repos/{owner}/{repo}/environments/{environment_name}"
-    ],
-    createOrUpdateFileContents: ["PUT /repos/{owner}/{repo}/contents/{path}"],
-    createOrgRuleset: ["POST /orgs/{org}/rulesets"],
-    createPagesDeployment: ["POST /repos/{owner}/{repo}/pages/deployments"],
-    createPagesSite: ["POST /repos/{owner}/{repo}/pages"],
-    createRelease: ["POST /repos/{owner}/{repo}/releases"],
-    createRepoRuleset: ["POST /repos/{owner}/{repo}/rulesets"],
-    createTagProtection: ["POST /repos/{owner}/{repo}/tags/protection"],
-    createUsingTemplate: [
-      "POST /repos/{template_owner}/{template_repo}/generate"
-    ],
-    createWebhook: ["POST /repos/{owner}/{repo}/hooks"],
-    declineInvitation: [
-      "DELETE /user/repository_invitations/{invitation_id}",
-      {},
-      { renamed: ["repos", "declineInvitationForAuthenticatedUser"] }
-    ],
-    declineInvitationForAuthenticatedUser: [
-      "DELETE /user/repository_invitations/{invitation_id}"
-    ],
-    delete: ["DELETE /repos/{owner}/{repo}"],
-    deleteAccessRestrictions: [
-      "DELETE /repos/{owner}/{repo}/branches/{branch}/protection/restrictions"
-    ],
-    deleteAdminBranchProtection: [
-      "DELETE /repos/{owner}/{repo}/branches/{branch}/protection/enforce_admins"
-    ],
-    deleteAnEnvironment: [
-      "DELETE /repos/{owner}/{repo}/environments/{environment_name}"
-    ],
-    deleteAutolink: ["DELETE /repos/{owner}/{repo}/autolinks/{autolink_id}"],
-    deleteBranchProtection: [
-      "DELETE /repos/{owner}/{repo}/branches/{branch}/protection"
-    ],
-    deleteCommitComment: ["DELETE /repos/{owner}/{repo}/comments/{comment_id}"],
-    deleteCommitSignatureProtection: [
-      "DELETE /repos/{owner}/{repo}/branches/{branch}/protection/required_signatures"
-    ],
-    deleteDeployKey: ["DELETE /repos/{owner}/{repo}/keys/{key_id}"],
-    deleteDeployment: [
-      "DELETE /repos/{owner}/{repo}/deployments/{deployment_id}"
-    ],
-    deleteDeploymentBranchPolicy: [
-      "DELETE /repos/{owner}/{repo}/environments/{environment_name}/deployment-branch-policies/{branch_policy_id}"
-    ],
-    deleteFile: ["DELETE /repos/{owner}/{repo}/contents/{path}"],
-    deleteInvitation: [
-      "DELETE /repos/{owner}/{repo}/invitations/{invitation_id}"
-    ],
-    deleteOrgRuleset: ["DELETE /orgs/{org}/rulesets/{ruleset_id}"],
-    deletePagesSite: ["DELETE /repos/{owner}/{repo}/pages"],
-    deletePullRequestReviewProtection: [
-      "DELETE /repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews"
-    ],
-    deleteRelease: ["DELETE /repos/{owner}/{repo}/releases/{release_id}"],
-    deleteReleaseAsset: [
-      "DELETE /repos/{owner}/{repo}/releases/assets/{asset_id}"
-    ],
-    deleteRepoRuleset: ["DELETE /repos/{owner}/{repo}/rulesets/{ruleset_id}"],
-    deleteTagProtection: [
-      "DELETE /repos/{owner}/{repo}/tags/protection/{tag_protection_id}"
-    ],
-    deleteWebhook: ["DELETE /repos/{owner}/{repo}/hooks/{hook_id}"],
-    disableAutomatedSecurityFixes: [
-      "DELETE /repos/{owner}/{repo}/automated-security-fixes"
-    ],
-    disableDeploymentProtectionRule: [
-      "DELETE /repos/{owner}/{repo}/environments/{environment_name}/deployment_protection_rules/{protection_rule_id}"
-    ],
-    disablePrivateVulnerabilityReporting: [
-      "DELETE /repos/{owner}/{repo}/private-vulnerability-reporting"
-    ],
-    disableVulnerabilityAlerts: [
-      "DELETE /repos/{owner}/{repo}/vulnerability-alerts"
-    ],
-    downloadArchive: [
-      "GET /repos/{owner}/{repo}/zipball/{ref}",
-      {},
-      { renamed: ["repos", "downloadZipballArchive"] }
-    ],
-    downloadTarballArchive: ["GET /repos/{owner}/{repo}/tarball/{ref}"],
-    downloadZipballArchive: ["GET /repos/{owner}/{repo}/zipball/{ref}"],
-    enableAutomatedSecurityFixes: [
-      "PUT /repos/{owner}/{repo}/automated-security-fixes"
-    ],
-    enablePrivateVulnerabilityReporting: [
-      "PUT /repos/{owner}/{repo}/private-vulnerability-reporting"
-    ],
-    enableVulnerabilityAlerts: [
-      "PUT /repos/{owner}/{repo}/vulnerability-alerts"
-    ],
-    generateReleaseNotes: [
-      "POST /repos/{owner}/{repo}/releases/generate-notes"
-    ],
-    get: ["GET /repos/{owner}/{repo}"],
-    getAccessRestrictions: [
-      "GET /repos/{owner}/{repo}/branches/{branch}/protection/restrictions"
-    ],
-    getAdminBranchProtection: [
-      "GET /repos/{owner}/{repo}/branches/{branch}/protection/enforce_admins"
-    ],
-    getAllDeploymentProtectionRules: [
-      "GET /repos/{owner}/{repo}/environments/{environment_name}/deployment_protection_rules"
-    ],
-    getAllEnvironments: ["GET /repos/{owner}/{repo}/environments"],
-    getAllStatusCheckContexts: [
-      "GET /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts"
-    ],
-    getAllTopics: ["GET /repos/{owner}/{repo}/topics"],
-    getAppsWithAccessToProtectedBranch: [
-      "GET /repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps"
-    ],
-    getAutolink: ["GET /repos/{owner}/{repo}/autolinks/{autolink_id}"],
-    getBranch: ["GET /repos/{owner}/{repo}/branches/{branch}"],
-    getBranchProtection: [
-      "GET /repos/{owner}/{repo}/branches/{branch}/protection"
-    ],
-    getBranchRules: ["GET /repos/{owner}/{repo}/rules/branches/{branch}"],
-    getClones: ["GET /repos/{owner}/{repo}/traffic/clones"],
-    getCodeFrequencyStats: ["GET /repos/{owner}/{repo}/stats/code_frequency"],
-    getCollaboratorPermissionLevel: [
-      "GET /repos/{owner}/{repo}/collaborators/{username}/permission"
-    ],
-    getCombinedStatusForRef: ["GET /repos/{owner}/{repo}/commits/{ref}/status"],
-    getCommit: ["GET /repos/{owner}/{repo}/commits/{ref}"],
-    getCommitActivityStats: ["GET /repos/{owner}/{repo}/stats/commit_activity"],
-    getCommitComment: ["GET /repos/{owner}/{repo}/comments/{comment_id}"],
-    getCommitSignatureProtection: [
-      "GET /repos/{owner}/{repo}/branches/{branch}/protection/required_signatures"
-    ],
-    getCommunityProfileMetrics: ["GET /repos/{owner}/{repo}/community/profile"],
-    getContent: ["GET /repos/{owner}/{repo}/contents/{path}"],
-    getContributorsStats: ["GET /repos/{owner}/{repo}/stats/contributors"],
-    getCustomDeploymentProtectionRule: [
-      "GET /repos/{owner}/{repo}/environments/{environment_name}/deployment_protection_rules/{protection_rule_id}"
-    ],
-    getCustomPropertiesValues: ["GET /repos/{owner}/{repo}/properties/values"],
-    getDeployKey: ["GET /repos/{owner}/{repo}/keys/{key_id}"],
-    getDeployment: ["GET /repos/{owner}/{repo}/deployments/{deployment_id}"],
-    getDeploymentBranchPolicy: [
-      "GET /repos/{owner}/{repo}/environments/{environment_name}/deployment-branch-policies/{branch_policy_id}"
-    ],
-    getDeploymentStatus: [
-      "GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses/{status_id}"
-    ],
-    getEnvironment: [
-      "GET /repos/{owner}/{repo}/environments/{environment_name}"
-    ],
-    getLatestPagesBuild: ["GET /repos/{owner}/{repo}/pages/builds/latest"],
-    getLatestRelease: ["GET /repos/{owner}/{repo}/releases/latest"],
-    getOrgRuleSuite: ["GET /orgs/{org}/rulesets/rule-suites/{rule_suite_id}"],
-    getOrgRuleSuites: ["GET /orgs/{org}/rulesets/rule-suites"],
-    getOrgRuleset: ["GET /orgs/{org}/rulesets/{ruleset_id}"],
-    getOrgRulesets: ["GET /orgs/{org}/rulesets"],
-    getPages: ["GET /repos/{owner}/{repo}/pages"],
-    getPagesBuild: ["GET /repos/{owner}/{repo}/pages/builds/{build_id}"],
-    getPagesDeployment: [
-      "GET /repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}"
-    ],
-    getPagesHealthCheck: ["GET /repos/{owner}/{repo}/pages/health"],
-    getParticipationStats: ["GET /repos/{owner}/{repo}/stats/participation"],
-    getPullRequestReviewProtection: [
-      "GET /repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews"
-    ],
-    getPunchCardStats: ["GET /repos/{owner}/{repo}/stats/punch_card"],
-    getReadme: ["GET /repos/{owner}/{repo}/readme"],
-    getReadmeInDirectory: ["GET /repos/{owner}/{repo}/readme/{dir}"],
-    getRelease: ["GET /repos/{owner}/{repo}/releases/{release_id}"],
-    getReleaseAsset: ["GET /repos/{owner}/{repo}/releases/assets/{asset_id}"],
-    getReleaseByTag: ["GET /repos/{owner}/{repo}/releases/tags/{tag}"],
-    getRepoRuleSuite: [
-      "GET /repos/{owner}/{repo}/rulesets/rule-suites/{rule_suite_id}"
-    ],
-    getRepoRuleSuites: ["GET /repos/{owner}/{repo}/rulesets/rule-suites"],
-    getRepoRuleset: ["GET /repos/{owner}/{repo}/rulesets/{ruleset_id}"],
-    getRepoRulesets: ["GET /repos/{owner}/{repo}/rulesets"],
-    getStatusChecksProtection: [
-      "GET /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks"
-    ],
-    getTeamsWithAccessToProtectedBranch: [
-      "GET /repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams"
-    ],
-    getTopPaths: ["GET /repos/{owner}/{repo}/traffic/popular/paths"],
-    getTopReferrers: ["GET /repos/{owner}/{repo}/traffic/popular/referrers"],
-    getUsersWithAccessToProtectedBranch: [
-      "GET /repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users"
-    ],
-    getViews: ["GET /repos/{owner}/{repo}/traffic/views"],
-    getWebhook: ["GET /repos/{owner}/{repo}/hooks/{hook_id}"],
-    getWebhookConfigForRepo: [
-      "GET /repos/{owner}/{repo}/hooks/{hook_id}/config"
-    ],
-    getWebhookDelivery: [
-      "GET /repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}"
-    ],
-    listActivities: ["GET /repos/{owner}/{repo}/activity"],
-    listAutolinks: ["GET /repos/{owner}/{repo}/autolinks"],
-    listBranches: ["GET /repos/{owner}/{repo}/branches"],
-    listBranchesForHeadCommit: [
-      "GET /repos/{owner}/{repo}/commits/{commit_sha}/branches-where-head"
-    ],
-    listCollaborators: ["GET /repos/{owner}/{repo}/collaborators"],
-    listCommentsForCommit: [
-      "GET /repos/{owner}/{repo}/commits/{commit_sha}/comments"
-    ],
-    listCommitCommentsForRepo: ["GET /repos/{owner}/{repo}/comments"],
-    listCommitStatusesForRef: [
-      "GET /repos/{owner}/{repo}/commits/{ref}/statuses"
-    ],
-    listCommits: ["GET /repos/{owner}/{repo}/commits"],
-    listContributors: ["GET /repos/{owner}/{repo}/contributors"],
-    listCustomDeploymentRuleIntegrations: [
-      "GET /repos/{owner}/{repo}/environments/{environment_name}/deployment_protection_rules/apps"
-    ],
-    listDeployKeys: ["GET /repos/{owner}/{repo}/keys"],
-    listDeploymentBranchPolicies: [
-      "GET /repos/{owner}/{repo}/environments/{environment_name}/deployment-branch-policies"
-    ],
-    listDeploymentStatuses: [
-      "GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses"
-    ],
-    listDeployments: ["GET /repos/{owner}/{repo}/deployments"],
-    listForAuthenticatedUser: ["GET /user/repos"],
-    listForOrg: ["GET /orgs/{org}/repos"],
-    listForUser: ["GET /users/{username}/repos"],
-    listForks: ["GET /repos/{owner}/{repo}/forks"],
-    listInvitations: ["GET /repos/{owner}/{repo}/invitations"],
-    listInvitationsForAuthenticatedUser: ["GET /user/repository_invitations"],
-    listLanguages: ["GET /repos/{owner}/{repo}/languages"],
-    listPagesBuilds: ["GET /repos/{owner}/{repo}/pages/builds"],
-    listPublic: ["GET /repositories"],
-    listPullRequestsAssociatedWithCommit: [
-      "GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls"
-    ],
-    listReleaseAssets: [
-      "GET /repos/{owner}/{repo}/releases/{release_id}/assets"
-    ],
-    listReleases: ["GET /repos/{owner}/{repo}/releases"],
-    listTagProtection: ["GET /repos/{owner}/{repo}/tags/protection"],
-    listTags: ["GET /repos/{owner}/{repo}/tags"],
-    listTeams: ["GET /repos/{owner}/{repo}/teams"],
-    listWebhookDeliveries: [
-      "GET /repos/{owner}/{repo}/hooks/{hook_id}/deliveries"
-    ],
-    listWebhooks: ["GET /repos/{owner}/{repo}/hooks"],
-    merge: ["POST /repos/{owner}/{repo}/merges"],
-    mergeUpstream: ["POST /repos/{owner}/{repo}/merge-upstream"],
-    pingWebhook: ["POST /repos/{owner}/{repo}/hooks/{hook_id}/pings"],
-    redeliverWebhookDelivery: [
-      "POST /repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}/attempts"
-    ],
-    removeAppAccessRestrictions: [
-      "DELETE /repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps",
-      {},
-      { mapToData: "apps" }
-    ],
-    removeCollaborator: [
-      "DELETE /repos/{owner}/{repo}/collaborators/{username}"
-    ],
-    removeStatusCheckContexts: [
-      "DELETE /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts",
-      {},
-      { mapToData: "contexts" }
-    ],
-    removeStatusCheckProtection: [
-      "DELETE /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks"
-    ],
-    removeTeamAccessRestrictions: [
-      "DELETE /repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams",
-      {},
-      { mapToData: "teams" }
-    ],
-    removeUserAccessRestrictions: [
-      "DELETE /repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users",
-      {},
-      { mapToData: "users" }
-    ],
-    renameBranch: ["POST /repos/{owner}/{repo}/branches/{branch}/rename"],
-    replaceAllTopics: ["PUT /repos/{owner}/{repo}/topics"],
-    requestPagesBuild: ["POST /repos/{owner}/{repo}/pages/builds"],
-    setAdminBranchProtection: [
-      "POST /repos/{owner}/{repo}/branches/{branch}/protection/enforce_admins"
-    ],
-    setAppAccessRestrictions: [
-      "PUT /repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps",
-      {},
-      { mapToData: "apps" }
-    ],
-    setStatusCheckContexts: [
-      "PUT /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts",
-      {},
-      { mapToData: "contexts" }
-    ],
-    setTeamAccessRestrictions: [
-      "PUT /repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams",
-      {},
-      { mapToData: "teams" }
-    ],
-    setUserAccessRestrictions: [
-      "PUT /repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users",
-      {},
-      { mapToData: "users" }
-    ],
-    testPushWebhook: ["POST /repos/{owner}/{repo}/hooks/{hook_id}/tests"],
-    transfer: ["POST /repos/{owner}/{repo}/transfer"],
-    update: ["PATCH /repos/{owner}/{repo}"],
-    updateBranchProtection: [
-      "PUT /repos/{owner}/{repo}/branches/{branch}/protection"
-    ],
-    updateCommitComment: ["PATCH /repos/{owner}/{repo}/comments/{comment_id}"],
-    updateDeploymentBranchPolicy: [
-      "PUT /repos/{owner}/{repo}/environments/{environment_name}/deployment-branch-policies/{branch_policy_id}"
-    ],
-    updateInformationAboutPagesSite: ["PUT /repos/{owner}/{repo}/pages"],
-    updateInvitation: [
-      "PATCH /repos/{owner}/{repo}/invitations/{invitation_id}"
-    ],
-    updateOrgRuleset: ["PUT /orgs/{org}/rulesets/{ruleset_id}"],
-    updatePullRequestReviewProtection: [
-      "PATCH /repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews"
-    ],
-    updateRelease: ["PATCH /repos/{owner}/{repo}/releases/{release_id}"],
-    updateReleaseAsset: [
-      "PATCH /repos/{owner}/{repo}/releases/assets/{asset_id}"
-    ],
-    updateRepoRuleset: ["PUT /repos/{owner}/{repo}/rulesets/{ruleset_id}"],
-    updateStatusCheckPotection: [
-      "PATCH /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks",
-      {},
-      { renamed: ["repos", "updateStatusCheckProtection"] }
-    ],
-    updateStatusCheckProtection: [
-      "PATCH /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks"
-    ],
-    updateWebhook: ["PATCH /repos/{owner}/{repo}/hooks/{hook_id}"],
-    updateWebhookConfigForRepo: [
-      "PATCH /repos/{owner}/{repo}/hooks/{hook_id}/config"
-    ],
-    uploadReleaseAsset: [
-      "POST /repos/{owner}/{repo}/releases/{release_id}/assets{?name,label}",
-      { baseUrl: "https://uploads.github.com" }
-    ]
-  },
-  search: {
-    code: ["GET /search/code"],
-    commits: ["GET /search/commits"],
-    issuesAndPullRequests: ["GET /search/issues"],
-    labels: ["GET /search/labels"],
-    repos: ["GET /search/repositories"],
-    topics: ["GET /search/topics"],
-    users: ["GET /search/users"]
-  },
-  secretScanning: {
-    getAlert: [
-      "GET /repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}"
-    ],
-    listAlertsForEnterprise: [
-      "GET /enterprises/{enterprise}/secret-scanning/alerts"
-    ],
-    listAlertsForOrg: ["GET /orgs/{org}/secret-scanning/alerts"],
-    listAlertsForRepo: ["GET /repos/{owner}/{repo}/secret-scanning/alerts"],
-    listLocationsForAlert: [
-      "GET /repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}/locations"
-    ],
-    updateAlert: [
-      "PATCH /repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}"
-    ]
-  },
-  securityAdvisories: {
-    createFork: [
-      "POST /repos/{owner}/{repo}/security-advisories/{ghsa_id}/forks"
-    ],
-    createPrivateVulnerabilityReport: [
-      "POST /repos/{owner}/{repo}/security-advisories/reports"
-    ],
-    createRepositoryAdvisory: [
-      "POST /repos/{owner}/{repo}/security-advisories"
-    ],
-    createRepositoryAdvisoryCveRequest: [
-      "POST /repos/{owner}/{repo}/security-advisories/{ghsa_id}/cve"
-    ],
-    getGlobalAdvisory: ["GET /advisories/{ghsa_id}"],
-    getRepositoryAdvisory: [
-      "GET /repos/{owner}/{repo}/security-advisories/{ghsa_id}"
-    ],
-    listGlobalAdvisories: ["GET /advisories"],
-    listOrgRepositoryAdvisories: ["GET /orgs/{org}/security-advisories"],
-    listRepositoryAdvisories: ["GET /repos/{owner}/{repo}/security-advisories"],
-    updateRepositoryAdvisory: [
-      "PATCH /repos/{owner}/{repo}/security-advisories/{ghsa_id}"
-    ]
-  },
-  teams: {
-    addOrUpdateMembershipForUserInOrg: [
-      "PUT /orgs/{org}/teams/{team_slug}/memberships/{username}"
-    ],
-    addOrUpdateProjectPermissionsInOrg: [
-      "PUT /orgs/{org}/teams/{team_slug}/projects/{project_id}"
-    ],
-    addOrUpdateRepoPermissionsInOrg: [
-      "PUT /orgs/{org}/teams/{team_slug}/repos/{owner}/{repo}"
-    ],
-    checkPermissionsForProjectInOrg: [
-      "GET /orgs/{org}/teams/{team_slug}/projects/{project_id}"
-    ],
-    checkPermissionsForRepoInOrg: [
-      "GET /orgs/{org}/teams/{team_slug}/repos/{owner}/{repo}"
-    ],
-    create: ["POST /orgs/{org}/teams"],
-    createDiscussionCommentInOrg: [
-      "POST /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/comments"
-    ],
-    createDiscussionInOrg: ["POST /orgs/{org}/teams/{team_slug}/discussions"],
-    deleteDiscussionCommentInOrg: [
-      "DELETE /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/comments/{comment_number}"
-    ],
-    deleteDiscussionInOrg: [
-      "DELETE /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}"
-    ],
-    deleteInOrg: ["DELETE /orgs/{org}/teams/{team_slug}"],
-    getByName: ["GET /orgs/{org}/teams/{team_slug}"],
-    getDiscussionCommentInOrg: [
-      "GET /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/comments/{comment_number}"
-    ],
-    getDiscussionInOrg: [
-      "GET /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}"
-    ],
-    getMembershipForUserInOrg: [
-      "GET /orgs/{org}/teams/{team_slug}/memberships/{username}"
-    ],
-    list: ["GET /orgs/{org}/teams"],
-    listChildInOrg: ["GET /orgs/{org}/teams/{team_slug}/teams"],
-    listDiscussionCommentsInOrg: [
-      "GET /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/comments"
-    ],
-    listDiscussionsInOrg: ["GET /orgs/{org}/teams/{team_slug}/discussions"],
-    listForAuthenticatedUser: ["GET /user/teams"],
-    listMembersInOrg: ["GET /orgs/{org}/teams/{team_slug}/members"],
-    listPendingInvitationsInOrg: [
-      "GET /orgs/{org}/teams/{team_slug}/invitations"
-    ],
-    listProjectsInOrg: ["GET /orgs/{org}/teams/{team_slug}/projects"],
-    listReposInOrg: ["GET /orgs/{org}/teams/{team_slug}/repos"],
-    removeMembershipForUserInOrg: [
-      "DELETE /orgs/{org}/teams/{team_slug}/memberships/{username}"
-    ],
-    removeProjectInOrg: [
-      "DELETE /orgs/{org}/teams/{team_slug}/projects/{project_id}"
-    ],
-    removeRepoInOrg: [
-      "DELETE /orgs/{org}/teams/{team_slug}/repos/{owner}/{repo}"
-    ],
-    updateDiscussionCommentInOrg: [
-      "PATCH /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/comments/{comment_number}"
-    ],
-    updateDiscussionInOrg: [
-      "PATCH /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}"
-    ],
-    updateInOrg: ["PATCH /orgs/{org}/teams/{team_slug}"]
-  },
-  users: {
-    addEmailForAuthenticated: [
-      "POST /user/emails",
-      {},
-      { renamed: ["users", "addEmailForAuthenticatedUser"] }
-    ],
-    addEmailForAuthenticatedUser: ["POST /user/emails"],
-    addSocialAccountForAuthenticatedUser: ["POST /user/social_accounts"],
-    block: ["PUT /user/blocks/{username}"],
-    checkBlocked: ["GET /user/blocks/{username}"],
-    checkFollowingForUser: ["GET /users/{username}/following/{target_user}"],
-    checkPersonIsFollowedByAuthenticated: ["GET /user/following/{username}"],
-    createGpgKeyForAuthenticated: [
-      "POST /user/gpg_keys",
-      {},
-      { renamed: ["users", "createGpgKeyForAuthenticatedUser"] }
-    ],
-    createGpgKeyForAuthenticatedUser: ["POST /user/gpg_keys"],
-    createPublicSshKeyForAuthenticated: [
-      "POST /user/keys",
-      {},
-      { renamed: ["users", "createPublicSshKeyForAuthenticatedUser"] }
-    ],
-    createPublicSshKeyForAuthenticatedUser: ["POST /user/keys"],
-    createSshSigningKeyForAuthenticatedUser: ["POST /user/ssh_signing_keys"],
-    deleteEmailForAuthenticated: [
-      "DELETE /user/emails",
-      {},
-      { renamed: ["users", "deleteEmailForAuthenticatedUser"] }
-    ],
-    deleteEmailForAuthenticatedUser: ["DELETE /user/emails"],
-    deleteGpgKeyForAuthenticated: [
-      "DELETE /user/gpg_keys/{gpg_key_id}",
-      {},
-      { renamed: ["users", "deleteGpgKeyForAuthenticatedUser"] }
-    ],
-    deleteGpgKeyForAuthenticatedUser: ["DELETE /user/gpg_keys/{gpg_key_id}"],
-    deletePublicSshKeyForAuthenticated: [
-      "DELETE /user/keys/{key_id}",
-      {},
-      { renamed: ["users", "deletePublicSshKeyForAuthenticatedUser"] }
-    ],
-    deletePublicSshKeyForAuthenticatedUser: ["DELETE /user/keys/{key_id}"],
-    deleteSocialAccountForAuthenticatedUser: ["DELETE /user/social_accounts"],
-    deleteSshSigningKeyForAuthenticatedUser: [
-      "DELETE /user/ssh_signing_keys/{ssh_signing_key_id}"
-    ],
-    follow: ["PUT /user/following/{username}"],
-    getAuthenticated: ["GET /user"],
-    getByUsername: ["GET /users/{username}"],
-    getContextForUser: ["GET /users/{username}/hovercard"],
-    getGpgKeyForAuthenticated: [
-      "GET /user/gpg_keys/{gpg_key_id}",
-      {},
-      { renamed: ["users", "getGpgKeyForAuthenticatedUser"] }
-    ],
-    getGpgKeyForAuthenticatedUser: ["GET /user/gpg_keys/{gpg_key_id}"],
-    getPublicSshKeyForAuthenticated: [
-      "GET /user/keys/{key_id}",
-      {},
-      { renamed: ["users", "getPublicSshKeyForAuthenticatedUser"] }
-    ],
-    getPublicSshKeyForAuthenticatedUser: ["GET /user/keys/{key_id}"],
-    getSshSigningKeyForAuthenticatedUser: [
-      "GET /user/ssh_signing_keys/{ssh_signing_key_id}"
-    ],
-    list: ["GET /users"],
-    listBlockedByAuthenticated: [
-      "GET /user/blocks",
-      {},
-      { renamed: ["users", "listBlockedByAuthenticatedUser"] }
-    ],
-    listBlockedByAuthenticatedUser: ["GET /user/blocks"],
-    listEmailsForAuthenticated: [
-      "GET /user/emails",
-      {},
-      { renamed: ["users", "listEmailsForAuthenticatedUser"] }
-    ],
-    listEmailsForAuthenticatedUser: ["GET /user/emails"],
-    listFollowedByAuthenticated: [
-      "GET /user/following",
-      {},
-      { renamed: ["users", "listFollowedByAuthenticatedUser"] }
-    ],
-    listFollowedByAuthenticatedUser: ["GET /user/following"],
-    listFollowersForAuthenticatedUser: ["GET /user/followers"],
-    listFollowersForUser: ["GET /users/{username}/followers"],
-    listFollowingForUser: ["GET /users/{username}/following"],
-    listGpgKeysForAuthenticated: [
-      "GET /user/gpg_keys",
-      {},
-      { renamed: ["users", "listGpgKeysForAuthenticatedUser"] }
-    ],
-    listGpgKeysForAuthenticatedUser: ["GET /user/gpg_keys"],
-    listGpgKeysForUser: ["GET /users/{username}/gpg_keys"],
-    listPublicEmailsForAuthenticated: [
-      "GET /user/public_emails",
-      {},
-      { renamed: ["users", "listPublicEmailsForAuthenticatedUser"] }
-    ],
-    listPublicEmailsForAuthenticatedUser: ["GET /user/public_emails"],
-    listPublicKeysForUser: ["GET /users/{username}/keys"],
-    listPublicSshKeysForAuthenticated: [
-      "GET /user/keys",
-      {},
-      { renamed: ["users", "listPublicSshKeysForAuthenticatedUser"] }
-    ],
-    listPublicSshKeysForAuthenticatedUser: ["GET /user/keys"],
-    listSocialAccountsForAuthenticatedUser: ["GET /user/social_accounts"],
-    listSocialAccountsForUser: ["GET /users/{username}/social_accounts"],
-    listSshSigningKeysForAuthenticatedUser: ["GET /user/ssh_signing_keys"],
-    listSshSigningKeysForUser: ["GET /users/{username}/ssh_signing_keys"],
-    setPrimaryEmailVisibilityForAuthenticated: [
-      "PATCH /user/email/visibility",
-      {},
-      { renamed: ["users", "setPrimaryEmailVisibilityForAuthenticatedUser"] }
-    ],
-    setPrimaryEmailVisibilityForAuthenticatedUser: [
-      "PATCH /user/email/visibility"
-    ],
-    unblock: ["DELETE /user/blocks/{username}"],
-    unfollow: ["DELETE /user/following/{username}"],
-    updateAuthenticated: ["PATCH /user"]
-  }
-};
-var endpoints_default = Endpoints;
-
-const endpointMethodsMap = /* @__PURE__ */ new Map();
-for (const [scope, endpoints] of Object.entries(endpoints_default)) {
-  for (const [methodName, endpoint] of Object.entries(endpoints)) {
-    const [route, defaults, decorations] = endpoint;
-    const [method, url] = route.split(/ /);
-    const endpointDefaults = Object.assign(
-      {
-        method,
-        url
-      },
-      defaults
-    );
-    if (!endpointMethodsMap.has(scope)) {
-      endpointMethodsMap.set(scope, /* @__PURE__ */ new Map());
-    }
-    endpointMethodsMap.get(scope).set(methodName, {
-      scope,
-      methodName,
-      endpointDefaults,
-      decorations
-    });
-  }
-}
-const handler = {
-  has({ scope }, methodName) {
-    return endpointMethodsMap.get(scope).has(methodName);
-  },
-  getOwnPropertyDescriptor(target, methodName) {
-    return {
-      value: this.get(target, methodName),
-      // ensures method is in the cache
-      configurable: true,
-      writable: true,
-      enumerable: true
-    };
-  },
-  defineProperty(target, methodName, descriptor) {
-    Object.defineProperty(target.cache, methodName, descriptor);
-    return true;
-  },
-  deleteProperty(target, methodName) {
-    delete target.cache[methodName];
-    return true;
-  },
-  ownKeys({ scope }) {
-    return [...endpointMethodsMap.get(scope).keys()];
-  },
-  set(target, methodName, value) {
-    return target.cache[methodName] = value;
-  },
-  get({ octokit, scope, cache }, methodName) {
-    if (cache[methodName]) {
-      return cache[methodName];
-    }
-    const method = endpointMethodsMap.get(scope).get(methodName);
-    if (!method) {
-      return void 0;
-    }
-    const { endpointDefaults, decorations } = method;
-    if (decorations) {
-      cache[methodName] = decorate(
-        octokit,
-        scope,
-        methodName,
-        endpointDefaults,
-        decorations
-      );
-    } else {
-      cache[methodName] = octokit.request.defaults(endpointDefaults);
-    }
-    return cache[methodName];
-  }
-};
-function endpointsToMethods(octokit) {
-  const newMethods = {};
-  for (const scope of endpointMethodsMap.keys()) {
-    newMethods[scope] = new Proxy({ octokit, scope, cache: {} }, handler);
-  }
-  return newMethods;
-}
-function decorate(octokit, scope, methodName, defaults, decorations) {
-  const requestWithDefaults = octokit.request.defaults(defaults);
-  function withDecorations(...args) {
-    let options = requestWithDefaults.endpoint.merge(...args);
-    if (decorations.mapToData) {
-      options = Object.assign({}, options, {
-        data: options[decorations.mapToData],
-        [decorations.mapToData]: void 0
-      });
-      return requestWithDefaults(options);
-    }
-    if (decorations.renamed) {
-      const [newScope, newMethodName] = decorations.renamed;
-      octokit.log.warn(
-        `octokit.${scope}.${methodName}() has been renamed to octokit.${newScope}.${newMethodName}()`
-      );
-    }
-    if (decorations.deprecated) {
-      octokit.log.warn(decorations.deprecated);
-    }
-    if (decorations.renamedParameters) {
-      const options2 = requestWithDefaults.endpoint.merge(...args);
-      for (const [name, alias] of Object.entries(
-        decorations.renamedParameters
-      )) {
-        if (name in options2) {
-          octokit.log.warn(
-            `"${name}" parameter is deprecated for "octokit.${scope}.${methodName}()". Use "${alias}" instead`
-          );
-          if (!(alias in options2)) {
-            options2[alias] = options2[name];
-          }
-          delete options2[name];
-        }
-      }
-      return requestWithDefaults(options2);
-    }
-    return requestWithDefaults(...args);
-  }
-  return Object.assign(withDecorations, requestWithDefaults);
-}
-
-function restEndpointMethods(octokit) {
-  const api = endpointsToMethods(octokit);
-  return {
-    rest: api
-  };
-}
-restEndpointMethods.VERSION = VERSION$1;
-function legacyRestEndpointMethods(octokit) {
-  const api = endpointsToMethods(octokit);
-  return {
-    ...api,
-    rest: api
-  };
-}
-legacyRestEndpointMethods.VERSION = VERSION$1;
-
-var distSrc = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	legacyRestEndpointMethods: legacyRestEndpointMethods,
-	restEndpointMethods: restEndpointMethods
-});
-
-var require$$3 = /*@__PURE__*/getAugmentedNamespace(distSrc);
-
-// pkg/dist-src/version.js
-var VERSION = "9.2.2";
-
-// pkg/dist-src/normalize-paginated-list-response.js
-function normalizePaginatedListResponse(response) {
-  if (!response.data) {
-    return {
-      ...response,
-      data: []
-    };
-  }
-  const responseNeedsNormalization = "total_count" in response.data && !("url" in response.data);
-  if (!responseNeedsNormalization)
-    return response;
-  const incompleteResults = response.data.incomplete_results;
-  const repositorySelection = response.data.repository_selection;
-  const totalCount = response.data.total_count;
-  delete response.data.incomplete_results;
-  delete response.data.repository_selection;
-  delete response.data.total_count;
-  const namespaceKey = Object.keys(response.data)[0];
-  const data = response.data[namespaceKey];
-  response.data = data;
-  if (typeof incompleteResults !== "undefined") {
-    response.data.incomplete_results = incompleteResults;
-  }
-  if (typeof repositorySelection !== "undefined") {
-    response.data.repository_selection = repositorySelection;
-  }
-  response.data.total_count = totalCount;
-  return response;
-}
-
-// pkg/dist-src/iterator.js
-function iterator(octokit, route, parameters) {
-  const options = typeof route === "function" ? route.endpoint(parameters) : octokit.request.endpoint(route, parameters);
-  const requestMethod = typeof route === "function" ? route : octokit.request;
-  const method = options.method;
-  const headers = options.headers;
-  let url = options.url;
-  return {
-    [Symbol.asyncIterator]: () => ({
-      async next() {
-        if (!url)
-          return { done: true };
-        try {
-          const response = await requestMethod({ method, url, headers });
-          const normalizedResponse = normalizePaginatedListResponse(response);
-          url = ((normalizedResponse.headers.link || "").match(
-            /<([^<>]+)>;\s*rel="next"/
-          ) || [])[1];
-          return { value: normalizedResponse };
-        } catch (error) {
-          if (error.status !== 409)
-            throw error;
-          url = "";
-          return {
-            value: {
-              status: 200,
-              headers: {},
-              data: []
-            }
-          };
-        }
-      }
-    })
-  };
-}
-
-// pkg/dist-src/paginate.js
-function paginate(octokit, route, parameters, mapFn) {
-  if (typeof parameters === "function") {
-    mapFn = parameters;
-    parameters = void 0;
-  }
-  return gather(
-    octokit,
-    [],
-    iterator(octokit, route, parameters)[Symbol.asyncIterator](),
-    mapFn
-  );
-}
-function gather(octokit, results, iterator2, mapFn) {
-  return iterator2.next().then((result) => {
-    if (result.done) {
-      return results;
-    }
-    let earlyExit = false;
-    function done() {
-      earlyExit = true;
-    }
-    results = results.concat(
-      mapFn ? mapFn(result.value, done) : result.value.data
-    );
-    if (earlyExit) {
-      return results;
-    }
-    return gather(octokit, results, iterator2, mapFn);
-  });
-}
-
-// pkg/dist-src/compose-paginate.js
-var composePaginateRest = Object.assign(paginate, {
-  iterator
-});
-
-// pkg/dist-src/generated/paginating-endpoints.js
-var paginatingEndpoints = [
-  "GET /advisories",
-  "GET /app/hook/deliveries",
-  "GET /app/installation-requests",
-  "GET /app/installations",
-  "GET /assignments/{assignment_id}/accepted_assignments",
-  "GET /classrooms",
-  "GET /classrooms/{classroom_id}/assignments",
-  "GET /enterprises/{enterprise}/dependabot/alerts",
-  "GET /enterprises/{enterprise}/secret-scanning/alerts",
-  "GET /events",
-  "GET /gists",
-  "GET /gists/public",
-  "GET /gists/starred",
-  "GET /gists/{gist_id}/comments",
-  "GET /gists/{gist_id}/commits",
-  "GET /gists/{gist_id}/forks",
-  "GET /installation/repositories",
-  "GET /issues",
-  "GET /licenses",
-  "GET /marketplace_listing/plans",
-  "GET /marketplace_listing/plans/{plan_id}/accounts",
-  "GET /marketplace_listing/stubbed/plans",
-  "GET /marketplace_listing/stubbed/plans/{plan_id}/accounts",
-  "GET /networks/{owner}/{repo}/events",
-  "GET /notifications",
-  "GET /organizations",
-  "GET /orgs/{org}/actions/cache/usage-by-repository",
-  "GET /orgs/{org}/actions/permissions/repositories",
-  "GET /orgs/{org}/actions/runners",
-  "GET /orgs/{org}/actions/secrets",
-  "GET /orgs/{org}/actions/secrets/{secret_name}/repositories",
-  "GET /orgs/{org}/actions/variables",
-  "GET /orgs/{org}/actions/variables/{name}/repositories",
-  "GET /orgs/{org}/blocks",
-  "GET /orgs/{org}/code-scanning/alerts",
-  "GET /orgs/{org}/codespaces",
-  "GET /orgs/{org}/codespaces/secrets",
-  "GET /orgs/{org}/codespaces/secrets/{secret_name}/repositories",
-  "GET /orgs/{org}/copilot/billing/seats",
-  "GET /orgs/{org}/dependabot/alerts",
-  "GET /orgs/{org}/dependabot/secrets",
-  "GET /orgs/{org}/dependabot/secrets/{secret_name}/repositories",
-  "GET /orgs/{org}/events",
-  "GET /orgs/{org}/failed_invitations",
-  "GET /orgs/{org}/hooks",
-  "GET /orgs/{org}/hooks/{hook_id}/deliveries",
-  "GET /orgs/{org}/installations",
-  "GET /orgs/{org}/invitations",
-  "GET /orgs/{org}/invitations/{invitation_id}/teams",
-  "GET /orgs/{org}/issues",
-  "GET /orgs/{org}/members",
-  "GET /orgs/{org}/members/{username}/codespaces",
-  "GET /orgs/{org}/migrations",
-  "GET /orgs/{org}/migrations/{migration_id}/repositories",
-  "GET /orgs/{org}/organization-roles/{role_id}/teams",
-  "GET /orgs/{org}/organization-roles/{role_id}/users",
-  "GET /orgs/{org}/outside_collaborators",
-  "GET /orgs/{org}/packages",
-  "GET /orgs/{org}/packages/{package_type}/{package_name}/versions",
-  "GET /orgs/{org}/personal-access-token-requests",
-  "GET /orgs/{org}/personal-access-token-requests/{pat_request_id}/repositories",
-  "GET /orgs/{org}/personal-access-tokens",
-  "GET /orgs/{org}/personal-access-tokens/{pat_id}/repositories",
-  "GET /orgs/{org}/projects",
-  "GET /orgs/{org}/properties/values",
-  "GET /orgs/{org}/public_members",
-  "GET /orgs/{org}/repos",
-  "GET /orgs/{org}/rulesets",
-  "GET /orgs/{org}/rulesets/rule-suites",
-  "GET /orgs/{org}/secret-scanning/alerts",
-  "GET /orgs/{org}/security-advisories",
-  "GET /orgs/{org}/teams",
-  "GET /orgs/{org}/teams/{team_slug}/discussions",
-  "GET /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/comments",
-  "GET /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/comments/{comment_number}/reactions",
-  "GET /orgs/{org}/teams/{team_slug}/discussions/{discussion_number}/reactions",
-  "GET /orgs/{org}/teams/{team_slug}/invitations",
-  "GET /orgs/{org}/teams/{team_slug}/members",
-  "GET /orgs/{org}/teams/{team_slug}/projects",
-  "GET /orgs/{org}/teams/{team_slug}/repos",
-  "GET /orgs/{org}/teams/{team_slug}/teams",
-  "GET /projects/columns/{column_id}/cards",
-  "GET /projects/{project_id}/collaborators",
-  "GET /projects/{project_id}/columns",
-  "GET /repos/{owner}/{repo}/actions/artifacts",
-  "GET /repos/{owner}/{repo}/actions/caches",
-  "GET /repos/{owner}/{repo}/actions/organization-secrets",
-  "GET /repos/{owner}/{repo}/actions/organization-variables",
-  "GET /repos/{owner}/{repo}/actions/runners",
-  "GET /repos/{owner}/{repo}/actions/runs",
-  "GET /repos/{owner}/{repo}/actions/runs/{run_id}/artifacts",
-  "GET /repos/{owner}/{repo}/actions/runs/{run_id}/attempts/{attempt_number}/jobs",
-  "GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs",
-  "GET /repos/{owner}/{repo}/actions/secrets",
-  "GET /repos/{owner}/{repo}/actions/variables",
-  "GET /repos/{owner}/{repo}/actions/workflows",
-  "GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs",
-  "GET /repos/{owner}/{repo}/activity",
-  "GET /repos/{owner}/{repo}/assignees",
-  "GET /repos/{owner}/{repo}/branches",
-  "GET /repos/{owner}/{repo}/check-runs/{check_run_id}/annotations",
-  "GET /repos/{owner}/{repo}/check-suites/{check_suite_id}/check-runs",
-  "GET /repos/{owner}/{repo}/code-scanning/alerts",
-  "GET /repos/{owner}/{repo}/code-scanning/alerts/{alert_number}/instances",
-  "GET /repos/{owner}/{repo}/code-scanning/analyses",
-  "GET /repos/{owner}/{repo}/codespaces",
-  "GET /repos/{owner}/{repo}/codespaces/devcontainers",
-  "GET /repos/{owner}/{repo}/codespaces/secrets",
-  "GET /repos/{owner}/{repo}/collaborators",
-  "GET /repos/{owner}/{repo}/comments",
-  "GET /repos/{owner}/{repo}/comments/{comment_id}/reactions",
-  "GET /repos/{owner}/{repo}/commits",
-  "GET /repos/{owner}/{repo}/commits/{commit_sha}/comments",
-  "GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls",
-  "GET /repos/{owner}/{repo}/commits/{ref}/check-runs",
-  "GET /repos/{owner}/{repo}/commits/{ref}/check-suites",
-  "GET /repos/{owner}/{repo}/commits/{ref}/status",
-  "GET /repos/{owner}/{repo}/commits/{ref}/statuses",
-  "GET /repos/{owner}/{repo}/contributors",
-  "GET /repos/{owner}/{repo}/dependabot/alerts",
-  "GET /repos/{owner}/{repo}/dependabot/secrets",
-  "GET /repos/{owner}/{repo}/deployments",
-  "GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses",
-  "GET /repos/{owner}/{repo}/environments",
-  "GET /repos/{owner}/{repo}/environments/{environment_name}/deployment-branch-policies",
-  "GET /repos/{owner}/{repo}/environments/{environment_name}/deployment_protection_rules/apps",
-  "GET /repos/{owner}/{repo}/events",
-  "GET /repos/{owner}/{repo}/forks",
-  "GET /repos/{owner}/{repo}/hooks",
-  "GET /repos/{owner}/{repo}/hooks/{hook_id}/deliveries",
-  "GET /repos/{owner}/{repo}/invitations",
-  "GET /repos/{owner}/{repo}/issues",
-  "GET /repos/{owner}/{repo}/issues/comments",
-  "GET /repos/{owner}/{repo}/issues/comments/{comment_id}/reactions",
-  "GET /repos/{owner}/{repo}/issues/events",
-  "GET /repos/{owner}/{repo}/issues/{issue_number}/comments",
-  "GET /repos/{owner}/{repo}/issues/{issue_number}/events",
-  "GET /repos/{owner}/{repo}/issues/{issue_number}/labels",
-  "GET /repos/{owner}/{repo}/issues/{issue_number}/reactions",
-  "GET /repos/{owner}/{repo}/issues/{issue_number}/timeline",
-  "GET /repos/{owner}/{repo}/keys",
-  "GET /repos/{owner}/{repo}/labels",
-  "GET /repos/{owner}/{repo}/milestones",
-  "GET /repos/{owner}/{repo}/milestones/{milestone_number}/labels",
-  "GET /repos/{owner}/{repo}/notifications",
-  "GET /repos/{owner}/{repo}/pages/builds",
-  "GET /repos/{owner}/{repo}/projects",
-  "GET /repos/{owner}/{repo}/pulls",
-  "GET /repos/{owner}/{repo}/pulls/comments",
-  "GET /repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions",
-  "GET /repos/{owner}/{repo}/pulls/{pull_number}/comments",
-  "GET /repos/{owner}/{repo}/pulls/{pull_number}/commits",
-  "GET /repos/{owner}/{repo}/pulls/{pull_number}/files",
-  "GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews",
-  "GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/comments",
-  "GET /repos/{owner}/{repo}/releases",
-  "GET /repos/{owner}/{repo}/releases/{release_id}/assets",
-  "GET /repos/{owner}/{repo}/releases/{release_id}/reactions",
-  "GET /repos/{owner}/{repo}/rules/branches/{branch}",
-  "GET /repos/{owner}/{repo}/rulesets",
-  "GET /repos/{owner}/{repo}/rulesets/rule-suites",
-  "GET /repos/{owner}/{repo}/secret-scanning/alerts",
-  "GET /repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}/locations",
-  "GET /repos/{owner}/{repo}/security-advisories",
-  "GET /repos/{owner}/{repo}/stargazers",
-  "GET /repos/{owner}/{repo}/subscribers",
-  "GET /repos/{owner}/{repo}/tags",
-  "GET /repos/{owner}/{repo}/teams",
-  "GET /repos/{owner}/{repo}/topics",
-  "GET /repositories",
-  "GET /repositories/{repository_id}/environments/{environment_name}/secrets",
-  "GET /repositories/{repository_id}/environments/{environment_name}/variables",
-  "GET /search/code",
-  "GET /search/commits",
-  "GET /search/issues",
-  "GET /search/labels",
-  "GET /search/repositories",
-  "GET /search/topics",
-  "GET /search/users",
-  "GET /teams/{team_id}/discussions",
-  "GET /teams/{team_id}/discussions/{discussion_number}/comments",
-  "GET /teams/{team_id}/discussions/{discussion_number}/comments/{comment_number}/reactions",
-  "GET /teams/{team_id}/discussions/{discussion_number}/reactions",
-  "GET /teams/{team_id}/invitations",
-  "GET /teams/{team_id}/members",
-  "GET /teams/{team_id}/projects",
-  "GET /teams/{team_id}/repos",
-  "GET /teams/{team_id}/teams",
-  "GET /user/blocks",
-  "GET /user/codespaces",
-  "GET /user/codespaces/secrets",
-  "GET /user/emails",
-  "GET /user/followers",
-  "GET /user/following",
-  "GET /user/gpg_keys",
-  "GET /user/installations",
-  "GET /user/installations/{installation_id}/repositories",
-  "GET /user/issues",
-  "GET /user/keys",
-  "GET /user/marketplace_purchases",
-  "GET /user/marketplace_purchases/stubbed",
-  "GET /user/memberships/orgs",
-  "GET /user/migrations",
-  "GET /user/migrations/{migration_id}/repositories",
-  "GET /user/orgs",
-  "GET /user/packages",
-  "GET /user/packages/{package_type}/{package_name}/versions",
-  "GET /user/public_emails",
-  "GET /user/repos",
-  "GET /user/repository_invitations",
-  "GET /user/social_accounts",
-  "GET /user/ssh_signing_keys",
-  "GET /user/starred",
-  "GET /user/subscriptions",
-  "GET /user/teams",
-  "GET /users",
-  "GET /users/{username}/events",
-  "GET /users/{username}/events/orgs/{org}",
-  "GET /users/{username}/events/public",
-  "GET /users/{username}/followers",
-  "GET /users/{username}/following",
-  "GET /users/{username}/gists",
-  "GET /users/{username}/gpg_keys",
-  "GET /users/{username}/keys",
-  "GET /users/{username}/orgs",
-  "GET /users/{username}/packages",
-  "GET /users/{username}/projects",
-  "GET /users/{username}/received_events",
-  "GET /users/{username}/received_events/public",
-  "GET /users/{username}/repos",
-  "GET /users/{username}/social_accounts",
-  "GET /users/{username}/ssh_signing_keys",
-  "GET /users/{username}/starred",
-  "GET /users/{username}/subscriptions"
-];
-
-// pkg/dist-src/paginating-endpoints.js
-function isPaginatingEndpoint(arg) {
-  if (typeof arg === "string") {
-    return paginatingEndpoints.includes(arg);
-  } else {
-    return false;
-  }
-}
-
-// pkg/dist-src/index.js
-function paginateRest(octokit) {
-  return {
-    paginate: Object.assign(paginate.bind(null, octokit), {
-      iterator: iterator.bind(null, octokit)
-    })
-  };
-}
-paginateRest.VERSION = VERSION;
-
-var distWeb = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	composePaginateRest: composePaginateRest,
-	isPaginatingEndpoint: isPaginatingEndpoint,
-	paginateRest: paginateRest,
-	paginatingEndpoints: paginatingEndpoints
-});
-
-var require$$4 = /*@__PURE__*/getAugmentedNamespace(distWeb);
-
-var hasRequiredUtils;
-
-function requireUtils () {
-	if (hasRequiredUtils) return utils$1;
-	hasRequiredUtils = 1;
-	(function (exports$1) {
-		var __createBinding = (utils$1 && utils$1.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-		    if (k2 === undefined) k2 = k;
-		    var desc = Object.getOwnPropertyDescriptor(m, k);
-		    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-		      desc = { enumerable: true, get: function() { return m[k]; } };
-		    }
-		    Object.defineProperty(o, k2, desc);
-		}) : (function(o, m, k, k2) {
-		    if (k2 === undefined) k2 = k;
-		    o[k2] = m[k];
-		}));
-		var __setModuleDefault = (utils$1 && utils$1.__setModuleDefault) || (Object.create ? (function(o, v) {
-		    Object.defineProperty(o, "default", { enumerable: true, value: v });
-		}) : function(o, v) {
-		    o["default"] = v;
-		});
-		var __importStar = (utils$1 && utils$1.__importStar) || function (mod) {
-		    if (mod && mod.__esModule) return mod;
-		    var result = {};
-		    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-		    __setModuleDefault(result, mod);
-		    return result;
-		};
-		Object.defineProperty(exports$1, "__esModule", { value: true });
-		exports$1.getOctokitOptions = exports$1.GitHub = exports$1.defaults = exports$1.context = void 0;
-		const Context = __importStar(requireContext());
-		const Utils = __importStar(requireUtils$1());
-		// octokit + plugins
-		const core_1 = require$$2;
-		const plugin_rest_endpoint_methods_1 = require$$3;
-		const plugin_paginate_rest_1 = require$$4;
-		exports$1.context = new Context.Context();
-		const baseUrl = Utils.getApiBaseUrl();
-		exports$1.defaults = {
-		    baseUrl,
-		    request: {
-		        agent: Utils.getProxyAgent(baseUrl),
-		        fetch: Utils.getProxyFetch(baseUrl)
-		    }
-		};
-		exports$1.GitHub = core_1.Octokit.plugin(plugin_rest_endpoint_methods_1.restEndpointMethods, plugin_paginate_rest_1.paginateRest).defaults(exports$1.defaults);
-		/**
-		 * Convience function to correctly format Octokit Options to pass into the constructor.
-		 *
-		 * @param     token    the repo PAT or GITHUB_TOKEN
-		 * @param     options  other options to set
-		 */
-		function getOctokitOptions(token, options) {
-		    const opts = Object.assign({}, options || {}); // Shallow clone - don't mutate the object provided by the caller
-		    // Auth
-		    const auth = Utils.getAuthString(token, opts);
-		    if (auth) {
-		        opts.auth = auth;
-		    }
-		    return opts;
-		}
-		exports$1.getOctokitOptions = getOctokitOptions;
-		
-	} (utils$1));
-	return utils$1;
-}
-
-var hasRequiredGithub;
-
-function requireGithub () {
-	if (hasRequiredGithub) return github;
-	hasRequiredGithub = 1;
-	var __createBinding = (github && github.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-	    if (k2 === undefined) k2 = k;
-	    var desc = Object.getOwnPropertyDescriptor(m, k);
-	    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-	      desc = { enumerable: true, get: function() { return m[k]; } };
-	    }
-	    Object.defineProperty(o, k2, desc);
-	}) : (function(o, m, k, k2) {
-	    if (k2 === undefined) k2 = k;
-	    o[k2] = m[k];
-	}));
-	var __setModuleDefault = (github && github.__setModuleDefault) || (Object.create ? (function(o, v) {
-	    Object.defineProperty(o, "default", { enumerable: true, value: v });
-	}) : function(o, v) {
-	    o["default"] = v;
-	});
-	var __importStar = (github && github.__importStar) || function (mod) {
-	    if (mod && mod.__esModule) return mod;
-	    var result = {};
-	    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-	    __setModuleDefault(result, mod);
-	    return result;
-	};
-	Object.defineProperty(github, "__esModule", { value: true });
-	github.getOctokit = github.context = void 0;
-	const Context = __importStar(requireContext());
-	const utils_1 = requireUtils();
-	github.context = new Context.Context();
-	/**
-	 * Returns a hydrated octokit ready to use for GitHub Actions
-	 *
-	 * @param     token    the repo PAT or GITHUB_TOKEN
-	 * @param     options  other options to set
-	 */
-	function getOctokit(token, options, ...additionalPlugins) {
-	    const GitHubWithPlugins = utils_1.GitHub.plugin(...additionalPlugins);
-	    return new GitHubWithPlugins((0, utils_1.getOctokitOptions)(token, options));
-	}
-	github.getOctokit = getOctokit;
-	
-	return github;
-}
-
-var githubExports = requireGithub();
-
-const objectToString = Object.prototype.toString;
-
-const isError = value => objectToString.call(value) === '[object Error]';
+const isError = value => objectToString$1.call(value) === '[object Error]';
 
 const errorMessages = new Set([
 	'network error', // Chrome
@@ -31285,7 +27303,7 @@ function isNetworkError(error) {
 	return errorMessages.has(message);
 }
 
-async function requestAudit(url, token, github) {
+async function requestAudit(url, token, context) {
     const apiUrl = `${getApiBaseUrl()}/api/v1/audit`;
     try {
         const response = await fetch(apiUrl, {
@@ -31296,7 +27314,7 @@ async function requestAudit(url, token, github) {
             },
             body: JSON.stringify({
                 url,
-                github
+                context
             })
         });
         if (!response.ok) {
@@ -31335,18 +27353,9238 @@ function getApiBaseUrl() {
     return 'https://xcelera.dev';
 }
 
+// https://www.appveyor.com/docs/environment-variables
+
+var appveyor = {
+  detect({ env }) {
+    return Boolean(env.APPVEYOR);
+  },
+  configuration({ env }) {
+    const pr = env.APPVEYOR_PULL_REQUEST_NUMBER;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Appveyor",
+      service: "appveyor",
+      commit: env.APPVEYOR_REPO_COMMIT,
+      tag: env.APPVEYOR_REPO_TAG_NAME,
+      build: env.APPVEYOR_BUILD_NUMBER,
+      buildUrl: `https://ci.appveyor.com/project/${env.APPVEYOR_PROJECT_SLUG}/build/${env.APPVEYOR_BUILD_VERSION}`,
+      branch: env.APPVEYOR_REPO_BRANCH,
+      job: env.APPVEYOR_JOB_NUMBER,
+      jobUrl: `https://ci.appveyor.com/project/${env.APPVEYOR_PROJECT_SLUG}/build/job/${env.APPVEYOR_JOB_ID}`,
+      pr,
+      isPr,
+      prBranch: env.APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH,
+      slug: env.APPVEYOR_REPO_NAME,
+      root: env.APPVEYOR_BUILD_FOLDER,
+    };
+  },
+};
+
+function prNumber(pr) {
+  return (/\d+(?!.*\d+)/.exec(pr) || [])[0];
+}
+
+function parseBranch(branch) {
+  return branch
+    ? /^(?:refs\/heads\/)?(?<branch>.+)$/i.exec(branch)[1]
+    : undefined;
+}
+
+// https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
+// The docs indicate that SYSTEM_PULLREQUEST_SOURCEBRANCH and SYSTEM_PULLREQUEST_TARGETBRANCH are in the long format (e.g `refs/heads/master`) however tests show they are both in the short format (e.g. `master`)
+
+var azurePipelines = {
+  detect({ env }) {
+    return Boolean(env.BUILD_BUILDURI);
+  },
+  configuration({ env }) {
+    const pr = env.SYSTEM_PULLREQUEST_PULLREQUESTID;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Azure Pipelines",
+      service: "azurePipelines",
+      commit: env.BUILD_SOURCEVERSION,
+      build: env.BUILD_BUILDNUMBER,
+      branch: parseBranch(
+        isPr ? env.SYSTEM_PULLREQUEST_TARGETBRANCH : env.BUILD_SOURCEBRANCH,
+      ),
+      pr,
+      isPr,
+      prBranch: parseBranch(
+        isPr ? env.SYSTEM_PULLREQUEST_SOURCEBRANCH : undefined,
+      ),
+      root: env.BUILD_REPOSITORY_LOCALPATH,
+    };
+  },
+};
+
+// https://confluence.atlassian.com/bamboo/bamboo-variables-289277087.html
+
+var bamboo = {
+  detect({ env }) {
+    return Boolean(env.bamboo_agentId);
+  },
+  configuration({ env }) {
+    return {
+      name: "Bamboo",
+      service: "bamboo",
+      commit: env.bamboo_planRepository_1_revision,
+      build: env.bamboo_buildNumber,
+      buildUrl: env.bamboo_buildResultsUrl,
+      branch: env.bamboo_planRepository_1_branchName,
+      job: env.bamboo_buildKey,
+      root: env.bamboo_build_working_directory,
+    };
+  },
+};
+
+// https://confluence.atlassian.com/bitbucket/environment-variables-794502608.html
+
+var bitbucket = {
+  detect({ env }) {
+    return Boolean(env.BITBUCKET_BUILD_NUMBER);
+  },
+  configuration({ env }) {
+    return {
+      name: "Bitbucket Pipelines",
+      service: "bitbucket",
+      commit: env.BITBUCKET_COMMIT,
+      tag: env.BITBUCKET_TAG,
+      build: env.BITBUCKET_BUILD_NUMBER,
+      buildUrl: `https://bitbucket.org/${env.BITBUCKET_REPO_FULL_NAME}/addon/pipelines/home#!/results/${env.BITBUCKET_BUILD_NUMBER}`,
+      branch: env.BITBUCKET_BRANCH,
+      slug: env.BITBUCKET_REPO_FULL_NAME,
+      root: env.BITBUCKET_CLONE_DIR,
+    };
+  },
+};
+
+// https://devcenter.bitrise.io/builds/available-environment-variables/#exposed-by-bitriseio
+
+var bitrise = {
+  detect({ env }) {
+    return Boolean(env.BITRISE_IO);
+  },
+  configuration({ env }) {
+    const pr =
+      env.BITRISE_PULL_REQUEST === "false"
+        ? undefined
+        : env.BITRISE_PULL_REQUEST;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Bitrise",
+      service: "bitrise",
+      commit: env.BITRISE_GIT_COMMIT,
+      tag: env.BITRISE_GIT_TAG,
+      build: env.BITRISE_BUILD_NUMBER,
+      buildUrl: env.BITRISE_BUILD_URL,
+      branch: isPr ? env.BITRISEIO_GIT_BRANCH_DEST : env.BITRISE_GIT_BRANCH,
+      pr,
+      isPr,
+      prBranch: isPr ? env.BITRISE_GIT_BRANCH : undefined,
+      slug: env.BITRISE_APP_SLUG,
+    };
+  },
+};
+
+// https://buddy.works/knowledge/deployments/how-use-environment-variables#default-environment-variables
+
+
+var buddy = {
+  detect({ env }) {
+    return Boolean(env.BUDDY_WORKSPACE_ID);
+  },
+  configuration({ env }) {
+    const pr = prNumber(env.BUDDY_EXECUTION_PULL_REQUEST_ID);
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Buddy",
+      service: "buddy",
+      commit: env.BUDDY_EXECUTION_REVISION,
+      tag: env.BUDDY_EXECUTION_TAG,
+      build: env.BUDDY_EXECUTION_ID,
+      buildUrl: env.BUDDY_EXECUTION_URL,
+      branch: isPr
+        ? env.BUDDY_EXECUTION_PULL_REQUEST_HEAD_BRANCH
+        : env.BUDDY_EXECUTION_BRANCH,
+      pr,
+      isPr,
+      slug: env.BUDDY_REPO_SLUG,
+    };
+  },
+};
+
+var crossSpawn$1 = {exports: {}};
+
+var windows;
+var hasRequiredWindows;
+
+function requireWindows () {
+	if (hasRequiredWindows) return windows;
+	hasRequiredWindows = 1;
+	windows = isexe;
+	isexe.sync = sync;
+
+	var fs = require$$0$2;
+
+	function checkPathExt (path, options) {
+	  var pathext = options.pathExt !== undefined ?
+	    options.pathExt : process.env.PATHEXT;
+
+	  if (!pathext) {
+	    return true
+	  }
+
+	  pathext = pathext.split(';');
+	  if (pathext.indexOf('') !== -1) {
+	    return true
+	  }
+	  for (var i = 0; i < pathext.length; i++) {
+	    var p = pathext[i].toLowerCase();
+	    if (p && path.substr(-p.length).toLowerCase() === p) {
+	      return true
+	    }
+	  }
+	  return false
+	}
+
+	function checkStat (stat, path, options) {
+	  if (!stat.isSymbolicLink() && !stat.isFile()) {
+	    return false
+	  }
+	  return checkPathExt(path, options)
+	}
+
+	function isexe (path, options, cb) {
+	  fs.stat(path, function (er, stat) {
+	    cb(er, er ? false : checkStat(stat, path, options));
+	  });
+	}
+
+	function sync (path, options) {
+	  return checkStat(fs.statSync(path), path, options)
+	}
+	return windows;
+}
+
+var mode;
+var hasRequiredMode;
+
+function requireMode () {
+	if (hasRequiredMode) return mode;
+	hasRequiredMode = 1;
+	mode = isexe;
+	isexe.sync = sync;
+
+	var fs = require$$0$2;
+
+	function isexe (path, options, cb) {
+	  fs.stat(path, function (er, stat) {
+	    cb(er, er ? false : checkStat(stat, options));
+	  });
+	}
+
+	function sync (path, options) {
+	  return checkStat(fs.statSync(path), options)
+	}
+
+	function checkStat (stat, options) {
+	  return stat.isFile() && checkMode(stat, options)
+	}
+
+	function checkMode (stat, options) {
+	  var mod = stat.mode;
+	  var uid = stat.uid;
+	  var gid = stat.gid;
+
+	  var myUid = options.uid !== undefined ?
+	    options.uid : process.getuid && process.getuid();
+	  var myGid = options.gid !== undefined ?
+	    options.gid : process.getgid && process.getgid();
+
+	  var u = parseInt('100', 8);
+	  var g = parseInt('010', 8);
+	  var o = parseInt('001', 8);
+	  var ug = u | g;
+
+	  var ret = (mod & o) ||
+	    (mod & g) && gid === myGid ||
+	    (mod & u) && uid === myUid ||
+	    (mod & ug) && myUid === 0;
+
+	  return ret
+	}
+	return mode;
+}
+
+var isexe_1;
+var hasRequiredIsexe;
+
+function requireIsexe () {
+	if (hasRequiredIsexe) return isexe_1;
+	hasRequiredIsexe = 1;
+	var core;
+	if (process.platform === 'win32' || commonjsGlobal.TESTING_WINDOWS) {
+	  core = requireWindows();
+	} else {
+	  core = requireMode();
+	}
+
+	isexe_1 = isexe;
+	isexe.sync = sync;
+
+	function isexe (path, options, cb) {
+	  if (typeof options === 'function') {
+	    cb = options;
+	    options = {};
+	  }
+
+	  if (!cb) {
+	    if (typeof Promise !== 'function') {
+	      throw new TypeError('callback not provided')
+	    }
+
+	    return new Promise(function (resolve, reject) {
+	      isexe(path, options || {}, function (er, is) {
+	        if (er) {
+	          reject(er);
+	        } else {
+	          resolve(is);
+	        }
+	      });
+	    })
+	  }
+
+	  core(path, options || {}, function (er, is) {
+	    // ignore EACCES because that just means we aren't allowed to run it
+	    if (er) {
+	      if (er.code === 'EACCES' || options && options.ignoreErrors) {
+	        er = null;
+	        is = false;
+	      }
+	    }
+	    cb(er, is);
+	  });
+	}
+
+	function sync (path, options) {
+	  // my kingdom for a filtered catch
+	  try {
+	    return core.sync(path, options || {})
+	  } catch (er) {
+	    if (options && options.ignoreErrors || er.code === 'EACCES') {
+	      return false
+	    } else {
+	      throw er
+	    }
+	  }
+	}
+	return isexe_1;
+}
+
+var which_1;
+var hasRequiredWhich;
+
+function requireWhich () {
+	if (hasRequiredWhich) return which_1;
+	hasRequiredWhich = 1;
+	const isWindows = process.platform === 'win32' ||
+	    process.env.OSTYPE === 'cygwin' ||
+	    process.env.OSTYPE === 'msys';
+
+	const path = require$$0$b;
+	const COLON = isWindows ? ';' : ':';
+	const isexe = requireIsexe();
+
+	const getNotFoundError = (cmd) =>
+	  Object.assign(new Error(`not found: ${cmd}`), { code: 'ENOENT' });
+
+	const getPathInfo = (cmd, opt) => {
+	  const colon = opt.colon || COLON;
+
+	  // If it has a slash, then we don't bother searching the pathenv.
+	  // just check the file itself, and that's it.
+	  const pathEnv = cmd.match(/\//) || isWindows && cmd.match(/\\/) ? ['']
+	    : (
+	      [
+	        // windows always checks the cwd first
+	        ...(isWindows ? [process.cwd()] : []),
+	        ...(opt.path || process.env.PATH ||
+	          /* istanbul ignore next: very unusual */ '').split(colon),
+	      ]
+	    );
+	  const pathExtExe = isWindows
+	    ? opt.pathExt || process.env.PATHEXT || '.EXE;.CMD;.BAT;.COM'
+	    : '';
+	  const pathExt = isWindows ? pathExtExe.split(colon) : [''];
+
+	  if (isWindows) {
+	    if (cmd.indexOf('.') !== -1 && pathExt[0] !== '')
+	      pathExt.unshift('');
+	  }
+
+	  return {
+	    pathEnv,
+	    pathExt,
+	    pathExtExe,
+	  }
+	};
+
+	const which = (cmd, opt, cb) => {
+	  if (typeof opt === 'function') {
+	    cb = opt;
+	    opt = {};
+	  }
+	  if (!opt)
+	    opt = {};
+
+	  const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt);
+	  const found = [];
+
+	  const step = i => new Promise((resolve, reject) => {
+	    if (i === pathEnv.length)
+	      return opt.all && found.length ? resolve(found)
+	        : reject(getNotFoundError(cmd))
+
+	    const ppRaw = pathEnv[i];
+	    const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw;
+
+	    const pCmd = path.join(pathPart, cmd);
+	    const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd
+	      : pCmd;
+
+	    resolve(subStep(p, i, 0));
+	  });
+
+	  const subStep = (p, i, ii) => new Promise((resolve, reject) => {
+	    if (ii === pathExt.length)
+	      return resolve(step(i + 1))
+	    const ext = pathExt[ii];
+	    isexe(p + ext, { pathExt: pathExtExe }, (er, is) => {
+	      if (!er && is) {
+	        if (opt.all)
+	          found.push(p + ext);
+	        else
+	          return resolve(p + ext)
+	      }
+	      return resolve(subStep(p, i, ii + 1))
+	    });
+	  });
+
+	  return cb ? step(0).then(res => cb(null, res), cb) : step(0)
+	};
+
+	const whichSync = (cmd, opt) => {
+	  opt = opt || {};
+
+	  const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt);
+	  const found = [];
+
+	  for (let i = 0; i < pathEnv.length; i ++) {
+	    const ppRaw = pathEnv[i];
+	    const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw;
+
+	    const pCmd = path.join(pathPart, cmd);
+	    const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd
+	      : pCmd;
+
+	    for (let j = 0; j < pathExt.length; j ++) {
+	      const cur = p + pathExt[j];
+	      try {
+	        const is = isexe.sync(cur, { pathExt: pathExtExe });
+	        if (is) {
+	          if (opt.all)
+	            found.push(cur);
+	          else
+	            return cur
+	        }
+	      } catch (ex) {}
+	    }
+	  }
+
+	  if (opt.all && found.length)
+	    return found
+
+	  if (opt.nothrow)
+	    return null
+
+	  throw getNotFoundError(cmd)
+	};
+
+	which_1 = which;
+	which.sync = whichSync;
+	return which_1;
+}
+
+var pathKey$1 = {exports: {}};
+
+var hasRequiredPathKey;
+
+function requirePathKey () {
+	if (hasRequiredPathKey) return pathKey$1.exports;
+	hasRequiredPathKey = 1;
+
+	const pathKey = (options = {}) => {
+		const environment = options.env || process.env;
+		const platform = options.platform || process.platform;
+
+		if (platform !== 'win32') {
+			return 'PATH';
+		}
+
+		return Object.keys(environment).reverse().find(key => key.toUpperCase() === 'PATH') || 'Path';
+	};
+
+	pathKey$1.exports = pathKey;
+	// TODO: Remove this for the next major release
+	pathKey$1.exports.default = pathKey;
+	return pathKey$1.exports;
+}
+
+var resolveCommand_1;
+var hasRequiredResolveCommand;
+
+function requireResolveCommand () {
+	if (hasRequiredResolveCommand) return resolveCommand_1;
+	hasRequiredResolveCommand = 1;
+
+	const path = require$$0$b;
+	const which = requireWhich();
+	const getPathKey = requirePathKey();
+
+	function resolveCommandAttempt(parsed, withoutPathExt) {
+	    const env = parsed.options.env || process.env;
+	    const cwd = process.cwd();
+	    const hasCustomCwd = parsed.options.cwd != null;
+	    // Worker threads do not have process.chdir()
+	    const shouldSwitchCwd = hasCustomCwd && process.chdir !== undefined && !process.chdir.disabled;
+
+	    // If a custom `cwd` was specified, we need to change the process cwd
+	    // because `which` will do stat calls but does not support a custom cwd
+	    if (shouldSwitchCwd) {
+	        try {
+	            process.chdir(parsed.options.cwd);
+	        } catch (err) {
+	            /* Empty */
+	        }
+	    }
+
+	    let resolved;
+
+	    try {
+	        resolved = which.sync(parsed.command, {
+	            path: env[getPathKey({ env })],
+	            pathExt: withoutPathExt ? path.delimiter : undefined,
+	        });
+	    } catch (e) {
+	        /* Empty */
+	    } finally {
+	        if (shouldSwitchCwd) {
+	            process.chdir(cwd);
+	        }
+	    }
+
+	    // If we successfully resolved, ensure that an absolute path is returned
+	    // Note that when a custom `cwd` was used, we need to resolve to an absolute path based on it
+	    if (resolved) {
+	        resolved = path.resolve(hasCustomCwd ? parsed.options.cwd : '', resolved);
+	    }
+
+	    return resolved;
+	}
+
+	function resolveCommand(parsed) {
+	    return resolveCommandAttempt(parsed) || resolveCommandAttempt(parsed, true);
+	}
+
+	resolveCommand_1 = resolveCommand;
+	return resolveCommand_1;
+}
+
+var _escape = {};
+
+var hasRequired_escape;
+
+function require_escape () {
+	if (hasRequired_escape) return _escape;
+	hasRequired_escape = 1;
+
+	// See http://www.robvanderwoude.com/escapechars.php
+	const metaCharsRegExp = /([()\][%!^"`<>&|;, *?])/g;
+
+	function escapeCommand(arg) {
+	    // Escape meta chars
+	    arg = arg.replace(metaCharsRegExp, '^$1');
+
+	    return arg;
+	}
+
+	function escapeArgument(arg, doubleEscapeMetaChars) {
+	    // Convert to string
+	    arg = `${arg}`;
+
+	    // Algorithm below is based on https://qntm.org/cmd
+	    // It's slightly altered to disable JS backtracking to avoid hanging on specially crafted input
+	    // Please see https://github.com/moxystudio/node-cross-spawn/pull/160 for more information
+
+	    // Sequence of backslashes followed by a double quote:
+	    // double up all the backslashes and escape the double quote
+	    arg = arg.replace(/(?=(\\+?)?)\1"/g, '$1$1\\"');
+
+	    // Sequence of backslashes followed by the end of the string
+	    // (which will become a double quote later):
+	    // double up all the backslashes
+	    arg = arg.replace(/(?=(\\+?)?)\1$/, '$1$1');
+
+	    // All other backslashes occur literally
+
+	    // Quote the whole thing:
+	    arg = `"${arg}"`;
+
+	    // Escape meta chars
+	    arg = arg.replace(metaCharsRegExp, '^$1');
+
+	    // Double escape meta chars if necessary
+	    if (doubleEscapeMetaChars) {
+	        arg = arg.replace(metaCharsRegExp, '^$1');
+	    }
+
+	    return arg;
+	}
+
+	_escape.command = escapeCommand;
+	_escape.argument = escapeArgument;
+	return _escape;
+}
+
+var shebangRegex;
+var hasRequiredShebangRegex;
+
+function requireShebangRegex () {
+	if (hasRequiredShebangRegex) return shebangRegex;
+	hasRequiredShebangRegex = 1;
+	shebangRegex = /^#!(.*)/;
+	return shebangRegex;
+}
+
+var shebangCommand;
+var hasRequiredShebangCommand;
+
+function requireShebangCommand () {
+	if (hasRequiredShebangCommand) return shebangCommand;
+	hasRequiredShebangCommand = 1;
+	const shebangRegex = requireShebangRegex();
+
+	shebangCommand = (string = '') => {
+		const match = string.match(shebangRegex);
+
+		if (!match) {
+			return null;
+		}
+
+		const [path, argument] = match[0].replace(/#! ?/, '').split(' ');
+		const binary = path.split('/').pop();
+
+		if (binary === 'env') {
+			return argument;
+		}
+
+		return argument ? `${binary} ${argument}` : binary;
+	};
+	return shebangCommand;
+}
+
+var readShebang_1;
+var hasRequiredReadShebang;
+
+function requireReadShebang () {
+	if (hasRequiredReadShebang) return readShebang_1;
+	hasRequiredReadShebang = 1;
+
+	const fs = require$$0$2;
+	const shebangCommand = requireShebangCommand();
+
+	function readShebang(command) {
+	    // Read the first 150 bytes from the file
+	    const size = 150;
+	    const buffer = Buffer.alloc(size);
+
+	    let fd;
+
+	    try {
+	        fd = fs.openSync(command, 'r');
+	        fs.readSync(fd, buffer, 0, size, 0);
+	        fs.closeSync(fd);
+	    } catch (e) { /* Empty */ }
+
+	    // Attempt to extract shebang (null is returned if not a shebang)
+	    return shebangCommand(buffer.toString());
+	}
+
+	readShebang_1 = readShebang;
+	return readShebang_1;
+}
+
+var parse_1;
+var hasRequiredParse;
+
+function requireParse () {
+	if (hasRequiredParse) return parse_1;
+	hasRequiredParse = 1;
+
+	const path = require$$0$b;
+	const resolveCommand = requireResolveCommand();
+	const escape = require_escape();
+	const readShebang = requireReadShebang();
+
+	const isWin = process.platform === 'win32';
+	const isExecutableRegExp = /\.(?:com|exe)$/i;
+	const isCmdShimRegExp = /node_modules[\\/].bin[\\/][^\\/]+\.cmd$/i;
+
+	function detectShebang(parsed) {
+	    parsed.file = resolveCommand(parsed);
+
+	    const shebang = parsed.file && readShebang(parsed.file);
+
+	    if (shebang) {
+	        parsed.args.unshift(parsed.file);
+	        parsed.command = shebang;
+
+	        return resolveCommand(parsed);
+	    }
+
+	    return parsed.file;
+	}
+
+	function parseNonShell(parsed) {
+	    if (!isWin) {
+	        return parsed;
+	    }
+
+	    // Detect & add support for shebangs
+	    const commandFile = detectShebang(parsed);
+
+	    // We don't need a shell if the command filename is an executable
+	    const needsShell = !isExecutableRegExp.test(commandFile);
+
+	    // If a shell is required, use cmd.exe and take care of escaping everything correctly
+	    // Note that `forceShell` is an hidden option used only in tests
+	    if (parsed.options.forceShell || needsShell) {
+	        // Need to double escape meta chars if the command is a cmd-shim located in `node_modules/.bin/`
+	        // The cmd-shim simply calls execute the package bin file with NodeJS, proxying any argument
+	        // Because the escape of metachars with ^ gets interpreted when the cmd.exe is first called,
+	        // we need to double escape them
+	        const needsDoubleEscapeMetaChars = isCmdShimRegExp.test(commandFile);
+
+	        // Normalize posix paths into OS compatible paths (e.g.: foo/bar -> foo\bar)
+	        // This is necessary otherwise it will always fail with ENOENT in those cases
+	        parsed.command = path.normalize(parsed.command);
+
+	        // Escape command & arguments
+	        parsed.command = escape.command(parsed.command);
+	        parsed.args = parsed.args.map((arg) => escape.argument(arg, needsDoubleEscapeMetaChars));
+
+	        const shellCommand = [parsed.command].concat(parsed.args).join(' ');
+
+	        parsed.args = ['/d', '/s', '/c', `"${shellCommand}"`];
+	        parsed.command = process.env.comspec || 'cmd.exe';
+	        parsed.options.windowsVerbatimArguments = true; // Tell node's spawn that the arguments are already escaped
+	    }
+
+	    return parsed;
+	}
+
+	function parse(command, args, options) {
+	    // Normalize arguments, similar to nodejs
+	    if (args && !Array.isArray(args)) {
+	        options = args;
+	        args = null;
+	    }
+
+	    args = args ? args.slice(0) : []; // Clone array to avoid changing the original
+	    options = Object.assign({}, options); // Clone object to avoid changing the original
+
+	    // Build our parsed object
+	    const parsed = {
+	        command,
+	        args,
+	        options,
+	        file: undefined,
+	        original: {
+	            command,
+	            args,
+	        },
+	    };
+
+	    // Delegate further parsing to shell or non-shell
+	    return options.shell ? parsed : parseNonShell(parsed);
+	}
+
+	parse_1 = parse;
+	return parse_1;
+}
+
+var enoent;
+var hasRequiredEnoent;
+
+function requireEnoent () {
+	if (hasRequiredEnoent) return enoent;
+	hasRequiredEnoent = 1;
+
+	const isWin = process.platform === 'win32';
+
+	function notFoundError(original, syscall) {
+	    return Object.assign(new Error(`${syscall} ${original.command} ENOENT`), {
+	        code: 'ENOENT',
+	        errno: 'ENOENT',
+	        syscall: `${syscall} ${original.command}`,
+	        path: original.command,
+	        spawnargs: original.args,
+	    });
+	}
+
+	function hookChildProcess(cp, parsed) {
+	    if (!isWin) {
+	        return;
+	    }
+
+	    const originalEmit = cp.emit;
+
+	    cp.emit = function (name, arg1) {
+	        // If emitting "exit" event and exit code is 1, we need to check if
+	        // the command exists and emit an "error" instead
+	        // See https://github.com/IndigoUnited/node-cross-spawn/issues/16
+	        if (name === 'exit') {
+	            const err = verifyENOENT(arg1, parsed);
+
+	            if (err) {
+	                return originalEmit.call(cp, 'error', err);
+	            }
+	        }
+
+	        return originalEmit.apply(cp, arguments); // eslint-disable-line prefer-rest-params
+	    };
+	}
+
+	function verifyENOENT(status, parsed) {
+	    if (isWin && status === 1 && !parsed.file) {
+	        return notFoundError(parsed.original, 'spawn');
+	    }
+
+	    return null;
+	}
+
+	function verifyENOENTSync(status, parsed) {
+	    if (isWin && status === 1 && !parsed.file) {
+	        return notFoundError(parsed.original, 'spawnSync');
+	    }
+
+	    return null;
+	}
+
+	enoent = {
+	    hookChildProcess,
+	    verifyENOENT,
+	    verifyENOENTSync,
+	    notFoundError,
+	};
+	return enoent;
+}
+
+var hasRequiredCrossSpawn;
+
+function requireCrossSpawn () {
+	if (hasRequiredCrossSpawn) return crossSpawn$1.exports;
+	hasRequiredCrossSpawn = 1;
+
+	const cp = require$$2$2;
+	const parse = requireParse();
+	const enoent = requireEnoent();
+
+	function spawn(command, args, options) {
+	    // Parse the arguments
+	    const parsed = parse(command, args, options);
+
+	    // Spawn the child process
+	    const spawned = cp.spawn(parsed.command, parsed.args, parsed.options);
+
+	    // Hook into child process "exit" event to emit an error if the command
+	    // does not exists, see: https://github.com/IndigoUnited/node-cross-spawn/issues/16
+	    enoent.hookChildProcess(spawned, parsed);
+
+	    return spawned;
+	}
+
+	function spawnSync(command, args, options) {
+	    // Parse the arguments
+	    const parsed = parse(command, args, options);
+
+	    // Spawn the child process
+	    const result = cp.spawnSync(parsed.command, parsed.args, parsed.options);
+
+	    // Analyze if the command does not exist, see: https://github.com/IndigoUnited/node-cross-spawn/issues/16
+	    result.error = result.error || enoent.verifyENOENTSync(result.status, parsed);
+
+	    return result;
+	}
+
+	crossSpawn$1.exports = spawn;
+	crossSpawn$1.exports.spawn = spawn;
+	crossSpawn$1.exports.sync = spawnSync;
+
+	crossSpawn$1.exports._parse = parse;
+	crossSpawn$1.exports._enoent = enoent;
+	return crossSpawn$1.exports;
+}
+
+var crossSpawnExports = requireCrossSpawn();
+var crossSpawn = /*@__PURE__*/getDefaultExportFromCjs(crossSpawnExports);
+
+function stripFinalNewline(input) {
+	const LF = typeof input === 'string' ? '\n' : '\n'.charCodeAt();
+	const CR = typeof input === 'string' ? '\r' : '\r'.charCodeAt();
+
+	if (input[input.length - 1] === LF) {
+		input = input.slice(0, -1);
+	}
+
+	if (input[input.length - 1] === CR) {
+		input = input.slice(0, -1);
+	}
+
+	return input;
+}
+
+function pathKey(options = {}) {
+	const {
+		env = process.env,
+		platform = process.platform
+	} = options;
+
+	if (platform !== 'win32') {
+		return 'PATH';
+	}
+
+	return Object.keys(env).reverse().find(key => key.toUpperCase() === 'PATH') || 'Path';
+}
+
+const npmRunPath = ({
+	cwd = process$2.cwd(),
+	path: pathOption = process$2.env[pathKey()],
+	preferLocal = true,
+	execPath = process$2.execPath,
+	addExecPath = true,
+} = {}) => {
+	const cwdString = cwd instanceof URL ? fileURLToPath(cwd) : cwd;
+	const cwdPath = path.resolve(cwdString);
+	const result = [];
+
+	if (preferLocal) {
+		applyPreferLocal(result, cwdPath);
+	}
+
+	if (addExecPath) {
+		applyExecPath(result, execPath, cwdPath);
+	}
+
+	return [...result, pathOption].join(path.delimiter);
+};
+
+const applyPreferLocal = (result, cwdPath) => {
+	let previous;
+
+	while (previous !== cwdPath) {
+		result.push(path.join(cwdPath, 'node_modules/.bin'));
+		previous = cwdPath;
+		cwdPath = path.resolve(cwdPath, '..');
+	}
+};
+
+// Ensure the running `node` binary is used
+const applyExecPath = (result, execPath, cwdPath) => {
+	const execPathString = execPath instanceof URL ? fileURLToPath(execPath) : execPath;
+	result.push(path.resolve(cwdPath, execPathString, '..'));
+};
+
+const npmRunPathEnv = ({env = process$2.env, ...options} = {}) => {
+	env = {...env};
+
+	const pathName = pathKey({env});
+	options.path = env[pathName];
+	env[pathName] = npmRunPath(options);
+
+	return env;
+};
+
+const getRealtimeSignals=()=>{
+const length=SIGRTMAX-SIGRTMIN+1;
+return Array.from({length},getRealtimeSignal)
+};
+
+const getRealtimeSignal=(value,index)=>({
+name:`SIGRT${index+1}`,
+number:SIGRTMIN+index,
+action:"terminate",
+description:"Application-specific signal (realtime)",
+standard:"posix"
+});
+
+const SIGRTMIN=34;
+const SIGRTMAX=64;
+
+const SIGNALS=[
+{
+name:"SIGHUP",
+number:1,
+action:"terminate",
+description:"Terminal closed",
+standard:"posix"
+},
+{
+name:"SIGINT",
+number:2,
+action:"terminate",
+description:"User interruption with CTRL-C",
+standard:"ansi"
+},
+{
+name:"SIGQUIT",
+number:3,
+action:"core",
+description:"User interruption with CTRL-\\",
+standard:"posix"
+},
+{
+name:"SIGILL",
+number:4,
+action:"core",
+description:"Invalid machine instruction",
+standard:"ansi"
+},
+{
+name:"SIGTRAP",
+number:5,
+action:"core",
+description:"Debugger breakpoint",
+standard:"posix"
+},
+{
+name:"SIGABRT",
+number:6,
+action:"core",
+description:"Aborted",
+standard:"ansi"
+},
+{
+name:"SIGIOT",
+number:6,
+action:"core",
+description:"Aborted",
+standard:"bsd"
+},
+{
+name:"SIGBUS",
+number:7,
+action:"core",
+description:
+"Bus error due to misaligned, non-existing address or paging error",
+standard:"bsd"
+},
+{
+name:"SIGEMT",
+number:7,
+action:"terminate",
+description:"Command should be emulated but is not implemented",
+standard:"other"
+},
+{
+name:"SIGFPE",
+number:8,
+action:"core",
+description:"Floating point arithmetic error",
+standard:"ansi"
+},
+{
+name:"SIGKILL",
+number:9,
+action:"terminate",
+description:"Forced termination",
+standard:"posix",
+forced:true
+},
+{
+name:"SIGUSR1",
+number:10,
+action:"terminate",
+description:"Application-specific signal",
+standard:"posix"
+},
+{
+name:"SIGSEGV",
+number:11,
+action:"core",
+description:"Segmentation fault",
+standard:"ansi"
+},
+{
+name:"SIGUSR2",
+number:12,
+action:"terminate",
+description:"Application-specific signal",
+standard:"posix"
+},
+{
+name:"SIGPIPE",
+number:13,
+action:"terminate",
+description:"Broken pipe or socket",
+standard:"posix"
+},
+{
+name:"SIGALRM",
+number:14,
+action:"terminate",
+description:"Timeout or timer",
+standard:"posix"
+},
+{
+name:"SIGTERM",
+number:15,
+action:"terminate",
+description:"Termination",
+standard:"ansi"
+},
+{
+name:"SIGSTKFLT",
+number:16,
+action:"terminate",
+description:"Stack is empty or overflowed",
+standard:"other"
+},
+{
+name:"SIGCHLD",
+number:17,
+action:"ignore",
+description:"Child process terminated, paused or unpaused",
+standard:"posix"
+},
+{
+name:"SIGCLD",
+number:17,
+action:"ignore",
+description:"Child process terminated, paused or unpaused",
+standard:"other"
+},
+{
+name:"SIGCONT",
+number:18,
+action:"unpause",
+description:"Unpaused",
+standard:"posix",
+forced:true
+},
+{
+name:"SIGSTOP",
+number:19,
+action:"pause",
+description:"Paused",
+standard:"posix",
+forced:true
+},
+{
+name:"SIGTSTP",
+number:20,
+action:"pause",
+description:"Paused using CTRL-Z or \"suspend\"",
+standard:"posix"
+},
+{
+name:"SIGTTIN",
+number:21,
+action:"pause",
+description:"Background process cannot read terminal input",
+standard:"posix"
+},
+{
+name:"SIGBREAK",
+number:21,
+action:"terminate",
+description:"User interruption with CTRL-BREAK",
+standard:"other"
+},
+{
+name:"SIGTTOU",
+number:22,
+action:"pause",
+description:"Background process cannot write to terminal output",
+standard:"posix"
+},
+{
+name:"SIGURG",
+number:23,
+action:"ignore",
+description:"Socket received out-of-band data",
+standard:"bsd"
+},
+{
+name:"SIGXCPU",
+number:24,
+action:"core",
+description:"Process timed out",
+standard:"bsd"
+},
+{
+name:"SIGXFSZ",
+number:25,
+action:"core",
+description:"File too big",
+standard:"bsd"
+},
+{
+name:"SIGVTALRM",
+number:26,
+action:"terminate",
+description:"Timeout or timer",
+standard:"bsd"
+},
+{
+name:"SIGPROF",
+number:27,
+action:"terminate",
+description:"Timeout or timer",
+standard:"bsd"
+},
+{
+name:"SIGWINCH",
+number:28,
+action:"ignore",
+description:"Terminal window size changed",
+standard:"bsd"
+},
+{
+name:"SIGIO",
+number:29,
+action:"terminate",
+description:"I/O is available",
+standard:"other"
+},
+{
+name:"SIGPOLL",
+number:29,
+action:"terminate",
+description:"Watched event",
+standard:"other"
+},
+{
+name:"SIGINFO",
+number:29,
+action:"ignore",
+description:"Request for process information",
+standard:"other"
+},
+{
+name:"SIGPWR",
+number:30,
+action:"terminate",
+description:"Device running out of power",
+standard:"systemv"
+},
+{
+name:"SIGSYS",
+number:31,
+action:"core",
+description:"Invalid system call",
+standard:"other"
+},
+{
+name:"SIGUNUSED",
+number:31,
+action:"terminate",
+description:"Invalid system call",
+standard:"other"
+}];
+
+const getSignals=()=>{
+const realtimeSignals=getRealtimeSignals();
+const signals=[...SIGNALS,...realtimeSignals].map(normalizeSignal);
+return signals
+};
+
+
+
+
+
+
+
+const normalizeSignal=({
+name,
+number:defaultNumber,
+description,
+action,
+forced=false,
+standard
+})=>{
+const{
+signals:{[name]:constantSignal}
+}=constants$5;
+const supported=constantSignal!==undefined;
+const number=supported?constantSignal:defaultNumber;
+return {name,number,description,supported,action,forced,standard}
+};
+
+const getSignalsByName=()=>{
+const signals=getSignals();
+return Object.fromEntries(signals.map(getSignalByName))
+};
+
+const getSignalByName=({
+name,
+number,
+description,
+supported,
+action,
+forced,
+standard
+})=>[name,{name,number,description,supported,action,forced,standard}];
+
+const signalsByName=getSignalsByName();
+
+
+
+
+const getSignalsByNumber=()=>{
+const signals=getSignals();
+const length=SIGRTMAX+1;
+const signalsA=Array.from({length},(value,number)=>
+getSignalByNumber(number,signals)
+);
+return Object.assign({},...signalsA)
+};
+
+const getSignalByNumber=(number,signals)=>{
+const signal=findSignalByNumber(number,signals);
+
+if(signal===undefined){
+return {}
+}
+
+const{name,description,supported,action,forced,standard}=signal;
+return {
+[number]:{
+name,
+number,
+description,
+supported,
+action,
+forced,
+standard
+}
+}
+};
+
+
+
+const findSignalByNumber=(number,signals)=>{
+const signal=signals.find(({name})=>constants$5.signals[name]===number);
+
+if(signal!==undefined){
+return signal
+}
+
+return signals.find((signalA)=>signalA.number===number)
+};
+
+getSignalsByNumber();
+
+const getErrorPrefix = ({timedOut, timeout, errorCode, signal, signalDescription, exitCode, isCanceled}) => {
+	if (timedOut) {
+		return `timed out after ${timeout} milliseconds`;
+	}
+
+	if (errorCode !== undefined) {
+		return `failed with ${errorCode}`;
+	}
+
+	if (signal !== undefined) {
+		return `was killed with ${signal} (${signalDescription})`;
+	}
+
+	if (exitCode !== undefined) {
+		return `failed with exit code ${exitCode}`;
+	}
+
+	return 'failed';
+};
+
+const makeError = ({
+	stdout,
+	stderr,
+	all,
+	error,
+	signal,
+	exitCode,
+	command,
+	escapedCommand,
+	timedOut,
+	isCanceled,
+	killed,
+	parsed: {options: {timeout, cwd = process$2.cwd()}},
+}) => {
+	// `signal` and `exitCode` emitted on `spawned.on('exit')` event can be `null`.
+	// We normalize them to `undefined`
+	exitCode = exitCode === null ? undefined : exitCode;
+	signal = signal === null ? undefined : signal;
+	const signalDescription = signal === undefined ? undefined : signalsByName[signal].description;
+
+	const errorCode = error && error.code;
+
+	const prefix = getErrorPrefix({timedOut, timeout, errorCode, signal, signalDescription, exitCode, isCanceled});
+	const execaMessage = `Command ${prefix}: ${command}`;
+	const isError = Object.prototype.toString.call(error) === '[object Error]';
+	const shortMessage = isError ? `${execaMessage}\n${error.message}` : execaMessage;
+	const message = [shortMessage, stderr, stdout].filter(Boolean).join('\n');
+
+	if (isError) {
+		error.originalMessage = error.message;
+		error.message = message;
+	} else {
+		error = new Error(message);
+	}
+
+	error.shortMessage = shortMessage;
+	error.command = command;
+	error.escapedCommand = escapedCommand;
+	error.exitCode = exitCode;
+	error.signal = signal;
+	error.signalDescription = signalDescription;
+	error.stdout = stdout;
+	error.stderr = stderr;
+	error.cwd = cwd;
+
+	if (all !== undefined) {
+		error.all = all;
+	}
+
+	if ('bufferedData' in error) {
+		delete error.bufferedData;
+	}
+
+	error.failed = true;
+	error.timedOut = Boolean(timedOut);
+	error.isCanceled = isCanceled;
+	error.killed = killed && !timedOut;
+
+	return error;
+};
+
+const aliases = ['stdin', 'stdout', 'stderr'];
+
+const hasAlias = options => aliases.some(alias => options[alias] !== undefined);
+
+const normalizeStdio = options => {
+	if (!options) {
+		return;
+	}
+
+	const {stdio} = options;
+
+	if (stdio === undefined) {
+		return aliases.map(alias => options[alias]);
+	}
+
+	if (hasAlias(options)) {
+		throw new Error(`It's not possible to provide \`stdio\` in combination with one of ${aliases.map(alias => `\`${alias}\``).join(', ')}`);
+	}
+
+	if (typeof stdio === 'string') {
+		return stdio;
+	}
+
+	if (!Array.isArray(stdio)) {
+		throw new TypeError(`Expected \`stdio\` to be of type \`string\` or \`Array\`, got \`${typeof stdio}\``);
+	}
+
+	const length = Math.max(stdio.length, aliases.length);
+	return Array.from({length}, (value, index) => stdio[index]);
+};
+
+/**
+ * This is not the set of all possible signals.
+ *
+ * It IS, however, the set of all signals that trigger
+ * an exit on either Linux or BSD systems.  Linux is a
+ * superset of the signal names supported on BSD, and
+ * the unknown signals just fail to register, so we can
+ * catch that easily enough.
+ *
+ * Windows signals are a different set, since there are
+ * signals that terminate Windows processes, but don't
+ * terminate (or don't even exist) on Posix systems.
+ *
+ * Don't bother with SIGKILL.  It's uncatchable, which
+ * means that we can't fire any callbacks anyway.
+ *
+ * If a user does happen to register a handler on a non-
+ * fatal signal like SIGWINCH or something, and then
+ * exit, it'll end up firing `process.emit('exit')`, so
+ * the handler will be fired anyway.
+ *
+ * SIGBUS, SIGFPE, SIGSEGV and SIGILL, when not raised
+ * artificially, inherently leave the process in a
+ * state from which it is not safe to try and enter JS
+ * listeners.
+ */
+const signals = [];
+signals.push('SIGHUP', 'SIGINT', 'SIGTERM');
+if (process.platform !== 'win32') {
+    signals.push('SIGALRM', 'SIGABRT', 'SIGVTALRM', 'SIGXCPU', 'SIGXFSZ', 'SIGUSR2', 'SIGTRAP', 'SIGSYS', 'SIGQUIT', 'SIGIOT'
+    // should detect profiler and enable/disable accordingly.
+    // see #21
+    // 'SIGPROF'
+    );
+}
+if (process.platform === 'linux') {
+    signals.push('SIGIO', 'SIGPOLL', 'SIGPWR', 'SIGSTKFLT');
+}
+
+// Note: since nyc uses this module to output coverage, any lines
+// that are in the direct sync flow of nyc's outputCoverage are
+// ignored, since we can never get coverage for them.
+// grab a reference to node's real process object right away
+const processOk = (process) => !!process &&
+    typeof process === 'object' &&
+    typeof process.removeListener === 'function' &&
+    typeof process.emit === 'function' &&
+    typeof process.reallyExit === 'function' &&
+    typeof process.listeners === 'function' &&
+    typeof process.kill === 'function' &&
+    typeof process.pid === 'number' &&
+    typeof process.on === 'function';
+const kExitEmitter = Symbol.for('signal-exit emitter');
+const global$1 = globalThis;
+const ObjectDefineProperty = Object.defineProperty.bind(Object);
+// teeny special purpose ee
+class Emitter {
+    emitted = {
+        afterExit: false,
+        exit: false,
+    };
+    listeners = {
+        afterExit: [],
+        exit: [],
+    };
+    count = 0;
+    id = Math.random();
+    constructor() {
+        if (global$1[kExitEmitter]) {
+            return global$1[kExitEmitter];
+        }
+        ObjectDefineProperty(global$1, kExitEmitter, {
+            value: this,
+            writable: false,
+            enumerable: false,
+            configurable: false,
+        });
+    }
+    on(ev, fn) {
+        this.listeners[ev].push(fn);
+    }
+    removeListener(ev, fn) {
+        const list = this.listeners[ev];
+        const i = list.indexOf(fn);
+        /* c8 ignore start */
+        if (i === -1) {
+            return;
+        }
+        /* c8 ignore stop */
+        if (i === 0 && list.length === 1) {
+            list.length = 0;
+        }
+        else {
+            list.splice(i, 1);
+        }
+    }
+    emit(ev, code, signal) {
+        if (this.emitted[ev]) {
+            return false;
+        }
+        this.emitted[ev] = true;
+        let ret = false;
+        for (const fn of this.listeners[ev]) {
+            ret = fn(code, signal) === true || ret;
+        }
+        if (ev === 'exit') {
+            ret = this.emit('afterExit', code, signal) || ret;
+        }
+        return ret;
+    }
+}
+class SignalExitBase {
+}
+const signalExitWrap = (handler) => {
+    return {
+        onExit(cb, opts) {
+            return handler.onExit(cb, opts);
+        },
+        load() {
+            return handler.load();
+        },
+        unload() {
+            return handler.unload();
+        },
+    };
+};
+class SignalExitFallback extends SignalExitBase {
+    onExit() {
+        return () => { };
+    }
+    load() { }
+    unload() { }
+}
+class SignalExit extends SignalExitBase {
+    // "SIGHUP" throws an `ENOSYS` error on Windows,
+    // so use a supported signal instead
+    /* c8 ignore start */
+    #hupSig = process$1.platform === 'win32' ? 'SIGINT' : 'SIGHUP';
+    /* c8 ignore stop */
+    #emitter = new Emitter();
+    #process;
+    #originalProcessEmit;
+    #originalProcessReallyExit;
+    #sigListeners = {};
+    #loaded = false;
+    constructor(process) {
+        super();
+        this.#process = process;
+        // { <signal>: <listener fn>, ... }
+        this.#sigListeners = {};
+        for (const sig of signals) {
+            this.#sigListeners[sig] = () => {
+                // If there are no other listeners, an exit is coming!
+                // Simplest way: remove us and then re-send the signal.
+                // We know that this will kill the process, so we can
+                // safely emit now.
+                const listeners = this.#process.listeners(sig);
+                let { count } = this.#emitter;
+                // This is a workaround for the fact that signal-exit v3 and signal
+                // exit v4 are not aware of each other, and each will attempt to let
+                // the other handle it, so neither of them do. To correct this, we
+                // detect if we're the only handler *except* for previous versions
+                // of signal-exit, and increment by the count of listeners it has
+                // created.
+                /* c8 ignore start */
+                const p = process;
+                if (typeof p.__signal_exit_emitter__ === 'object' &&
+                    typeof p.__signal_exit_emitter__.count === 'number') {
+                    count += p.__signal_exit_emitter__.count;
+                }
+                /* c8 ignore stop */
+                if (listeners.length === count) {
+                    this.unload();
+                    const ret = this.#emitter.emit('exit', null, sig);
+                    /* c8 ignore start */
+                    const s = sig === 'SIGHUP' ? this.#hupSig : sig;
+                    if (!ret)
+                        process.kill(process.pid, s);
+                    /* c8 ignore stop */
+                }
+            };
+        }
+        this.#originalProcessReallyExit = process.reallyExit;
+        this.#originalProcessEmit = process.emit;
+    }
+    onExit(cb, opts) {
+        /* c8 ignore start */
+        if (!processOk(this.#process)) {
+            return () => { };
+        }
+        /* c8 ignore stop */
+        if (this.#loaded === false) {
+            this.load();
+        }
+        const ev = opts?.alwaysLast ? 'afterExit' : 'exit';
+        this.#emitter.on(ev, cb);
+        return () => {
+            this.#emitter.removeListener(ev, cb);
+            if (this.#emitter.listeners['exit'].length === 0 &&
+                this.#emitter.listeners['afterExit'].length === 0) {
+                this.unload();
+            }
+        };
+    }
+    load() {
+        if (this.#loaded) {
+            return;
+        }
+        this.#loaded = true;
+        // This is the number of onSignalExit's that are in play.
+        // It's important so that we can count the correct number of
+        // listeners on signals, and don't wait for the other one to
+        // handle it instead of us.
+        this.#emitter.count += 1;
+        for (const sig of signals) {
+            try {
+                const fn = this.#sigListeners[sig];
+                if (fn)
+                    this.#process.on(sig, fn);
+            }
+            catch (_) { }
+        }
+        this.#process.emit = (ev, ...a) => {
+            return this.#processEmit(ev, ...a);
+        };
+        this.#process.reallyExit = (code) => {
+            return this.#processReallyExit(code);
+        };
+    }
+    unload() {
+        if (!this.#loaded) {
+            return;
+        }
+        this.#loaded = false;
+        signals.forEach(sig => {
+            const listener = this.#sigListeners[sig];
+            /* c8 ignore start */
+            if (!listener) {
+                throw new Error('Listener not defined for signal: ' + sig);
+            }
+            /* c8 ignore stop */
+            try {
+                this.#process.removeListener(sig, listener);
+                /* c8 ignore start */
+            }
+            catch (_) { }
+            /* c8 ignore stop */
+        });
+        this.#process.emit = this.#originalProcessEmit;
+        this.#process.reallyExit = this.#originalProcessReallyExit;
+        this.#emitter.count -= 1;
+    }
+    #processReallyExit(code) {
+        /* c8 ignore start */
+        if (!processOk(this.#process)) {
+            return 0;
+        }
+        this.#process.exitCode = code || 0;
+        /* c8 ignore stop */
+        this.#emitter.emit('exit', this.#process.exitCode, null);
+        return this.#originalProcessReallyExit.call(this.#process, this.#process.exitCode);
+    }
+    #processEmit(ev, ...args) {
+        const og = this.#originalProcessEmit;
+        if (ev === 'exit' && processOk(this.#process)) {
+            if (typeof args[0] === 'number') {
+                this.#process.exitCode = args[0];
+                /* c8 ignore start */
+            }
+            /* c8 ignore start */
+            const ret = og.call(this.#process, ev, ...args);
+            /* c8 ignore start */
+            this.#emitter.emit('exit', this.#process.exitCode, null);
+            /* c8 ignore stop */
+            return ret;
+        }
+        else {
+            return og.call(this.#process, ev, ...args);
+        }
+    }
+}
+const process$1 = globalThis.process;
+// wrap so that we call the method on the actual handler, without
+// exporting it directly.
+signalExitWrap(processOk(process$1) ? new SignalExit(process$1) : new SignalExitFallback());
+
+function isStream(stream) {
+	return stream !== null
+		&& typeof stream === 'object'
+		&& typeof stream.pipe === 'function';
+}
+
+new TextEncoder();
+
+var mergeStream;
+var hasRequiredMergeStream;
+
+function requireMergeStream () {
+	if (hasRequiredMergeStream) return mergeStream;
+	hasRequiredMergeStream = 1;
+
+	const { PassThrough } = require$$0$6;
+
+	mergeStream = function (/*streams...*/) {
+	  var sources = [];
+	  var output  = new PassThrough({objectMode: true});
+
+	  output.setMaxListeners(0);
+
+	  output.add = add;
+	  output.isEmpty = isEmpty;
+
+	  output.on('unpipe', remove);
+
+	  Array.prototype.slice.call(arguments).forEach(add);
+
+	  return output
+
+	  function add (source) {
+	    if (Array.isArray(source)) {
+	      source.forEach(add);
+	      return this
+	    }
+
+	    sources.push(source);
+	    source.once('end', remove.bind(null, source));
+	    source.once('error', output.emit.bind(output, 'error'));
+	    source.pipe(output, {end: false});
+	    return this
+	  }
+
+	  function isEmpty () {
+	    return sources.length == 0;
+	  }
+
+	  function remove (source) {
+	    sources = sources.filter(function (it) { return it !== source });
+	    if (!sources.length && output.readable) { output.end(); }
+	  }
+	};
+	return mergeStream;
+}
+
+requireMergeStream();
+
+const validateInputOptions = input => {
+	if (input !== undefined) {
+		throw new TypeError('The `input` and `inputFile` options cannot be both set.');
+	}
+};
+
+const getInputSync = ({input, inputFile}) => {
+	if (typeof inputFile !== 'string') {
+		return input;
+	}
+
+	validateInputOptions(input);
+	return readFileSync(inputFile);
+};
+
+// `input` and `inputFile` option in sync mode
+const handleInputSync = options => {
+	const input = getInputSync(options);
+
+	if (isStream(input)) {
+		throw new TypeError('The `input` option cannot be a stream in sync mode');
+	}
+
+	return input;
+};
+
+// eslint-disable-next-line unicorn/prefer-top-level-await
+const nativePromisePrototype = (async () => {})().constructor.prototype;
+
+['then', 'catch', 'finally'].map(property => [
+	property,
+	Reflect.getOwnPropertyDescriptor(nativePromisePrototype, property),
+]);
+
+const normalizeArgs = (file, args = []) => {
+	if (!Array.isArray(args)) {
+		return [file];
+	}
+
+	return [file, ...args];
+};
+
+const NO_ESCAPE_REGEXP = /^[\w.-]+$/;
+
+const escapeArg = arg => {
+	if (typeof arg !== 'string' || NO_ESCAPE_REGEXP.test(arg)) {
+		return arg;
+	}
+
+	return `"${arg.replaceAll('"', '\\"')}"`;
+};
+
+const joinCommand = (file, args) => normalizeArgs(file, args).join(' ');
+
+const getEscapedCommand = (file, args) => normalizeArgs(file, args).map(arg => escapeArg(arg)).join(' ');
+
+const verboseDefault = debuglog('execa').enabled;
+
+const padField = (field, padding) => String(field).padStart(padding, '0');
+
+const getTimestamp = () => {
+	const date = new Date();
+	return `${padField(date.getHours(), 2)}:${padField(date.getMinutes(), 2)}:${padField(date.getSeconds(), 2)}.${padField(date.getMilliseconds(), 3)}`;
+};
+
+const logCommand = (escapedCommand, {verbose}) => {
+	if (!verbose) {
+		return;
+	}
+
+	process$2.stderr.write(`[${getTimestamp()}] ${escapedCommand}\n`);
+};
+
+const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
+
+const getEnv = ({env: envOption, extendEnv, preferLocal, localDir, execPath}) => {
+	const env = extendEnv ? {...process$2.env, ...envOption} : envOption;
+
+	if (preferLocal) {
+		return npmRunPathEnv({env, cwd: localDir, execPath});
+	}
+
+	return env;
+};
+
+const handleArguments = (file, args, options = {}) => {
+	const parsed = crossSpawn._parse(file, args, options);
+	file = parsed.command;
+	args = parsed.args;
+	options = parsed.options;
+
+	options = {
+		maxBuffer: DEFAULT_MAX_BUFFER,
+		buffer: true,
+		stripFinalNewline: true,
+		extendEnv: true,
+		preferLocal: false,
+		localDir: options.cwd || process$2.cwd(),
+		execPath: process$2.execPath,
+		encoding: 'utf8',
+		reject: true,
+		cleanup: true,
+		all: false,
+		windowsHide: true,
+		verbose: verboseDefault,
+		...options,
+	};
+
+	options.env = getEnv(options);
+
+	options.stdio = normalizeStdio(options);
+
+	if (process$2.platform === 'win32' && path.basename(file, '.exe') === 'cmd') {
+		// #116
+		args.unshift('/q');
+	}
+
+	return {file, args, options, parsed};
+};
+
+const handleOutput = (options, value, error) => {
+	if (typeof value !== 'string' && !Buffer$1.isBuffer(value)) {
+		// When `execaSync()` errors, we normalize it to '' to mimic `execa()`
+		return error === undefined ? undefined : '';
+	}
+
+	if (options.stripFinalNewline) {
+		return stripFinalNewline(value);
+	}
+
+	return value;
+};
+
+function execaSync(file, args, options) {
+	const parsed = handleArguments(file, args, options);
+	const command = joinCommand(file, args);
+	const escapedCommand = getEscapedCommand(file, args);
+	logCommand(escapedCommand, parsed.options);
+
+	const input = handleInputSync(parsed.options);
+
+	let result;
+	try {
+		result = childProcess.spawnSync(parsed.file, parsed.args, {...parsed.options, input});
+	} catch (error) {
+		throw makeError({
+			error,
+			stdout: '',
+			stderr: '',
+			all: '',
+			command,
+			escapedCommand,
+			parsed,
+			timedOut: false,
+			isCanceled: false,
+			killed: false,
+		});
+	}
+
+	const stdout = handleOutput(parsed.options, result.stdout, result.error);
+	const stderr = handleOutput(parsed.options, result.stderr, result.error);
+
+	if (result.error || result.status !== 0 || result.signal !== null) {
+		const error = makeError({
+			stdout,
+			stderr,
+			error: result.error,
+			signal: result.signal,
+			exitCode: result.status,
+			command,
+			escapedCommand,
+			parsed,
+			timedOut: result.error && result.error.code === 'ETIMEDOUT',
+			isCanceled: false,
+			killed: result.signal !== null,
+		});
+
+		if (!parsed.options.reject) {
+			return error;
+		}
+
+		throw error;
+	}
+
+	return {
+		command,
+		escapedCommand,
+		exitCode: 0,
+		stdout,
+		stderr,
+		failed: false,
+		timedOut: false,
+		isCanceled: false,
+		killed: false,
+	};
+}
+
+function head(options) {
+  try {
+    return execaSync("git", ["rev-parse", "HEAD"], options).stdout;
+  } catch {
+    return undefined;
+  }
+}
+
+function branch(options) {
+  try {
+    const headRef = execaSync(
+      "git",
+      ["rev-parse", "--abbrev-ref", "HEAD"],
+      options,
+    ).stdout;
+
+    if (headRef === "HEAD") {
+      const branch = execaSync(
+        "git",
+        ["show", "-s", "--pretty=%d", "HEAD"],
+        options,
+      )
+        .stdout.replace(/^\(|\)$/g, "")
+        .split(", ")
+        .find((branch) => branch.startsWith("origin/"));
+      return branch ? branch.match(/^origin\/(?<branch>.+)/)[1] : undefined;
+    }
+
+    return headRef;
+  } catch {
+    return undefined;
+  }
+}
+
+// Match slug on SSH URLs (ex: `USER@HOST:PORT/ORG/REPO.git`)
+const GIT_SSH_URL_SLUG_PATTERN = /^(?:.*)@(?:.*):(?:\d+\/)?(.*)\.git$/;
+
+// Match slug on HTTP(S) URLs `https://github.com/semantic-release/env-ci.git`
+const GIT_PATHNAME_SLUG_PATTERN = /^\/(.*)\.git$/;
+
+/**
+ * Extract repository slug(owner/repo) from a repository URL
+ *
+ * @param {String} repositoryURL
+ * @returns {String | undefined}
+ */
+function getSlugFromGitURL(repositoryURL) {
+  if (!repositoryURL) {
+    return undefined;
+  }
+
+  if (repositoryURL.match(GIT_SSH_URL_SLUG_PATTERN)) {
+    return repositoryURL.replace(GIT_SSH_URL_SLUG_PATTERN, "$1");
+  }
+
+  try {
+    const url = new URL(repositoryURL);
+    return url.pathname.replace(GIT_PATHNAME_SLUG_PATTERN, "$1");
+  } catch {
+    return undefined;
+  }
+}
+
+// https://buildkite.com/docs/builds/environment-variables
+
+var buildkite = {
+  detect({ env }) {
+    return Boolean(env.BUILDKITE);
+  },
+  configuration({ env }) {
+    const pr =
+      env.BUILDKITE_PULL_REQUEST === "false"
+        ? undefined
+        : env.BUILDKITE_PULL_REQUEST;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Buildkite",
+      service: "buildkite",
+      build: env.BUILDKITE_BUILD_NUMBER,
+      buildUrl: env.BUILDKITE_BUILD_URL,
+      commit: env.BUILDKITE_COMMIT,
+      tag: env.BUILDKITE_TAG,
+      branch: isPr
+        ? env.BUILDKITE_PULL_REQUEST_BASE_BRANCH
+        : env.BUILDKITE_BRANCH,
+      slug: getSlugFromGitURL(env.BUILDKITE_REPO),
+      pr,
+      isPr,
+      prBranch: isPr ? env.BUILDKITE_BRANCH : undefined,
+      root: env.BUILDKITE_BUILD_CHECKOUT_PATH,
+    };
+  },
+};
+
+// https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
+
+
+var circleci = {
+  detect({ env }) {
+    return Boolean(env.CIRCLECI);
+  },
+  configuration({ env }) {
+    const pr =
+      env.CIRCLE_PR_NUMBER ||
+      prNumber(env.CIRCLE_PULL_REQUEST || env.CI_PULL_REQUEST);
+    const isPr = Boolean(pr);
+
+    return {
+      name: "CircleCI",
+      service: "circleci",
+      build: env.CIRCLE_BUILD_NUM,
+      buildUrl: env.CIRCLE_BUILD_URL,
+      job: `${env.CIRCLE_BUILD_NUM}.${env.CIRCLE_NODE_INDEX}`,
+      commit: env.CIRCLE_SHA1,
+      tag: env.CIRCLE_TAG,
+      branch: isPr ? undefined : env.CIRCLE_BRANCH,
+      pr,
+      isPr,
+      prBranch: isPr ? env.CIRCLE_BRANCH : undefined,
+      slug: `${env.CIRCLE_PROJECT_USERNAME}/${env.CIRCLE_PROJECT_REPONAME}`,
+    };
+  },
+};
+
+// https://cirrus-ci.org/guide/writing-tasks/#environment-variables
+
+const CIRRUS_CI_DASHBOARD = "https://cirrus-ci.com";
+
+var cirrus = {
+  detect({ env }) {
+    return Boolean(env.CIRRUS_CI);
+  },
+  configuration({ env }) {
+    const pr = env.CIRRUS_PR;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Cirrus CI",
+      service: "cirrus",
+      commit: env.CIRRUS_CHANGE_IN_REPO,
+      tag: env.CIRRUS_TAG,
+      build: env.CIRRUS_BUILD_ID,
+      buildUrl: `${CIRRUS_CI_DASHBOARD}/build/${env.CIRRUS_BUILD_ID}`,
+      job: env.CIRRUS_TASK_ID,
+      jobUrl: `${CIRRUS_CI_DASHBOARD}/task/${env.CIRRUS_TASK_ID}`,
+      branch: isPr ? env.CIRRUS_BASE_BRANCH : env.CIRRUS_BRANCH,
+      pr,
+      isPr,
+      prBranch: isPr ? env.CIRRUS_BRANCH : undefined,
+      slug: env.CIRRUS_REPO_FULL_NAME,
+      root: env.CIRRUS_WORKING_DIR,
+    };
+  },
+};
+
+// https://developers.cloudflare.com/pages/platform/build-configuration#environment-variables
+
+var cloudflarePages = {
+  detect({ env }) {
+    return env.CF_PAGES === "1";
+  },
+  configuration({ env }) {
+    return {
+      name: "Cloudflare Pages",
+      service: "cloudflarePages",
+      commit: env.CF_PAGES_COMMIT_SHA,
+      branch: env.CF_PAGES_BRANCH,
+      root: env.PWD,
+    };
+  },
+};
+
+// https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-env-vars.html
+
+var codebuild = {
+  detect({ env }) {
+    return Boolean(env.CODEBUILD_BUILD_ID);
+  },
+  configuration({ env, cwd }) {
+    return {
+      name: "AWS CodeBuild",
+      service: "codebuild",
+      commit: head({ env, cwd }),
+      build: env.CODEBUILD_BUILD_ID,
+      branch: branch({ env, cwd }),
+      buildUrl: `https://console.aws.amazon.com/codebuild/home?region=${env.AWS_REGION}#/builds/${env.CODEBUILD_BUILD_ID}/view/new`,
+      root: env.PWD,
+    };
+  },
+};
+
+// https://codefresh.io/docs/docs/codefresh-yaml/variables#system-provided-variables
+
+var codefresh = {
+  detect({ env }) {
+    return Boolean(env.CF_BUILD_ID);
+  },
+  configuration({ env }) {
+    const pr = env.CF_PULL_REQUEST_NUMBER;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Codefresh",
+      service: "codefresh",
+      commit: env.CF_REVISION,
+      build: env.CF_BUILD_ID,
+      buildUrl: env.CF_BUILD_URL,
+      branch: isPr ? env.CF_PULL_REQUEST_TARGET : env.CF_BRANCH,
+      pr,
+      isPr,
+      prBranch: isPr ? env.CF_BRANCH : undefined,
+      slug: `${env.CF_REPO_OWNER}/${env.CF_REPO_NAME}`,
+      root: env.CF_VOLUME_PATH,
+    };
+  },
+};
+
+// https://documentation.codeship.com/basic/builds-and-configuration/set-environment-variables/#default-environment-variables
+
+var codeship = {
+  detect({ env }) {
+    return env.CI_NAME && env.CI_NAME === "codeship";
+  },
+  configuration({ env }) {
+    return {
+      name: "Codeship",
+      service: "codeship",
+      build: env.CI_BUILD_NUMBER,
+      buildUrl: env.CI_BUILD_URL,
+      commit: env.CI_COMMIT_ID,
+      branch: env.CI_BRANCH,
+      slug: env.CI_REPO_NAME,
+    };
+  },
+};
+
+// https://readme.drone.io/reference/environ
+
+var drone = {
+  detect({ env }) {
+    return Boolean(env.DRONE);
+  },
+  configuration({ env }) {
+    const isPr = env.DRONE_BUILD_EVENT === "pull_request";
+
+    return {
+      name: "Drone",
+      service: "drone",
+      commit: env.DRONE_COMMIT_SHA,
+      tag: env.DRONE_TAG,
+      build: env.DRONE_BUILD_NUMBER,
+      buildUrl: env.DRONE_BUILD_LINK,
+      branch: isPr ? env.DRONE_TARGET_BRANCH : env.DRONE_BRANCH,
+      job: env.DRONE_JOB_NUMBER,
+      jobUrl: env.DRONE_BUILD_LINK,
+      pr: env.DRONE_PULL_REQUEST,
+      isPr,
+      prBranch: isPr ? env.DRONE_SOURCE_BRANCH : undefined,
+      slug: `${env.DRONE_REPO_OWNER}/${env.DRONE_REPO_NAME}`,
+      root: env.DRONE_WORKSPACE,
+    };
+  },
+};
+
+var git = {
+  configuration(options) {
+    return { commit: head(options), branch: branch(options) };
+  },
+};
+
+const getPrEvent = ({ env }) => {
+  try {
+    const event = env.GITHUB_EVENT_PATH
+      ? JSON.parse(readFileSync(env.GITHUB_EVENT_PATH, "utf-8"))
+      : undefined;
+
+    if (event && event.pull_request) {
+      return {
+        branch: event.pull_request.base
+          ? parseBranch(event.pull_request.base.ref)
+          : undefined,
+        pr: event.pull_request.number,
+      };
+    }
+  } catch {
+    // Noop
+  }
+
+  return { pr: undefined, branch: undefined };
+};
+
+const getPrNumber = (env) => {
+  const event = env.GITHUB_EVENT_PATH
+    ? JSON.parse(readFileSync(env.GITHUB_EVENT_PATH, "utf-8"))
+    : undefined;
+
+  return event && event.pull_request ? event.pull_request.number : undefined;
+};
+
+var github = {
+  detect({ env }) {
+    return Boolean(env.GITHUB_ACTIONS);
+  },
+  configuration({ env, cwd }) {
+    const isPr =
+      env.GITHUB_EVENT_NAME === "pull_request" ||
+      env.GITHUB_EVENT_NAME === "pull_request_target";
+    const branch = parseBranch(
+      env.GITHUB_EVENT_NAME === "pull_request_target"
+        ? `refs/pull/${getPrNumber(env)}/merge`
+        : env.GITHUB_REF,
+    );
+
+    return {
+      name: "GitHub Actions",
+      service: "github",
+      commit: env.GITHUB_SHA,
+      build: env.GITHUB_RUN_ID,
+      buildUrl: `${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}`,
+      isPr,
+      branch,
+      prBranch: isPr ? branch : undefined,
+      slug: env.GITHUB_REPOSITORY,
+      root: env.GITHUB_WORKSPACE,
+      ...(isPr ? getPrEvent({ env}) : undefined),
+    };
+  },
+};
+
+// https://docs.gitlab.com/ce/ci/variables/README.html
+
+var gitlab = {
+  detect({ env }) {
+    return Boolean(env.GITLAB_CI);
+  },
+  configuration({ env }) {
+    const pr = env.CI_MERGE_REQUEST_ID;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "GitLab CI/CD",
+      service: "gitlab",
+      commit: env.CI_COMMIT_SHA,
+      tag: env.CI_COMMIT_TAG,
+      build: env.CI_PIPELINE_ID,
+      buildUrl: `${env.CI_PROJECT_URL}/pipelines/${env.CI_PIPELINE_ID}`,
+      job: env.CI_JOB_ID,
+      jobUrl: `${env.CI_PROJECT_URL}/-/jobs/${env.CI_JOB_ID}`,
+      branch: isPr
+        ? env.CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+        : env.CI_COMMIT_REF_NAME,
+      pr,
+      isPr,
+      prBranch: env.CI_MERGE_REQUEST_SOURCE_BRANCH_NAME,
+      slug: env.CI_PROJECT_PATH,
+      root: env.CI_PROJECT_DIR,
+    };
+  },
+};
+
+// https://wiki.jenkins.io/display/JENKINS/Building+a+software+project
+
+var jenkins = {
+  detect({ env }) {
+    return Boolean(env.JENKINS_URL);
+  },
+  configuration({ env, cwd }) {
+    const pr = env.ghprbPullId || env.gitlabMergeRequestId || env.CHANGE_ID;
+    const isPr = Boolean(pr);
+    const localBranch =
+      env.GIT_LOCAL_BRANCH ||
+      env.GIT_BRANCH ||
+      env.gitlabBranch ||
+      env.BRANCH_NAME;
+
+    return {
+      name: "Jenkins",
+      service: "jenkins",
+      commit: env.ghprbActualCommit || env.GIT_COMMIT || head({ env, cwd }),
+      branch: isPr
+        ? env.ghprbTargetBranch || env.gitlabTargetBranch
+        : localBranch,
+      build: env.BUILD_NUMBER,
+      buildUrl: env.BUILD_URL,
+      root: env.WORKSPACE,
+      pr,
+      isPr,
+      prBranch: isPr
+        ? env.ghprbSourceBranch || env.gitlabSourceBranch || localBranch
+        : undefined,
+    };
+  },
+};
+
+// https://docs.netlify.com/configure-builds/environment-variables/#netlify-configuration-variables
+
+var netlify = {
+  detect({ env }) {
+    return env.NETLIFY === "true";
+  },
+  configuration({ env }) {
+    const isPr = env.PULL_REQUEST === "true";
+
+    return {
+      name: "Netlify",
+      service: "netlify",
+      commit: env.COMMIT_REF,
+      build: env.DEPLOY_ID,
+      buildUrl: `https://app.netlify.com/sites/${env.SITE_NAME}/deploys/${env.DEPLOY_ID}`,
+      branch: isPr ? undefined : env.HEAD,
+      pr: env.REVIEW_ID,
+      isPr,
+      prBranch: isPr ? env.HEAD : undefined,
+      slug: env.REPOSITORY_URL.match(/[^/:]+\/[^/]+?$/)[0],
+      root: env.PWD,
+    };
+  },
+};
+
+// https://puppet.com/docs/pipelines-for-apps/enterprise/environment-variable.html
+
+var puppet = {
+  detect({ env }) {
+    return Boolean(env.DISTELLI_APPNAME);
+  },
+  configuration({ env }) {
+    return {
+      name: "Puppet",
+      service: "puppet",
+      build: env.DISTELLI_BUILDNUM,
+      buildUrl: env.DISTELLI_RELEASE,
+      commit: env.DISTELLI_RELREVISION,
+      branch: env.DISTELLI_RELBRANCH,
+      root: env.DISTELLI_INSTALLHOME,
+    };
+  },
+};
+
+// https://sail.ci/docs/environment-variables
+
+var sail = {
+  detect({ env }) {
+    return Boolean(env.SAILCI);
+  },
+  configuration({ env }) {
+    const pr = env.SAIL_PULL_REQUEST_NUMBER;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Sail CI",
+      service: "sail",
+      commit: env.SAIL_COMMIT_SHA,
+      branch: isPr ? undefined : env.SAIL_COMMIT_BRANCH,
+      pr,
+      isPr,
+      slug: `${env.SAIL_REPO_OWNER}/${env.SAIL_REPO_NAME}`,
+      root: env.SAIL_CLONE_DIR,
+    };
+  },
+};
+
+// https://docs.screwdriver.cd/user-guide/environment-variables
+
+var screwdriver = {
+  detect({ env }) {
+    return Boolean(env.SCREWDRIVER);
+  },
+  configuration({ env }) {
+    const pr = env.SD_PULL_REQUEST;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Screwdriver.cd",
+      service: "screwdriver",
+      branch: isPr ? env.PR_BASE_BRANCH_NAME : env.GIT_BRANCH,
+      prBranch: isPr ? env.PR_BRANCH_NAME : undefined,
+      commit: env.SD_BUILD_SHA,
+      build: env.SD_BUILD_ID,
+      buildUrl: env.SD_UI_BUILD_URL,
+      job: env.SD_JOB_ID,
+      pr,
+      isPr,
+      slug: env.SD_PIPELINE_NAME,
+      root: env.SD_ROOT_DIR,
+    };
+  },
+};
+
+// https://scrutinizer-ci.com/docs/build/environment-variables
+
+var scrutinizer = {
+  detect({ env }) {
+    return Boolean(env.SCRUTINIZER);
+  },
+  configuration({ env }) {
+    const pr = env.SCRUTINIZER_PR_NUMBER;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Scrutinizer",
+      service: "scrutinizer",
+      commit: env.SCRUTINIZER_SHA1,
+      build: env.SCRUTINIZER_INSPECTION_UUID,
+      branch: env.SCRUTINIZER_BRANCH,
+      pr,
+      isPr,
+      prBranch: env.SCRUTINIZER_PR_SOURCE_BRANCH,
+    };
+  },
+};
+
+// 1.0: https://semaphoreci.com/docs/available-environment-variables.html
+// 2.0: https://docs.semaphoreci.com/article/12-environment-variables
+
+var semaphore = {
+  detect({ env }) {
+    return Boolean(env.SEMAPHORE);
+  },
+  configuration({ env, cwd }) {
+    const pr = env.SEMAPHORE_GIT_PR_NUMBER || env.PULL_REQUEST_NUMBER;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Semaphore",
+      service: "semaphore",
+      commit: env.SEMAPHORE_GIT_SHA || head({ env, cwd }),
+      tag: env.SEMAPHORE_GIT_TAG_NAME,
+      build: env.SEMAPHORE_JOB_ID || env.SEMAPHORE_BUILD_NUMBER,
+      branch: env.SEMAPHORE_GIT_BRANCH || (isPr ? undefined : env.BRANCH_NAME),
+      pr,
+      isPr,
+      prBranch:
+        env.SEMAPHORE_GIT_PR_BRANCH || (isPr ? env.BRANCH_NAME : undefined),
+      slug: env.SEMAPHORE_GIT_REPO_SLUG || env.SEMAPHORE_REPO_SLUG,
+      root: env.SEMAPHORE_GIT_DIR || env.SEMAPHORE_PROJECT_DIR,
+    };
+  },
+};
+
+// http://docs.shippable.com/ci/env-vars/#stdEnv
+
+var shippable = {
+  detect({ env }) {
+    return Boolean(env.SHIPPABLE);
+  },
+  configuration({ env }) {
+    const pr = env.IS_PULL_REQUEST === "true" ? env.PULL_REQUEST : undefined;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Shippable",
+      service: "shippable",
+      commit: env.COMMIT,
+      tag: env.GIT_TAG_NAME,
+      build: env.BUILD_NUMBER,
+      buildUrl: env.BUILD_URL,
+      branch: isPr ? env.BASE_BRANCH : env.BRANCH,
+      job: env.JOB_NUMBER,
+      pr,
+      isPr,
+      prBranch: isPr ? env.HEAD_BRANCH : undefined,
+      slug: env.SHIPPABLE_REPO_SLUG,
+      root: env.SHIPPABLE_BUILD_DIR,
+    };
+  },
+};
+
+var distNode = {};
+
+var hasRequiredDistNode;
+
+function requireDistNode () {
+	if (hasRequiredDistNode) return distNode;
+	hasRequiredDistNode = 1;
+
+	Object.defineProperty(distNode, "__esModule", {
+	  value: true
+	});
+	distNode.of = distNode.PropertiesFile = void 0;
+
+	var _fs = _interopRequireDefault(require$$0$2);
+
+	function _interopRequireDefault(obj) {
+	  return obj && obj.__esModule ? obj : {
+	    default: obj
+	  };
+	}
+	/*
+	 * properties
+	 *
+	 * Copyright (c) 2013 Matt Steele
+	 * Licensed under the MIT license.
+	 */
+
+
+	class PropertiesFile {
+	  constructor(...args) {
+	    this.objs = {};
+
+	    if (args.length) {
+	      this.of.apply(this, args);
+	    }
+	  }
+
+	  makeKeys(line) {
+	    if (line && line.indexOf('#') !== 0) {
+	      //let splitIndex = line.indexOf('=');
+	      let separatorPositions = ['=', ':'].map(sep => {
+	        return line.indexOf(sep);
+	      }).filter(index => {
+	        return index > -1;
+	      });
+	      let splitIndex = Math.min(...separatorPositions);
+	      let key = line.substring(0, splitIndex).trim();
+	      let value = line.substring(splitIndex + 1).trim(); // if keys already exists ...
+
+	      if (this.objs.hasOwnProperty(key)) {
+	        // if it is already an Array
+	        if (Array.isArray(this.objs[key])) {
+	          // just push the new value
+	          this.objs[key].push(value);
+	        } else {
+	          // transform the value into Array
+	          let oldValue = this.objs[key];
+	          this.objs[key] = [oldValue, value];
+	        }
+	      } else {
+	        // the key does not exists
+	        const escapedValue = value.replace(/"/g, '\\"') // escape "
+	        .replace(/\\:/g, ':') // remove \ before :
+	        .replace(/\\=/g, '='); // remove \ before =
+
+	        this.objs[key] = unescape(JSON.parse('"' + escapedValue + '"'));
+	      }
+	    }
+	  }
+
+	  addFile(file) {
+	    let data = _fs.default.readFileSync(file, 'utf-8');
+
+	    let items = data.split(/\r?\n/);
+	    let me = this;
+
+	    for (let i = 0; i < items.length; i++) {
+	      let line = items[i];
+
+	      while (line.substring(line.length - 1) === '\\') {
+	        line = line.slice(0, -1);
+	        let nextLine = items[i + 1];
+	        line = line + nextLine.trim();
+	        i++;
+	      }
+
+	      me.makeKeys(line);
+	    }
+	  }
+
+	  of(...args) {
+	    for (let i = 0; i < args.length; i++) {
+	      this.addFile(args[i]);
+	    }
+	  }
+
+	  get(key, defaultValue) {
+	    if (this.objs.hasOwnProperty(key)) {
+	      if (Array.isArray(this.objs[key])) {
+	        let ret = [];
+
+	        for (let i = 0; i < this.objs[key].length; i++) {
+	          ret[i] = this.interpolate(this.objs[key][i]);
+	        }
+
+	        return ret;
+	      } else {
+	        return typeof this.objs[key] === 'undefined' ? '' : this.interpolate(this.objs[key]);
+	      }
+	    }
+
+	    return defaultValue;
+	  }
+
+	  getLast(key, defaultValue) {
+	    if (this.objs.hasOwnProperty(key)) {
+	      if (Array.isArray(this.objs[key])) {
+	        var lg = this.objs[key].length;
+	        return this.interpolate(this.objs[key][lg - 1]);
+	      } else {
+	        return typeof this.objs[key] === 'undefined' ? '' : this.interpolate(this.objs[key]);
+	      }
+	    }
+
+	    return defaultValue;
+	  }
+
+	  getFirst(key, defaultValue) {
+	    if (this.objs.hasOwnProperty(key)) {
+	      if (Array.isArray(this.objs[key])) {
+	        return this.interpolate(this.objs[key][0]);
+	      } else {
+	        return typeof this.objs[key] === 'undefined' ? '' : this.interpolate(this.objs[key]);
+	      }
+	    }
+
+	    return defaultValue;
+	  }
+
+	  getInt(key, defaultIntValue) {
+	    let val = this.getLast(key);
+
+	    if (!val) {
+	      return defaultIntValue;
+	    } else {
+	      return parseInt(val, 10);
+	    }
+	  }
+
+	  getFloat(key, defaultFloatValue) {
+	    let val = this.getLast(key);
+
+	    if (!val) {
+	      return defaultFloatValue;
+	    } else {
+	      return parseFloat(val);
+	    }
+	  }
+
+	  getBoolean(key, defaultBooleanValue) {
+	    function parseBool(b) {
+	      return !/^(false|0)$/i.test(b) && !!b;
+	    }
+
+	    let val = this.getLast(key);
+
+	    if (!val) {
+	      return defaultBooleanValue || false;
+	    } else {
+	      return parseBool(val);
+	    }
+	  }
+
+	  set(key, value) {
+	    this.objs[key] = value;
+	  }
+
+	  interpolate(s) {
+	    let me = this;
+	    return s.replace(/\\\\/g, '\\').replace(/\$\{([A-Za-z0-9\.\-\_]*)\}/g, function (match) {
+	      return me.getLast(match.substring(2, match.length - 1));
+	    });
+	  }
+
+	  getKeys() {
+	    let keys = [];
+
+	    for (let key in this.objs) {
+	      keys.push(key);
+	    }
+
+	    return keys;
+	  }
+
+	  getMatchingKeys(matchstr) {
+	    let keys = [];
+
+	    for (let key in this.objs) {
+	      if (key.search(matchstr) !== -1) {
+	        keys.push(key);
+	      }
+	    }
+
+	    return keys;
+	  }
+
+	  reset() {
+	    this.objs = {};
+	  }
+
+	} // Retain 'of' from v1 for backward compatibility
+
+
+	distNode.PropertiesFile = PropertiesFile;
+
+	let of = function of(...args) {
+	  let globalFile = new PropertiesFile();
+	  globalFile.of.apply(globalFile, args);
+	  return globalFile;
+	};
+
+	distNode.of = of;
+	return distNode;
+}
+
+var distNodeExports = /*@__PURE__*/ requireDistNode();
+var javaProperties = /*@__PURE__*/getDefaultExportFromCjs(distNodeExports);
+
+// https://confluence.jetbrains.com/display/TCD10/Predefined+Build+Parameters
+
+
+const PROPERTIES_MAPPING = {
+  root: "teamcity.build.workingDir",
+  branch: "teamcity.build.branch",
+};
+
+const safeReadProperties = (filePath) => {
+  try {
+    return javaProperties.of(filePath);
+  } catch {
+    return undefined;
+  }
+};
+
+const getProperties = ({ env, cwd }) => {
+  const buildProperties = env.TEAMCITY_BUILD_PROPERTIES_FILE
+    ? safeReadProperties(env.TEAMCITY_BUILD_PROPERTIES_FILE)
+    : undefined;
+  const configFile = buildProperties
+    ? buildProperties.get("teamcity.configuration.properties.file")
+    : undefined;
+  const configProperties = configFile
+    ? safeReadProperties(configFile)
+    : configFile;
+
+  return Object.fromEntries(
+    Object.keys(PROPERTIES_MAPPING).map((key) => [
+      key,
+      (buildProperties
+        ? buildProperties.get(PROPERTIES_MAPPING[key])
+        : undefined) ||
+        (configProperties
+          ? configProperties.get(PROPERTIES_MAPPING[key])
+          : undefined) ||
+        (key === "branch" ? branch({ env, cwd }) : undefined),
+    ]),
+  );
+};
+
+var teamcity = {
+  detect({ env }) {
+    return Boolean(env.TEAMCITY_VERSION);
+  },
+  configuration({ env, cwd }) {
+    return {
+      name: "TeamCity",
+      service: "teamcity",
+      commit: env.BUILD_VCS_NUMBER,
+      build: env.BUILD_NUMBER,
+      slug: env.TEAMCITY_BUILDCONF_NAME,
+      ...getProperties({ env, cwd }),
+    };
+  },
+};
+
+// https://docs.travis-ci.com/user/environment-variables#default-environment-variables
+
+var travis = {
+  detect({ env }) {
+    return Boolean(env.TRAVIS);
+  },
+  configuration({ env }) {
+    const pr =
+      env.TRAVIS_PULL_REQUEST === "false" ? undefined : env.TRAVIS_PULL_REQUEST;
+    const isPr = Boolean(pr);
+
+    return {
+      name: "Travis CI",
+      service: "travis",
+      commit: env.TRAVIS_COMMIT,
+      tag: env.TRAVIS_TAG,
+      build: env.TRAVIS_BUILD_NUMBER,
+      buildUrl: env.TRAVIS_BUILD_WEB_URL,
+      branch: env.TRAVIS_BRANCH,
+      job: env.TRAVIS_JOB_NUMBER,
+      jobUrl: env.TRAVIS_JOB_WEB_URL,
+      pr,
+      isPr,
+      prBranch: env.TRAVIS_PULL_REQUEST_BRANCH,
+      slug: env.TRAVIS_REPO_SLUG,
+      root: env.TRAVIS_BUILD_DIR,
+    };
+  },
+};
+
+// https://go-vela.github.io/docs/reference/environment/variables/
+
+var vela = {
+  detect({ env }) {
+    return Boolean(env.VELA);
+  },
+  configuration({ env }) {
+    const isPr = env.VELA_BUILD_EVENT === "pull_request";
+
+    return {
+      name: "Vela",
+      service: "vela",
+      branch: isPr ? env.VELA_PULL_REQUEST_TARGET : env.VELA_BUILD_BRANCH,
+      commit: env.VELA_BUILD_COMMIT,
+      tag: env.VELA_BUILD_TAG,
+      build: env.VELA_BUILD_NUMBER,
+      buildUrl: env.VELA_BUILD_LINK,
+      job: undefined,
+      jobUrl: undefined,
+      isPr,
+      pr: env.VELA_BUILD_PULL_REQUEST,
+      prBranch: env.VELA_PULL_REQUEST_SOURCE,
+      slug: env.VELA_REPO_FULL_NAME,
+      root: env.VELA_BUILD_WORKSPACE,
+    };
+  },
+};
+
+// https://vercel.com/docs/environment-variables
+
+var vercel = {
+  detect({ env }) {
+    return Boolean(env.VERCEL) || Boolean(env.NOW_GITHUB_DEPLOYMENT);
+  },
+  configuration({ env }) {
+    const name = "Vercel";
+    const service = "vercel";
+
+    if (env.VERCEL) {
+      return {
+        name,
+        service,
+        commit: env.VERCEL_GIT_COMMIT_SHA,
+        branch: env.VERCEL_GIT_COMMIT_REF,
+        slug: `${env.VERCEL_GIT_REPO_OWNER}/${env.VERCEL_GIT_REPO_SLUG}`,
+      };
+    }
+
+    return {
+      name,
+      service,
+      commit: env.NOW_GITHUB_COMMIT_SHA,
+      branch: env.NOW_GITHUB_COMMIT_REF,
+      slug: `${env.NOW_GITHUB_ORG}/${env.NOW_GITHUB_REPO}`,
+    };
+  },
+};
+
+// http://devcenter.wercker.com/docs/environment-variables/available-env-vars#hs_cos_wrapper_name
+
+var wercker = {
+  detect({ env }) {
+    return Boolean(env.WERCKER_MAIN_PIPELINE_STARTED);
+  },
+  configuration({ env }) {
+    return {
+      name: "Wercker",
+      service: "wercker",
+      commit: env.WERCKER_GIT_COMMIT,
+      build: env.WERCKER_MAIN_PIPELINE_STARTED,
+      buildUrl: env.WERCKER_RUN_URL,
+      branch: env.WERCKER_GIT_BRANCH,
+      slug: `${env.WERCKER_GIT_OWNER}/${env.WERCKER_GIT_REPOSITORY}`,
+      root: env.WERCKER_ROOT,
+    };
+  },
+};
+
+// https://woodpecker-ci.org/docs/usage/environment#built-in-environment-variables
+
+var woodpecker = {
+  detect({ env }) {
+    return env.CI && env.CI === "woodpecker";
+  },
+  configuration({ env }) {
+    const isPr = env.CI_PIPELINE_EVENT === "pull_request";
+
+    return {
+      name: "Woodpecker CI",
+      service: "woodpecker",
+      commit: env.CI_COMMIT_SHA,
+      tag: env.CI_COMMIT_TAG,
+      build: env.CI_PIPELINE_NUMBER,
+      buildUrl: env.CI_PIPELINE_URL,
+      branch: isPr ? env.CI_COMMIT_TARGET_BRANCH : env.CI_COMMIT_BRANCH,
+      job: env.CI_STEP_NUMBER,
+      jobUrl: env.CI_STEP_URL,
+      pr: env.CI_COMMIT_PULL_REQUEST,
+      isPr,
+      prBranch: isPr ? env.CI_COMMIT_SOURCE_BRANCH : undefined,
+      slug: `${env.CI_REPO_OWNER}/${env.CI_REPO_NAME}`,
+      root: env.CI_WORKSPACE,
+    };
+  },
+};
+
+// https://jetbrains.com/help/space/automation-environment-variables.html#automation
+
+var jetbrainsSpace = {
+  detect({ env }) {
+    return Boolean(env.JB_SPACE_EXECUTION_NUMBER);
+  },
+  configuration({ env }) {
+    const projectKey = env.JB_SPACE_PROJECT_KEY;
+    const repositoryName = env.JB_SPACE_GIT_REPOSITORY_NAME;
+    return {
+      name: "JetBrains Space",
+      service: "jetbrainsSpace",
+      commit: env.JB_SPACE_GIT_REVISION,
+      build: env.JB_SPACE_EXECUTION_NUMBER,
+      branch: parseBranch(env.JB_SPACE_GIT_BRANCH),
+      slug:
+        projectKey && repositoryName
+          ? `${projectKey.toLowerCase()}/${repositoryName}`
+          : undefined,
+    };
+  },
+};
+
+const services = {
+  appveyor,
+  azurePipelines,
+  bamboo,
+  bitbucket,
+  bitrise,
+  buddy,
+  buildkite,
+  circleci,
+  cirrus,
+  cloudflarePages,
+  codebuild,
+  codefresh,
+  codeship,
+  drone,
+  github,
+  gitlab,
+  jenkins,
+  netlify,
+  puppet,
+  sail,
+  screwdriver,
+  scrutinizer,
+  semaphore,
+  shippable,
+  teamcity,
+  travis,
+  vela,
+  vercel,
+  wercker,
+  woodpecker,
+  jetbrainsSpace,
+};
+
+var envCi = ({ env = process.env, cwd = process.cwd() } = {}) => {
+  for (const name of Object.keys(services)) {
+    if (services[name].detect({ env, cwd })) {
+      return { isCi: true, ...services[name].configuration({ env, cwd }) };
+    }
+  }
+
+  return { isCi: Boolean(env.CI), ...git.configuration({ env, cwd }) };
+};
+
+/*!
+ * parse-github-url <https://github.com/jonschlinkert/parse-github-url>
+ *
+ * Copyright (c) 2015-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */
+
+var parseGithubUrl$1;
+var hasRequiredParseGithubUrl;
+
+function requireParseGithubUrl () {
+	if (hasRequiredParseGithubUrl) return parseGithubUrl$1;
+	hasRequiredParseGithubUrl = 1;
+
+	var url = require$$1$3;
+	var cache = { __proto__: null };
+
+	function isChecksum(str) {
+		return (/^[a-f0-9]{40}$/i).test(str);
+	}
+
+	function getBranch(str, obj) {
+		var segs = str.split('#');
+		var branch;
+		if (segs.length > 1) {
+			branch = segs[segs.length - 1];
+		}
+		if (!branch && obj.hash && obj.hash.charAt(0) === '#') {
+			branch = obj.hash.slice(1);
+		}
+		return branch || 'master';
+	}
+
+	function trimSlash(path) {
+		return path.charAt(0) === '/' ? path.slice(1) : path;
+	}
+
+	function name(str) {
+		return str ? str.replace(/\.git$/, '') : null;
+	}
+
+	function owner(str) {
+		if (!str) {
+			return null;
+		}
+		var idx = str.indexOf(':');
+		if (idx > -1) {
+			return str.slice(idx + 1);
+		}
+		return str;
+	}
+
+	function parse(str) {
+		if (typeof str !== 'string' || !str.length) {
+			return null;
+		}
+
+		if (str.indexOf('git@gist') !== -1 || str.indexOf('//gist') !== -1) {
+			return null;
+		}
+
+		// parse the URL
+		var obj = url.parse(str);
+		if (typeof obj.path !== 'string' || !obj.path.length || typeof obj.pathname !== 'string' || !obj.pathname.length) {
+			return null;
+		}
+
+		if (!obj.host && (/^git@/).test(str) === true) {
+			// return the correct host for git@ URLs
+			obj.host = url.parse('http://' + str.replace(/git@([^:]+):/, '$1/')).host;
+		}
+
+		obj.path = trimSlash(obj.path);
+		obj.pathname = trimSlash(obj.pathname);
+		obj.filepath = null;
+
+		if (obj.path.indexOf('repos') === 0) {
+			obj.path = obj.path.slice(6);
+		}
+
+		var seg = obj.path.split('/').filter(Boolean);
+		var hasBlob = seg[2] === 'blob';
+		if (hasBlob && !isChecksum(seg[3])) {
+			obj.branch = seg[3];
+			if (seg.length > 4) {
+				obj.filepath = seg.slice(4).join('/');
+			}
+		}
+
+		var blob = str.indexOf('blob');
+		if (hasBlob && blob !== -1) {
+			obj.blob = str.slice(blob + 5);
+		}
+
+		var hasTree = seg[2] === 'tree';
+		var tree = str.indexOf('tree');
+		if (hasTree && tree !== -1) {
+			var idx = tree + 5;
+			var branch = str.slice(idx);
+			var slash = branch.indexOf('/');
+			if (slash !== -1) {
+				branch = branch.slice(0, slash);
+			}
+			obj.branch = branch;
+		}
+
+		obj.owner = owner(seg[0]);
+		obj.name = name(seg[1]);
+
+		if (seg.length > 1 && obj.owner && obj.name) {
+			obj.repo = obj.owner + '/' + obj.name;
+		} else {
+			var href = obj.href.split(':');
+			if (href.length === 2 && obj.href.indexOf('//') === -1) {
+				obj.repo = obj.repo || href[href.length - 1];
+				var repoSegments = obj.repo.split('/');
+				obj.owner = repoSegments[0];
+				obj.name = repoSegments[1];
+
+			} else {
+				var match = obj.href.match(/\/([^/]*)$/);
+				obj.owner = match ? match[1] : null;
+				obj.repo = null;
+			}
+
+			if (obj.repo && (!obj.owner || !obj.name)) {
+				var segs = obj.repo.split('/');
+				if (segs.length === 2) {
+					obj.owner = segs[0];
+					obj.name = segs[1];
+				}
+			}
+		}
+
+		if (!obj.branch) {
+			obj.branch = seg[2] || getBranch(obj.path, obj);
+			if (seg.length > 3) {
+				obj.filepath = seg.slice(3).join('/');
+			}
+		}
+
+		obj.host = obj.host || 'github.com';
+		obj.owner = obj.owner || null;
+		obj.name = obj.name || null;
+		obj.repository = obj.repo;
+		return obj;
+	}
+
+	parseGithubUrl$1 = function parseGithubUrl(str) {
+		if (!cache[str]) {
+			cache[str] = parse(str);
+		}
+		return cache[str];
+	};
+	return parseGithubUrl$1;
+}
+
+var parseGithubUrlExports = requireParseGithubUrl();
+var parseGithubUrl = /*@__PURE__*/getDefaultExportFromCjs(parseGithubUrlExports);
+
+var dist$1 = {};
+
+var src$1 = {};
+
+var src = {exports: {}};
+
+var browser = {exports: {}};
+
+/**
+ * Helpers.
+ */
+
+var ms;
+var hasRequiredMs;
+
+function requireMs () {
+	if (hasRequiredMs) return ms;
+	hasRequiredMs = 1;
+	var s = 1000;
+	var m = s * 60;
+	var h = m * 60;
+	var d = h * 24;
+	var w = d * 7;
+	var y = d * 365.25;
+
+	/**
+	 * Parse or format the given `val`.
+	 *
+	 * Options:
+	 *
+	 *  - `long` verbose formatting [false]
+	 *
+	 * @param {String|Number} val
+	 * @param {Object} [options]
+	 * @throws {Error} throw an error if val is not a non-empty string or a number
+	 * @return {String|Number}
+	 * @api public
+	 */
+
+	ms = function (val, options) {
+	  options = options || {};
+	  var type = typeof val;
+	  if (type === 'string' && val.length > 0) {
+	    return parse(val);
+	  } else if (type === 'number' && isFinite(val)) {
+	    return options.long ? fmtLong(val) : fmtShort(val);
+	  }
+	  throw new Error(
+	    'val is not a non-empty string or a valid number. val=' +
+	      JSON.stringify(val)
+	  );
+	};
+
+	/**
+	 * Parse the given `str` and return milliseconds.
+	 *
+	 * @param {String} str
+	 * @return {Number}
+	 * @api private
+	 */
+
+	function parse(str) {
+	  str = String(str);
+	  if (str.length > 100) {
+	    return;
+	  }
+	  var match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
+	    str
+	  );
+	  if (!match) {
+	    return;
+	  }
+	  var n = parseFloat(match[1]);
+	  var type = (match[2] || 'ms').toLowerCase();
+	  switch (type) {
+	    case 'years':
+	    case 'year':
+	    case 'yrs':
+	    case 'yr':
+	    case 'y':
+	      return n * y;
+	    case 'weeks':
+	    case 'week':
+	    case 'w':
+	      return n * w;
+	    case 'days':
+	    case 'day':
+	    case 'd':
+	      return n * d;
+	    case 'hours':
+	    case 'hour':
+	    case 'hrs':
+	    case 'hr':
+	    case 'h':
+	      return n * h;
+	    case 'minutes':
+	    case 'minute':
+	    case 'mins':
+	    case 'min':
+	    case 'm':
+	      return n * m;
+	    case 'seconds':
+	    case 'second':
+	    case 'secs':
+	    case 'sec':
+	    case 's':
+	      return n * s;
+	    case 'milliseconds':
+	    case 'millisecond':
+	    case 'msecs':
+	    case 'msec':
+	    case 'ms':
+	      return n;
+	    default:
+	      return undefined;
+	  }
+	}
+
+	/**
+	 * Short format for `ms`.
+	 *
+	 * @param {Number} ms
+	 * @return {String}
+	 * @api private
+	 */
+
+	function fmtShort(ms) {
+	  var msAbs = Math.abs(ms);
+	  if (msAbs >= d) {
+	    return Math.round(ms / d) + 'd';
+	  }
+	  if (msAbs >= h) {
+	    return Math.round(ms / h) + 'h';
+	  }
+	  if (msAbs >= m) {
+	    return Math.round(ms / m) + 'm';
+	  }
+	  if (msAbs >= s) {
+	    return Math.round(ms / s) + 's';
+	  }
+	  return ms + 'ms';
+	}
+
+	/**
+	 * Long format for `ms`.
+	 *
+	 * @param {Number} ms
+	 * @return {String}
+	 * @api private
+	 */
+
+	function fmtLong(ms) {
+	  var msAbs = Math.abs(ms);
+	  if (msAbs >= d) {
+	    return plural(ms, msAbs, d, 'day');
+	  }
+	  if (msAbs >= h) {
+	    return plural(ms, msAbs, h, 'hour');
+	  }
+	  if (msAbs >= m) {
+	    return plural(ms, msAbs, m, 'minute');
+	  }
+	  if (msAbs >= s) {
+	    return plural(ms, msAbs, s, 'second');
+	  }
+	  return ms + ' ms';
+	}
+
+	/**
+	 * Pluralization helper.
+	 */
+
+	function plural(ms, msAbs, n, name) {
+	  var isPlural = msAbs >= n * 1.5;
+	  return Math.round(ms / n) + ' ' + name + (isPlural ? 's' : '');
+	}
+	return ms;
+}
+
+var common;
+var hasRequiredCommon;
+
+function requireCommon () {
+	if (hasRequiredCommon) return common;
+	hasRequiredCommon = 1;
+	/**
+	 * This is the common logic for both the Node.js and web browser
+	 * implementations of `debug()`.
+	 */
+
+	function setup(env) {
+		createDebug.debug = createDebug;
+		createDebug.default = createDebug;
+		createDebug.coerce = coerce;
+		createDebug.disable = disable;
+		createDebug.enable = enable;
+		createDebug.enabled = enabled;
+		createDebug.humanize = requireMs();
+		createDebug.destroy = destroy;
+
+		Object.keys(env).forEach(key => {
+			createDebug[key] = env[key];
+		});
+
+		/**
+		* The currently active debug mode names, and names to skip.
+		*/
+
+		createDebug.names = [];
+		createDebug.skips = [];
+
+		/**
+		* Map of special "%n" handling functions, for the debug "format" argument.
+		*
+		* Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
+		*/
+		createDebug.formatters = {};
+
+		/**
+		* Selects a color for a debug namespace
+		* @param {String} namespace The namespace string for the debug instance to be colored
+		* @return {Number|String} An ANSI color code for the given namespace
+		* @api private
+		*/
+		function selectColor(namespace) {
+			let hash = 0;
+
+			for (let i = 0; i < namespace.length; i++) {
+				hash = ((hash << 5) - hash) + namespace.charCodeAt(i);
+				hash |= 0; // Convert to 32bit integer
+			}
+
+			return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
+		}
+		createDebug.selectColor = selectColor;
+
+		/**
+		* Create a debugger with the given `namespace`.
+		*
+		* @param {String} namespace
+		* @return {Function}
+		* @api public
+		*/
+		function createDebug(namespace) {
+			let prevTime;
+			let enableOverride = null;
+			let namespacesCache;
+			let enabledCache;
+
+			function debug(...args) {
+				// Disabled?
+				if (!debug.enabled) {
+					return;
+				}
+
+				const self = debug;
+
+				// Set `diff` timestamp
+				const curr = Number(new Date());
+				const ms = curr - (prevTime || curr);
+				self.diff = ms;
+				self.prev = prevTime;
+				self.curr = curr;
+				prevTime = curr;
+
+				args[0] = createDebug.coerce(args[0]);
+
+				if (typeof args[0] !== 'string') {
+					// Anything else let's inspect with %O
+					args.unshift('%O');
+				}
+
+				// Apply any `formatters` transformations
+				let index = 0;
+				args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
+					// If we encounter an escaped % then don't increase the array index
+					if (match === '%%') {
+						return '%';
+					}
+					index++;
+					const formatter = createDebug.formatters[format];
+					if (typeof formatter === 'function') {
+						const val = args[index];
+						match = formatter.call(self, val);
+
+						// Now we need to remove `args[index]` since it's inlined in the `format`
+						args.splice(index, 1);
+						index--;
+					}
+					return match;
+				});
+
+				// Apply env-specific formatting (colors, etc.)
+				createDebug.formatArgs.call(self, args);
+
+				const logFn = self.log || createDebug.log;
+				logFn.apply(self, args);
+			}
+
+			debug.namespace = namespace;
+			debug.useColors = createDebug.useColors();
+			debug.color = createDebug.selectColor(namespace);
+			debug.extend = extend;
+			debug.destroy = createDebug.destroy; // XXX Temporary. Will be removed in the next major release.
+
+			Object.defineProperty(debug, 'enabled', {
+				enumerable: true,
+				configurable: false,
+				get: () => {
+					if (enableOverride !== null) {
+						return enableOverride;
+					}
+					if (namespacesCache !== createDebug.namespaces) {
+						namespacesCache = createDebug.namespaces;
+						enabledCache = createDebug.enabled(namespace);
+					}
+
+					return enabledCache;
+				},
+				set: v => {
+					enableOverride = v;
+				}
+			});
+
+			// Env-specific initialization logic for debug instances
+			if (typeof createDebug.init === 'function') {
+				createDebug.init(debug);
+			}
+
+			return debug;
+		}
+
+		function extend(namespace, delimiter) {
+			const newDebug = createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+			newDebug.log = this.log;
+			return newDebug;
+		}
+
+		/**
+		* Enables a debug mode by namespaces. This can include modes
+		* separated by a colon and wildcards.
+		*
+		* @param {String} namespaces
+		* @api public
+		*/
+		function enable(namespaces) {
+			createDebug.save(namespaces);
+			createDebug.namespaces = namespaces;
+
+			createDebug.names = [];
+			createDebug.skips = [];
+
+			const split = (typeof namespaces === 'string' ? namespaces : '')
+				.trim()
+				.replace(/\s+/g, ',')
+				.split(',')
+				.filter(Boolean);
+
+			for (const ns of split) {
+				if (ns[0] === '-') {
+					createDebug.skips.push(ns.slice(1));
+				} else {
+					createDebug.names.push(ns);
+				}
+			}
+		}
+
+		/**
+		 * Checks if the given string matches a namespace template, honoring
+		 * asterisks as wildcards.
+		 *
+		 * @param {String} search
+		 * @param {String} template
+		 * @return {Boolean}
+		 */
+		function matchesTemplate(search, template) {
+			let searchIndex = 0;
+			let templateIndex = 0;
+			let starIndex = -1;
+			let matchIndex = 0;
+
+			while (searchIndex < search.length) {
+				if (templateIndex < template.length && (template[templateIndex] === search[searchIndex] || template[templateIndex] === '*')) {
+					// Match character or proceed with wildcard
+					if (template[templateIndex] === '*') {
+						starIndex = templateIndex;
+						matchIndex = searchIndex;
+						templateIndex++; // Skip the '*'
+					} else {
+						searchIndex++;
+						templateIndex++;
+					}
+				} else if (starIndex !== -1) { // eslint-disable-line no-negated-condition
+					// Backtrack to the last '*' and try to match more characters
+					templateIndex = starIndex + 1;
+					matchIndex++;
+					searchIndex = matchIndex;
+				} else {
+					return false; // No match
+				}
+			}
+
+			// Handle trailing '*' in template
+			while (templateIndex < template.length && template[templateIndex] === '*') {
+				templateIndex++;
+			}
+
+			return templateIndex === template.length;
+		}
+
+		/**
+		* Disable debug output.
+		*
+		* @return {String} namespaces
+		* @api public
+		*/
+		function disable() {
+			const namespaces = [
+				...createDebug.names,
+				...createDebug.skips.map(namespace => '-' + namespace)
+			].join(',');
+			createDebug.enable('');
+			return namespaces;
+		}
+
+		/**
+		* Returns true if the given mode name is enabled, false otherwise.
+		*
+		* @param {String} name
+		* @return {Boolean}
+		* @api public
+		*/
+		function enabled(name) {
+			for (const skip of createDebug.skips) {
+				if (matchesTemplate(name, skip)) {
+					return false;
+				}
+			}
+
+			for (const ns of createDebug.names) {
+				if (matchesTemplate(name, ns)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/**
+		* Coerce `val`.
+		*
+		* @param {Mixed} val
+		* @return {Mixed}
+		* @api private
+		*/
+		function coerce(val) {
+			if (val instanceof Error) {
+				return val.stack || val.message;
+			}
+			return val;
+		}
+
+		/**
+		* XXX DO NOT USE. This is a temporary stub function.
+		* XXX It WILL be removed in the next major release.
+		*/
+		function destroy() {
+			console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
+		}
+
+		createDebug.enable(createDebug.load());
+
+		return createDebug;
+	}
+
+	common = setup;
+	return common;
+}
+
+/* eslint-env browser */
+
+var hasRequiredBrowser;
+
+function requireBrowser () {
+	if (hasRequiredBrowser) return browser.exports;
+	hasRequiredBrowser = 1;
+	(function (module, exports$1) {
+		/**
+		 * This is the web browser implementation of `debug()`.
+		 */
+
+		exports$1.formatArgs = formatArgs;
+		exports$1.save = save;
+		exports$1.load = load;
+		exports$1.useColors = useColors;
+		exports$1.storage = localstorage();
+		exports$1.destroy = (() => {
+			let warned = false;
+
+			return () => {
+				if (!warned) {
+					warned = true;
+					console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
+				}
+			};
+		})();
+
+		/**
+		 * Colors.
+		 */
+
+		exports$1.colors = [
+			'#0000CC',
+			'#0000FF',
+			'#0033CC',
+			'#0033FF',
+			'#0066CC',
+			'#0066FF',
+			'#0099CC',
+			'#0099FF',
+			'#00CC00',
+			'#00CC33',
+			'#00CC66',
+			'#00CC99',
+			'#00CCCC',
+			'#00CCFF',
+			'#3300CC',
+			'#3300FF',
+			'#3333CC',
+			'#3333FF',
+			'#3366CC',
+			'#3366FF',
+			'#3399CC',
+			'#3399FF',
+			'#33CC00',
+			'#33CC33',
+			'#33CC66',
+			'#33CC99',
+			'#33CCCC',
+			'#33CCFF',
+			'#6600CC',
+			'#6600FF',
+			'#6633CC',
+			'#6633FF',
+			'#66CC00',
+			'#66CC33',
+			'#9900CC',
+			'#9900FF',
+			'#9933CC',
+			'#9933FF',
+			'#99CC00',
+			'#99CC33',
+			'#CC0000',
+			'#CC0033',
+			'#CC0066',
+			'#CC0099',
+			'#CC00CC',
+			'#CC00FF',
+			'#CC3300',
+			'#CC3333',
+			'#CC3366',
+			'#CC3399',
+			'#CC33CC',
+			'#CC33FF',
+			'#CC6600',
+			'#CC6633',
+			'#CC9900',
+			'#CC9933',
+			'#CCCC00',
+			'#CCCC33',
+			'#FF0000',
+			'#FF0033',
+			'#FF0066',
+			'#FF0099',
+			'#FF00CC',
+			'#FF00FF',
+			'#FF3300',
+			'#FF3333',
+			'#FF3366',
+			'#FF3399',
+			'#FF33CC',
+			'#FF33FF',
+			'#FF6600',
+			'#FF6633',
+			'#FF9900',
+			'#FF9933',
+			'#FFCC00',
+			'#FFCC33'
+		];
+
+		/**
+		 * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+		 * and the Firebug extension (any Firefox version) are known
+		 * to support "%c" CSS customizations.
+		 *
+		 * TODO: add a `localStorage` variable to explicitly enable/disable colors
+		 */
+
+		// eslint-disable-next-line complexity
+		function useColors() {
+			// NB: In an Electron preload script, document will be defined but not fully
+			// initialized. Since we know we're in Chrome, we'll just detect this case
+			// explicitly
+			if (typeof window !== 'undefined' && window.process && (window.process.type === 'renderer' || window.process.__nwjs)) {
+				return true;
+			}
+
+			// Internet Explorer and Edge do not support colors.
+			if (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
+				return false;
+			}
+
+			let m;
+
+			// Is webkit? http://stackoverflow.com/a/16459606/376773
+			// document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
+			// eslint-disable-next-line no-return-assign
+			return (typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance) ||
+				// Is firebug? http://stackoverflow.com/a/398120/376773
+				(typeof window !== 'undefined' && window.console && (window.console.firebug || (window.console.exception && window.console.table))) ||
+				// Is firefox >= v31?
+				// https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+				(typeof navigator !== 'undefined' && navigator.userAgent && (m = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m[1], 10) >= 31) ||
+				// Double check webkit in userAgent just in case we are in a worker
+				(typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/));
+		}
+
+		/**
+		 * Colorize log arguments if enabled.
+		 *
+		 * @api public
+		 */
+
+		function formatArgs(args) {
+			args[0] = (this.useColors ? '%c' : '') +
+				this.namespace +
+				(this.useColors ? ' %c' : ' ') +
+				args[0] +
+				(this.useColors ? '%c ' : ' ') +
+				'+' + module.exports.humanize(this.diff);
+
+			if (!this.useColors) {
+				return;
+			}
+
+			const c = 'color: ' + this.color;
+			args.splice(1, 0, c, 'color: inherit');
+
+			// The final "%c" is somewhat tricky, because there could be other
+			// arguments passed either before or after the %c, so we need to
+			// figure out the correct index to insert the CSS into
+			let index = 0;
+			let lastC = 0;
+			args[0].replace(/%[a-zA-Z%]/g, match => {
+				if (match === '%%') {
+					return;
+				}
+				index++;
+				if (match === '%c') {
+					// We only are interested in the *last* %c
+					// (the user may have provided their own)
+					lastC = index;
+				}
+			});
+
+			args.splice(lastC, 0, c);
+		}
+
+		/**
+		 * Invokes `console.debug()` when available.
+		 * No-op when `console.debug` is not a "function".
+		 * If `console.debug` is not available, falls back
+		 * to `console.log`.
+		 *
+		 * @api public
+		 */
+		exports$1.log = console.debug || console.log || (() => {});
+
+		/**
+		 * Save `namespaces`.
+		 *
+		 * @param {String} namespaces
+		 * @api private
+		 */
+		function save(namespaces) {
+			try {
+				if (namespaces) {
+					exports$1.storage.setItem('debug', namespaces);
+				} else {
+					exports$1.storage.removeItem('debug');
+				}
+			} catch (error) {
+				// Swallow
+				// XXX (@Qix-) should we be logging these?
+			}
+		}
+
+		/**
+		 * Load `namespaces`.
+		 *
+		 * @return {String} returns the previously persisted debug modes
+		 * @api private
+		 */
+		function load() {
+			let r;
+			try {
+				r = exports$1.storage.getItem('debug') || exports$1.storage.getItem('DEBUG') ;
+			} catch (error) {
+				// Swallow
+				// XXX (@Qix-) should we be logging these?
+			}
+
+			// If debug isn't set in LS, and we're in Electron, try to load $DEBUG
+			if (!r && typeof process !== 'undefined' && 'env' in process) {
+				r = process.env.DEBUG;
+			}
+
+			return r;
+		}
+
+		/**
+		 * Localstorage attempts to return the localstorage.
+		 *
+		 * This is necessary because safari throws
+		 * when a user disables cookies/localstorage
+		 * and you attempt to access it.
+		 *
+		 * @return {LocalStorage}
+		 * @api private
+		 */
+
+		function localstorage() {
+			try {
+				// TVMLKit (Apple TV JS Runtime) does not have a window object, just localStorage in the global context
+				// The Browser also has localStorage in the global context.
+				return localStorage;
+			} catch (error) {
+				// Swallow
+				// XXX (@Qix-) should we be logging these?
+			}
+		}
+
+		module.exports = requireCommon()(exports$1);
+
+		const {formatters} = module.exports;
+
+		/**
+		 * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+		 */
+
+		formatters.j = function (v) {
+			try {
+				return JSON.stringify(v);
+			} catch (error) {
+				return '[UnexpectedJSONParseError]: ' + error.message;
+			}
+		}; 
+	} (browser, browser.exports));
+	return browser.exports;
+}
+
+var node = {exports: {}};
+
+var hasFlag;
+var hasRequiredHasFlag;
+
+function requireHasFlag () {
+	if (hasRequiredHasFlag) return hasFlag;
+	hasRequiredHasFlag = 1;
+
+	hasFlag = (flag, argv = process.argv) => {
+		const prefix = flag.startsWith('-') ? '' : (flag.length === 1 ? '-' : '--');
+		const position = argv.indexOf(prefix + flag);
+		const terminatorPosition = argv.indexOf('--');
+		return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
+	};
+	return hasFlag;
+}
+
+var supportsColor_1;
+var hasRequiredSupportsColor;
+
+function requireSupportsColor () {
+	if (hasRequiredSupportsColor) return supportsColor_1;
+	hasRequiredSupportsColor = 1;
+	const os = require$$0;
+	const tty = require$$1$4;
+	const hasFlag = requireHasFlag();
+
+	const {env} = process;
+
+	let forceColor;
+	if (hasFlag('no-color') ||
+		hasFlag('no-colors') ||
+		hasFlag('color=false') ||
+		hasFlag('color=never')) {
+		forceColor = 0;
+	} else if (hasFlag('color') ||
+		hasFlag('colors') ||
+		hasFlag('color=true') ||
+		hasFlag('color=always')) {
+		forceColor = 1;
+	}
+
+	if ('FORCE_COLOR' in env) {
+		if (env.FORCE_COLOR === 'true') {
+			forceColor = 1;
+		} else if (env.FORCE_COLOR === 'false') {
+			forceColor = 0;
+		} else {
+			forceColor = env.FORCE_COLOR.length === 0 ? 1 : Math.min(parseInt(env.FORCE_COLOR, 10), 3);
+		}
+	}
+
+	function translateLevel(level) {
+		if (level === 0) {
+			return false;
+		}
+
+		return {
+			level,
+			hasBasic: true,
+			has256: level >= 2,
+			has16m: level >= 3
+		};
+	}
+
+	function supportsColor(haveStream, streamIsTTY) {
+		if (forceColor === 0) {
+			return 0;
+		}
+
+		if (hasFlag('color=16m') ||
+			hasFlag('color=full') ||
+			hasFlag('color=truecolor')) {
+			return 3;
+		}
+
+		if (hasFlag('color=256')) {
+			return 2;
+		}
+
+		if (haveStream && !streamIsTTY && forceColor === undefined) {
+			return 0;
+		}
+
+		const min = forceColor || 0;
+
+		if (env.TERM === 'dumb') {
+			return min;
+		}
+
+		if (process.platform === 'win32') {
+			// Windows 10 build 10586 is the first Windows release that supports 256 colors.
+			// Windows 10 build 14931 is the first release that supports 16m/TrueColor.
+			const osRelease = os.release().split('.');
+			if (
+				Number(osRelease[0]) >= 10 &&
+				Number(osRelease[2]) >= 10586
+			) {
+				return Number(osRelease[2]) >= 14931 ? 3 : 2;
+			}
+
+			return 1;
+		}
+
+		if ('CI' in env) {
+			if (['TRAVIS', 'CIRCLECI', 'APPVEYOR', 'GITLAB_CI', 'GITHUB_ACTIONS', 'BUILDKITE'].some(sign => sign in env) || env.CI_NAME === 'codeship') {
+				return 1;
+			}
+
+			return min;
+		}
+
+		if ('TEAMCITY_VERSION' in env) {
+			return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(env.TEAMCITY_VERSION) ? 1 : 0;
+		}
+
+		if (env.COLORTERM === 'truecolor') {
+			return 3;
+		}
+
+		if ('TERM_PROGRAM' in env) {
+			const version = parseInt((env.TERM_PROGRAM_VERSION || '').split('.')[0], 10);
+
+			switch (env.TERM_PROGRAM) {
+				case 'iTerm.app':
+					return version >= 3 ? 3 : 2;
+				case 'Apple_Terminal':
+					return 2;
+				// No default
+			}
+		}
+
+		if (/-256(color)?$/i.test(env.TERM)) {
+			return 2;
+		}
+
+		if (/^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux/i.test(env.TERM)) {
+			return 1;
+		}
+
+		if ('COLORTERM' in env) {
+			return 1;
+		}
+
+		return min;
+	}
+
+	function getSupportLevel(stream) {
+		const level = supportsColor(stream, stream && stream.isTTY);
+		return translateLevel(level);
+	}
+
+	supportsColor_1 = {
+		supportsColor: getSupportLevel,
+		stdout: translateLevel(supportsColor(true, tty.isatty(1))),
+		stderr: translateLevel(supportsColor(true, tty.isatty(2)))
+	};
+	return supportsColor_1;
+}
+
+/**
+ * Module dependencies.
+ */
+
+var hasRequiredNode;
+
+function requireNode () {
+	if (hasRequiredNode) return node.exports;
+	hasRequiredNode = 1;
+	(function (module, exports$1) {
+		const tty = require$$1$4;
+		const util = require$$0$3;
+
+		/**
+		 * This is the Node.js implementation of `debug()`.
+		 */
+
+		exports$1.init = init;
+		exports$1.log = log;
+		exports$1.formatArgs = formatArgs;
+		exports$1.save = save;
+		exports$1.load = load;
+		exports$1.useColors = useColors;
+		exports$1.destroy = util.deprecate(
+			() => {},
+			'Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.'
+		);
+
+		/**
+		 * Colors.
+		 */
+
+		exports$1.colors = [6, 2, 3, 4, 5, 1];
+
+		try {
+			// Optional dependency (as in, doesn't need to be installed, NOT like optionalDependencies in package.json)
+			// eslint-disable-next-line import/no-extraneous-dependencies
+			const supportsColor = requireSupportsColor();
+
+			if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
+				exports$1.colors = [
+					20,
+					21,
+					26,
+					27,
+					32,
+					33,
+					38,
+					39,
+					40,
+					41,
+					42,
+					43,
+					44,
+					45,
+					56,
+					57,
+					62,
+					63,
+					68,
+					69,
+					74,
+					75,
+					76,
+					77,
+					78,
+					79,
+					80,
+					81,
+					92,
+					93,
+					98,
+					99,
+					112,
+					113,
+					128,
+					129,
+					134,
+					135,
+					148,
+					149,
+					160,
+					161,
+					162,
+					163,
+					164,
+					165,
+					166,
+					167,
+					168,
+					169,
+					170,
+					171,
+					172,
+					173,
+					178,
+					179,
+					184,
+					185,
+					196,
+					197,
+					198,
+					199,
+					200,
+					201,
+					202,
+					203,
+					204,
+					205,
+					206,
+					207,
+					208,
+					209,
+					214,
+					215,
+					220,
+					221
+				];
+			}
+		} catch (error) {
+			// Swallow - we only care if `supports-color` is available; it doesn't have to be.
+		}
+
+		/**
+		 * Build up the default `inspectOpts` object from the environment variables.
+		 *
+		 *   $ DEBUG_COLORS=no DEBUG_DEPTH=10 DEBUG_SHOW_HIDDEN=enabled node script.js
+		 */
+
+		exports$1.inspectOpts = Object.keys(process.env).filter(key => {
+			return /^debug_/i.test(key);
+		}).reduce((obj, key) => {
+			// Camel-case
+			const prop = key
+				.substring(6)
+				.toLowerCase()
+				.replace(/_([a-z])/g, (_, k) => {
+					return k.toUpperCase();
+				});
+
+			// Coerce string value into JS value
+			let val = process.env[key];
+			if (/^(yes|on|true|enabled)$/i.test(val)) {
+				val = true;
+			} else if (/^(no|off|false|disabled)$/i.test(val)) {
+				val = false;
+			} else if (val === 'null') {
+				val = null;
+			} else {
+				val = Number(val);
+			}
+
+			obj[prop] = val;
+			return obj;
+		}, {});
+
+		/**
+		 * Is stdout a TTY? Colored output is enabled when `true`.
+		 */
+
+		function useColors() {
+			return 'colors' in exports$1.inspectOpts ?
+				Boolean(exports$1.inspectOpts.colors) :
+				tty.isatty(process.stderr.fd);
+		}
+
+		/**
+		 * Adds ANSI color escape codes if enabled.
+		 *
+		 * @api public
+		 */
+
+		function formatArgs(args) {
+			const {namespace: name, useColors} = this;
+
+			if (useColors) {
+				const c = this.color;
+				const colorCode = '\u001B[3' + (c < 8 ? c : '8;5;' + c);
+				const prefix = `  ${colorCode};1m${name} \u001B[0m`;
+
+				args[0] = prefix + args[0].split('\n').join('\n' + prefix);
+				args.push(colorCode + 'm+' + module.exports.humanize(this.diff) + '\u001B[0m');
+			} else {
+				args[0] = getDate() + name + ' ' + args[0];
+			}
+		}
+
+		function getDate() {
+			if (exports$1.inspectOpts.hideDate) {
+				return '';
+			}
+			return new Date().toISOString() + ' ';
+		}
+
+		/**
+		 * Invokes `util.formatWithOptions()` with the specified arguments and writes to stderr.
+		 */
+
+		function log(...args) {
+			return process.stderr.write(util.formatWithOptions(exports$1.inspectOpts, ...args) + '\n');
+		}
+
+		/**
+		 * Save `namespaces`.
+		 *
+		 * @param {String} namespaces
+		 * @api private
+		 */
+		function save(namespaces) {
+			if (namespaces) {
+				process.env.DEBUG = namespaces;
+			} else {
+				// If you set a process.env field to null or undefined, it gets cast to the
+				// string 'null' or 'undefined'. Just delete instead.
+				delete process.env.DEBUG;
+			}
+		}
+
+		/**
+		 * Load `namespaces`.
+		 *
+		 * @return {String} returns the previously persisted debug modes
+		 * @api private
+		 */
+
+		function load() {
+			return process.env.DEBUG;
+		}
+
+		/**
+		 * Init logic for `debug` instances.
+		 *
+		 * Create a new `inspectOpts` object in case `useColors` is set
+		 * differently for a particular `debug` instance.
+		 */
+
+		function init(debug) {
+			debug.inspectOpts = {};
+
+			const keys = Object.keys(exports$1.inspectOpts);
+			for (let i = 0; i < keys.length; i++) {
+				debug.inspectOpts[keys[i]] = exports$1.inspectOpts[keys[i]];
+			}
+		}
+
+		module.exports = requireCommon()(exports$1);
+
+		const {formatters} = module.exports;
+
+		/**
+		 * Map %o to `util.inspect()`, all on a single line.
+		 */
+
+		formatters.o = function (v) {
+			this.inspectOpts.colors = this.useColors;
+			return util.inspect(v, this.inspectOpts)
+				.split('\n')
+				.map(str => str.trim())
+				.join(' ');
+		};
+
+		/**
+		 * Map %O to `util.inspect()`, allowing multiple lines if needed.
+		 */
+
+		formatters.O = function (v) {
+			this.inspectOpts.colors = this.useColors;
+			return util.inspect(v, this.inspectOpts);
+		}; 
+	} (node, node.exports));
+	return node.exports;
+}
+
+/**
+ * Detect Electron renderer / nwjs process, which is node, but we should
+ * treat as a browser.
+ */
+
+var hasRequiredSrc$1;
+
+function requireSrc$1 () {
+	if (hasRequiredSrc$1) return src.exports;
+	hasRequiredSrc$1 = 1;
+	if (typeof process === 'undefined' || process.type === 'renderer' || process.browser === true || process.__nwjs) {
+		src.exports = requireBrowser();
+	} else {
+		src.exports = requireNode();
+	}
+	return src.exports;
+}
+
+var hasRequiredSrc;
+
+function requireSrc () {
+	if (hasRequiredSrc) return src$1;
+	hasRequiredSrc = 1;
+	(function (exports$1) {
+		var __importDefault = (src$1 && src$1.__importDefault) || function (mod) {
+		    return (mod && mod.__esModule) ? mod : { "default": mod };
+		};
+		Object.defineProperty(exports$1, "__esModule", { value: true });
+		const fs_1 = require$$0$2;
+		const debug_1 = __importDefault(requireSrc$1());
+		const log = debug_1.default('@kwsites/file-exists');
+		function check(path, isFile, isDirectory) {
+		    log(`checking %s`, path);
+		    try {
+		        const stat = fs_1.statSync(path);
+		        if (stat.isFile() && isFile) {
+		            log(`[OK] path represents a file`);
+		            return true;
+		        }
+		        if (stat.isDirectory() && isDirectory) {
+		            log(`[OK] path represents a directory`);
+		            return true;
+		        }
+		        log(`[FAIL] path represents something other than a file or directory`);
+		        return false;
+		    }
+		    catch (e) {
+		        if (e.code === 'ENOENT') {
+		            log(`[FAIL] path is not accessible: %o`, e);
+		            return false;
+		        }
+		        log(`[FATAL] %o`, e);
+		        throw e;
+		    }
+		}
+		/**
+		 * Synchronous validation of a path existing either as a file or as a directory.
+		 *
+		 * @param {string} path The path to check
+		 * @param {number} type One or both of the exported numeric constants
+		 */
+		function exists(path, type = exports$1.READABLE) {
+		    return check(path, (type & exports$1.FILE) > 0, (type & exports$1.FOLDER) > 0);
+		}
+		exports$1.exists = exists;
+		/**
+		 * Constant representing a file
+		 */
+		exports$1.FILE = 1;
+		/**
+		 * Constant representing a folder
+		 */
+		exports$1.FOLDER = 2;
+		/**
+		 * Constant representing either a file or a folder
+		 */
+		exports$1.READABLE = exports$1.FILE + exports$1.FOLDER;
+		
+	} (src$1));
+	return src$1;
+}
+
+var hasRequiredDist$1;
+
+function requireDist$1 () {
+	if (hasRequiredDist$1) return dist$1;
+	hasRequiredDist$1 = 1;
+	(function (exports$1) {
+		function __export(m) {
+		    for (var p in m) if (!exports$1.hasOwnProperty(p)) exports$1[p] = m[p];
+		}
+		Object.defineProperty(exports$1, "__esModule", { value: true });
+		__export(requireSrc());
+		
+	} (dist$1));
+	return dist$1;
+}
+
+var distExports$1 = requireDist$1();
+
+var srcExports = requireSrc$1();
+var debug = /*@__PURE__*/getDefaultExportFromCjs(srcExports);
+
+var dist = {};
+
+var hasRequiredDist;
+
+function requireDist () {
+	if (hasRequiredDist) return dist;
+	hasRequiredDist = 1;
+	Object.defineProperty(dist, "__esModule", { value: true });
+	dist.createDeferred = dist.deferred = void 0;
+	/**
+	 * Creates a new `DeferredPromise`
+	 *
+	 * ```typescript
+	 import {deferred} from '@kwsites/promise-deferred`;
+	 ```
+	 */
+	function deferred() {
+	    let done;
+	    let fail;
+	    let status = 'pending';
+	    const promise = new Promise((_done, _fail) => {
+	        done = _done;
+	        fail = _fail;
+	    });
+	    return {
+	        promise,
+	        done(result) {
+	            if (status === 'pending') {
+	                status = 'resolved';
+	                done(result);
+	            }
+	        },
+	        fail(error) {
+	            if (status === 'pending') {
+	                status = 'rejected';
+	                fail(error);
+	            }
+	        },
+	        get fulfilled() {
+	            return status !== 'pending';
+	        },
+	        get status() {
+	            return status;
+	        },
+	    };
+	}
+	dist.deferred = deferred;
+	/**
+	 * Alias of the exported `deferred` function, to help consumers wanting to use `deferred` as the
+	 * local variable name rather than the factory import name, without needing to rename on import.
+	 *
+	 * ```typescript
+	 import {createDeferred} from '@kwsites/promise-deferred`;
+	 ```
+	 */
+	dist.createDeferred = deferred;
+	/**
+	 * Default export allows use as:
+	 *
+	 * ```typescript
+	 import deferred from '@kwsites/promise-deferred`;
+	 ```
+	 */
+	dist.default = deferred;
+	
+	return dist;
+}
+
+var distExports = requireDist();
+
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __commonJS = (cb, mod) => function __require() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// src/lib/args/pathspec.ts
+function pathspec(...paths) {
+  const key = new String(paths);
+  cache.set(key, paths);
+  return key;
+}
+function isPathSpec(path) {
+  return path instanceof String && cache.has(path);
+}
+function toPaths(pathSpec) {
+  return cache.get(pathSpec) || [];
+}
+var cache;
+var init_pathspec = __esm({
+  "src/lib/args/pathspec.ts"() {
+    cache = /* @__PURE__ */ new WeakMap();
+  }
+});
+
+// src/lib/errors/git-error.ts
+var GitError;
+var init_git_error = __esm({
+  "src/lib/errors/git-error.ts"() {
+    GitError = class extends Error {
+      constructor(task, message) {
+        super(message);
+        this.task = task;
+        Object.setPrototypeOf(this, new.target.prototype);
+      }
+    };
+  }
+});
+
+// src/lib/errors/git-response-error.ts
+var GitResponseError;
+var init_git_response_error = __esm({
+  "src/lib/errors/git-response-error.ts"() {
+    init_git_error();
+    GitResponseError = class extends GitError {
+      constructor(git, message) {
+        super(void 0, message || String(git));
+        this.git = git;
+      }
+    };
+  }
+});
+
+// src/lib/errors/task-configuration-error.ts
+var TaskConfigurationError;
+var init_task_configuration_error = __esm({
+  "src/lib/errors/task-configuration-error.ts"() {
+    init_git_error();
+    TaskConfigurationError = class extends GitError {
+      constructor(message) {
+        super(void 0, message);
+      }
+    };
+  }
+});
+function asFunction(source) {
+  if (typeof source !== "function") {
+    return NOOP;
+  }
+  return source;
+}
+function isUserFunction(source) {
+  return typeof source === "function" && source !== NOOP;
+}
+function splitOn(input, char) {
+  const index = input.indexOf(char);
+  if (index <= 0) {
+    return [input, ""];
+  }
+  return [input.substr(0, index), input.substr(index + 1)];
+}
+function first(input, offset = 0) {
+  return isArrayLike(input) && input.length > offset ? input[offset] : void 0;
+}
+function last(input, offset = 0) {
+  if (isArrayLike(input) && input.length > offset) {
+    return input[input.length - 1 - offset];
+  }
+}
+function isArrayLike(input) {
+  return filterHasLength(input);
+}
+function toLinesWithContent(input = "", trimmed2 = true, separator = "\n") {
+  return input.split(separator).reduce((output, line) => {
+    const lineContent = trimmed2 ? line.trim() : line;
+    if (lineContent) {
+      output.push(lineContent);
+    }
+    return output;
+  }, []);
+}
+function forEachLineWithContent(input, callback) {
+  return toLinesWithContent(input, true).map((line) => callback(line));
+}
+function folderExists(path) {
+  return distExports$1.exists(path, distExports$1.FOLDER);
+}
+function append(target, item) {
+  if (Array.isArray(target)) {
+    if (!target.includes(item)) {
+      target.push(item);
+    }
+  } else {
+    target.add(item);
+  }
+  return item;
+}
+function including(target, item) {
+  if (Array.isArray(target) && !target.includes(item)) {
+    target.push(item);
+  }
+  return target;
+}
+function remove(target, item) {
+  if (Array.isArray(target)) {
+    const index = target.indexOf(item);
+    if (index >= 0) {
+      target.splice(index, 1);
+    }
+  } else {
+    target.delete(item);
+  }
+  return item;
+}
+function asArray(source) {
+  return Array.isArray(source) ? source : [source];
+}
+function asCamelCase(str) {
+  return str.replace(/[\s-]+(.)/g, (_all, chr) => {
+    return chr.toUpperCase();
+  });
+}
+function asStringArray(source) {
+  return asArray(source).map((item) => {
+    return item instanceof String ? item : String(item);
+  });
+}
+function asNumber(source, onNaN = 0) {
+  if (source == null) {
+    return onNaN;
+  }
+  const num = parseInt(source, 10);
+  return Number.isNaN(num) ? onNaN : num;
+}
+function prefixedArray(input, prefix) {
+  const output = [];
+  for (let i = 0, max = input.length; i < max; i++) {
+    output.push(prefix, input[i]);
+  }
+  return output;
+}
+function bufferToString(input) {
+  return (Array.isArray(input) ? Buffer$1.concat(input) : input).toString("utf-8");
+}
+function pick(source, properties) {
+  const out = {};
+  properties.forEach((key) => {
+    if (source[key] !== void 0) {
+      out[key] = source[key];
+    }
+  });
+  return out;
+}
+function delay(duration = 0) {
+  return new Promise((done) => setTimeout(done, duration));
+}
+function orVoid(input) {
+  if (input === false) {
+    return void 0;
+  }
+  return input;
+}
+var NULL, NOOP, objectToString;
+var init_util = __esm({
+  "src/lib/utils/util.ts"() {
+    init_argument_filters();
+    NULL = "\0";
+    NOOP = () => {
+    };
+    objectToString = Object.prototype.toString.call.bind(Object.prototype.toString);
+  }
+});
+
+// src/lib/utils/argument-filters.ts
+function filterType(input, filter, def) {
+  if (filter(input)) {
+    return input;
+  }
+  return arguments.length > 2 ? def : void 0;
+}
+function filterPrimitives(input, omit) {
+  const type = isPathSpec(input) ? "string" : typeof input;
+  return /number|string|boolean/.test(type) && (!omit || !omit.includes(type));
+}
+function filterPlainObject(input) {
+  return !!input && objectToString(input) === "[object Object]";
+}
+function filterFunction(input) {
+  return typeof input === "function";
+}
+var filterArray, filterNumber, filterString, filterStringOrStringArray, filterHasLength;
+var init_argument_filters = __esm({
+  "src/lib/utils/argument-filters.ts"() {
+    init_pathspec();
+    init_util();
+    filterArray = (input) => {
+      return Array.isArray(input);
+    };
+    filterNumber = (input) => {
+      return typeof input === "number";
+    };
+    filterString = (input) => {
+      return typeof input === "string";
+    };
+    filterStringOrStringArray = (input) => {
+      return filterString(input) || Array.isArray(input) && input.every(filterString);
+    };
+    filterHasLength = (input) => {
+      if (input == null || "number|boolean|function".includes(typeof input)) {
+        return false;
+      }
+      return typeof input.length === "number";
+    };
+  }
+});
+
+// src/lib/utils/exit-codes.ts
+var ExitCodes;
+var init_exit_codes = __esm({
+  "src/lib/utils/exit-codes.ts"() {
+    ExitCodes = /* @__PURE__ */ ((ExitCodes2) => {
+      ExitCodes2[ExitCodes2["SUCCESS"] = 0] = "SUCCESS";
+      ExitCodes2[ExitCodes2["ERROR"] = 1] = "ERROR";
+      ExitCodes2[ExitCodes2["NOT_FOUND"] = -2] = "NOT_FOUND";
+      ExitCodes2[ExitCodes2["UNCLEAN"] = 128] = "UNCLEAN";
+      return ExitCodes2;
+    })(ExitCodes || {});
+  }
+});
+
+// src/lib/utils/git-output-streams.ts
+var GitOutputStreams;
+var init_git_output_streams = __esm({
+  "src/lib/utils/git-output-streams.ts"() {
+    GitOutputStreams = class _GitOutputStreams {
+      constructor(stdOut, stdErr) {
+        this.stdOut = stdOut;
+        this.stdErr = stdErr;
+      }
+      asStrings() {
+        return new _GitOutputStreams(this.stdOut.toString("utf8"), this.stdErr.toString("utf8"));
+      }
+    };
+  }
+});
+
+// src/lib/utils/line-parser.ts
+function useMatchesDefault() {
+  throw new Error(`LineParser:useMatches not implemented`);
+}
+var LineParser, RemoteLineParser;
+var init_line_parser = __esm({
+  "src/lib/utils/line-parser.ts"() {
+    LineParser = class {
+      constructor(regExp, useMatches) {
+        this.matches = [];
+        this.useMatches = useMatchesDefault;
+        this.parse = (line, target) => {
+          this.resetMatches();
+          if (!this._regExp.every((reg, index) => this.addMatch(reg, index, line(index)))) {
+            return false;
+          }
+          return this.useMatches(target, this.prepareMatches()) !== false;
+        };
+        this._regExp = Array.isArray(regExp) ? regExp : [regExp];
+        if (useMatches) {
+          this.useMatches = useMatches;
+        }
+      }
+      resetMatches() {
+        this.matches.length = 0;
+      }
+      prepareMatches() {
+        return this.matches;
+      }
+      addMatch(reg, index, line) {
+        const matched = line && reg.exec(line);
+        if (matched) {
+          this.pushMatch(index, matched);
+        }
+        return !!matched;
+      }
+      pushMatch(_index, matched) {
+        this.matches.push(...matched.slice(1));
+      }
+    };
+    RemoteLineParser = class extends LineParser {
+      addMatch(reg, index, line) {
+        return /^remote:\s/.test(String(line)) && super.addMatch(reg, index, line);
+      }
+      pushMatch(index, matched) {
+        if (index > 0 || matched.length > 1) {
+          super.pushMatch(index, matched);
+        }
+      }
+    };
+  }
+});
+
+// src/lib/utils/simple-git-options.ts
+function createInstanceConfig(...options) {
+  const baseDir = process.cwd();
+  const config = Object.assign(
+    { baseDir, ...defaultOptions },
+    ...options.filter((o) => typeof o === "object" && o)
+  );
+  config.baseDir = config.baseDir || baseDir;
+  config.trimmed = config.trimmed === true;
+  return config;
+}
+var defaultOptions;
+var init_simple_git_options = __esm({
+  "src/lib/utils/simple-git-options.ts"() {
+    defaultOptions = {
+      binary: "git",
+      maxConcurrentProcesses: 5,
+      config: [],
+      trimmed: false
+    };
+  }
+});
+
+// src/lib/utils/task-options.ts
+function appendTaskOptions(options, commands = []) {
+  if (!filterPlainObject(options)) {
+    return commands;
+  }
+  return Object.keys(options).reduce((commands2, key) => {
+    const value = options[key];
+    if (isPathSpec(value)) {
+      commands2.push(value);
+    } else if (filterPrimitives(value, ["boolean"])) {
+      commands2.push(key + "=" + value);
+    } else if (Array.isArray(value)) {
+      for (const v of value) {
+        if (!filterPrimitives(v, ["string", "number"])) {
+          commands2.push(key + "=" + v);
+        }
+      }
+    } else {
+      commands2.push(key);
+    }
+    return commands2;
+  }, commands);
+}
+function getTrailingOptions(args, initialPrimitive = 0, objectOnly = false) {
+  const command = [];
+  for (let i = 0, max = initialPrimitive < 0 ? args.length : initialPrimitive; i < max; i++) {
+    if ("string|number".includes(typeof args[i])) {
+      command.push(String(args[i]));
+    }
+  }
+  appendTaskOptions(trailingOptionsArgument(args), command);
+  if (!objectOnly) {
+    command.push(...trailingArrayArgument(args));
+  }
+  return command;
+}
+function trailingArrayArgument(args) {
+  const hasTrailingCallback = typeof last(args) === "function";
+  return asStringArray(filterType(last(args, hasTrailingCallback ? 1 : 0), filterArray, []));
+}
+function trailingOptionsArgument(args) {
+  const hasTrailingCallback = filterFunction(last(args));
+  return filterType(last(args, hasTrailingCallback ? 1 : 0), filterPlainObject);
+}
+function trailingFunctionArgument(args, includeNoop = true) {
+  const callback = asFunction(last(args));
+  return includeNoop || isUserFunction(callback) ? callback : void 0;
+}
+var init_task_options = __esm({
+  "src/lib/utils/task-options.ts"() {
+    init_argument_filters();
+    init_util();
+    init_pathspec();
+  }
+});
+
+// src/lib/utils/task-parser.ts
+function callTaskParser(parser4, streams) {
+  return parser4(streams.stdOut, streams.stdErr);
+}
+function parseStringResponse(result, parsers12, texts, trim = true) {
+  asArray(texts).forEach((text) => {
+    for (let lines = toLinesWithContent(text, trim), i = 0, max = lines.length; i < max; i++) {
+      const line = (offset = 0) => {
+        if (i + offset >= max) {
+          return;
+        }
+        return lines[i + offset];
+      };
+      parsers12.some(({ parse }) => parse(line, result));
+    }
+  });
+  return result;
+}
+var init_task_parser = __esm({
+  "src/lib/utils/task-parser.ts"() {
+    init_util();
+  }
+});
+
+// src/lib/utils/index.ts
+var utils_exports = {};
+__export(utils_exports, {
+  ExitCodes: () => ExitCodes,
+  GitOutputStreams: () => GitOutputStreams,
+  LineParser: () => LineParser,
+  NOOP: () => NOOP,
+  NULL: () => NULL,
+  RemoteLineParser: () => RemoteLineParser,
+  append: () => append,
+  appendTaskOptions: () => appendTaskOptions,
+  asArray: () => asArray,
+  asCamelCase: () => asCamelCase,
+  asFunction: () => asFunction,
+  asNumber: () => asNumber,
+  asStringArray: () => asStringArray,
+  bufferToString: () => bufferToString,
+  callTaskParser: () => callTaskParser,
+  createInstanceConfig: () => createInstanceConfig,
+  delay: () => delay,
+  filterArray: () => filterArray,
+  filterFunction: () => filterFunction,
+  filterHasLength: () => filterHasLength,
+  filterNumber: () => filterNumber,
+  filterPlainObject: () => filterPlainObject,
+  filterPrimitives: () => filterPrimitives,
+  filterString: () => filterString,
+  filterStringOrStringArray: () => filterStringOrStringArray,
+  filterType: () => filterType,
+  first: () => first,
+  folderExists: () => folderExists,
+  forEachLineWithContent: () => forEachLineWithContent,
+  getTrailingOptions: () => getTrailingOptions,
+  including: () => including,
+  isUserFunction: () => isUserFunction,
+  last: () => last,
+  objectToString: () => objectToString,
+  orVoid: () => orVoid,
+  parseStringResponse: () => parseStringResponse,
+  pick: () => pick,
+  prefixedArray: () => prefixedArray,
+  remove: () => remove,
+  splitOn: () => splitOn,
+  toLinesWithContent: () => toLinesWithContent,
+  trailingFunctionArgument: () => trailingFunctionArgument,
+  trailingOptionsArgument: () => trailingOptionsArgument
+});
+var init_utils = __esm({
+  "src/lib/utils/index.ts"() {
+    init_argument_filters();
+    init_exit_codes();
+    init_git_output_streams();
+    init_line_parser();
+    init_simple_git_options();
+    init_task_options();
+    init_task_parser();
+    init_util();
+  }
+});
+
+// src/lib/tasks/check-is-repo.ts
+var check_is_repo_exports = {};
+__export(check_is_repo_exports, {
+  CheckRepoActions: () => CheckRepoActions,
+  checkIsBareRepoTask: () => checkIsBareRepoTask,
+  checkIsRepoRootTask: () => checkIsRepoRootTask,
+  checkIsRepoTask: () => checkIsRepoTask
+});
+function checkIsRepoTask(action) {
+  switch (action) {
+    case "bare" /* BARE */:
+      return checkIsBareRepoTask();
+    case "root" /* IS_REPO_ROOT */:
+      return checkIsRepoRootTask();
+  }
+  const commands = ["rev-parse", "--is-inside-work-tree"];
+  return {
+    commands,
+    format: "utf-8",
+    onError,
+    parser
+  };
+}
+function checkIsRepoRootTask() {
+  const commands = ["rev-parse", "--git-dir"];
+  return {
+    commands,
+    format: "utf-8",
+    onError,
+    parser(path) {
+      return /^\.(git)?$/.test(path.trim());
+    }
+  };
+}
+function checkIsBareRepoTask() {
+  const commands = ["rev-parse", "--is-bare-repository"];
+  return {
+    commands,
+    format: "utf-8",
+    onError,
+    parser
+  };
+}
+function isNotRepoMessage(error) {
+  return /(Not a git repository|Kein Git-Repository)/i.test(String(error));
+}
+var CheckRepoActions, onError, parser;
+var init_check_is_repo = __esm({
+  "src/lib/tasks/check-is-repo.ts"() {
+    init_utils();
+    CheckRepoActions = /* @__PURE__ */ ((CheckRepoActions2) => {
+      CheckRepoActions2["BARE"] = "bare";
+      CheckRepoActions2["IN_TREE"] = "tree";
+      CheckRepoActions2["IS_REPO_ROOT"] = "root";
+      return CheckRepoActions2;
+    })(CheckRepoActions || {});
+    onError = ({ exitCode }, error, done, fail) => {
+      if (exitCode === 128 /* UNCLEAN */ && isNotRepoMessage(error)) {
+        return done(Buffer.from("false"));
+      }
+      fail(error);
+    };
+    parser = (text) => {
+      return text.trim() === "true";
+    };
+  }
+});
+
+// src/lib/responses/CleanSummary.ts
+function cleanSummaryParser(dryRun, text) {
+  const summary = new CleanResponse(dryRun);
+  const regexp = dryRun ? dryRunRemovalRegexp : removalRegexp;
+  toLinesWithContent(text).forEach((line) => {
+    const removed = line.replace(regexp, "");
+    summary.paths.push(removed);
+    (isFolderRegexp.test(removed) ? summary.folders : summary.files).push(removed);
+  });
+  return summary;
+}
+var CleanResponse, removalRegexp, dryRunRemovalRegexp, isFolderRegexp;
+var init_CleanSummary = __esm({
+  "src/lib/responses/CleanSummary.ts"() {
+    init_utils();
+    CleanResponse = class {
+      constructor(dryRun) {
+        this.dryRun = dryRun;
+        this.paths = [];
+        this.files = [];
+        this.folders = [];
+      }
+    };
+    removalRegexp = /^[a-z]+\s*/i;
+    dryRunRemovalRegexp = /^[a-z]+\s+[a-z]+\s*/i;
+    isFolderRegexp = /\/$/;
+  }
+});
+
+// src/lib/tasks/task.ts
+var task_exports = {};
+__export(task_exports, {
+  EMPTY_COMMANDS: () => EMPTY_COMMANDS,
+  adhocExecTask: () => adhocExecTask,
+  configurationErrorTask: () => configurationErrorTask,
+  isBufferTask: () => isBufferTask,
+  isEmptyTask: () => isEmptyTask,
+  straightThroughBufferTask: () => straightThroughBufferTask,
+  straightThroughStringTask: () => straightThroughStringTask
+});
+function adhocExecTask(parser4) {
+  return {
+    commands: EMPTY_COMMANDS,
+    format: "empty",
+    parser: parser4
+  };
+}
+function configurationErrorTask(error) {
+  return {
+    commands: EMPTY_COMMANDS,
+    format: "empty",
+    parser() {
+      throw typeof error === "string" ? new TaskConfigurationError(error) : error;
+    }
+  };
+}
+function straightThroughStringTask(commands, trimmed2 = false) {
+  return {
+    commands,
+    format: "utf-8",
+    parser(text) {
+      return trimmed2 ? String(text).trim() : text;
+    }
+  };
+}
+function straightThroughBufferTask(commands) {
+  return {
+    commands,
+    format: "buffer",
+    parser(buffer) {
+      return buffer;
+    }
+  };
+}
+function isBufferTask(task) {
+  return task.format === "buffer";
+}
+function isEmptyTask(task) {
+  return task.format === "empty" || !task.commands.length;
+}
+var EMPTY_COMMANDS;
+var init_task = __esm({
+  "src/lib/tasks/task.ts"() {
+    init_task_configuration_error();
+    EMPTY_COMMANDS = [];
+  }
+});
+
+// src/lib/tasks/clean.ts
+var clean_exports = {};
+__export(clean_exports, {
+  CONFIG_ERROR_INTERACTIVE_MODE: () => CONFIG_ERROR_INTERACTIVE_MODE,
+  CONFIG_ERROR_MODE_REQUIRED: () => CONFIG_ERROR_MODE_REQUIRED,
+  CONFIG_ERROR_UNKNOWN_OPTION: () => CONFIG_ERROR_UNKNOWN_OPTION,
+  CleanOptions: () => CleanOptions,
+  cleanTask: () => cleanTask,
+  cleanWithOptionsTask: () => cleanWithOptionsTask,
+  isCleanOptionsArray: () => isCleanOptionsArray
+});
+function cleanWithOptionsTask(mode, customArgs) {
+  const { cleanMode, options, valid } = getCleanOptions(mode);
+  if (!cleanMode) {
+    return configurationErrorTask(CONFIG_ERROR_MODE_REQUIRED);
+  }
+  if (!valid.options) {
+    return configurationErrorTask(CONFIG_ERROR_UNKNOWN_OPTION + JSON.stringify(mode));
+  }
+  options.push(...customArgs);
+  if (options.some(isInteractiveMode)) {
+    return configurationErrorTask(CONFIG_ERROR_INTERACTIVE_MODE);
+  }
+  return cleanTask(cleanMode, options);
+}
+function cleanTask(mode, customArgs) {
+  const commands = ["clean", `-${mode}`, ...customArgs];
+  return {
+    commands,
+    format: "utf-8",
+    parser(text) {
+      return cleanSummaryParser(mode === "n" /* DRY_RUN */, text);
+    }
+  };
+}
+function isCleanOptionsArray(input) {
+  return Array.isArray(input) && input.every((test) => CleanOptionValues.has(test));
+}
+function getCleanOptions(input) {
+  let cleanMode;
+  let options = [];
+  let valid = { cleanMode: false, options: true };
+  input.replace(/[^a-z]i/g, "").split("").forEach((char) => {
+    if (isCleanMode(char)) {
+      cleanMode = char;
+      valid.cleanMode = true;
+    } else {
+      valid.options = valid.options && isKnownOption(options[options.length] = `-${char}`);
+    }
+  });
+  return {
+    cleanMode,
+    options,
+    valid
+  };
+}
+function isCleanMode(cleanMode) {
+  return cleanMode === "f" /* FORCE */ || cleanMode === "n" /* DRY_RUN */;
+}
+function isKnownOption(option) {
+  return /^-[a-z]$/i.test(option) && CleanOptionValues.has(option.charAt(1));
+}
+function isInteractiveMode(option) {
+  if (/^-[^\-]/.test(option)) {
+    return option.indexOf("i") > 0;
+  }
+  return option === "--interactive";
+}
+var CONFIG_ERROR_INTERACTIVE_MODE, CONFIG_ERROR_MODE_REQUIRED, CONFIG_ERROR_UNKNOWN_OPTION, CleanOptions, CleanOptionValues;
+var init_clean = __esm({
+  "src/lib/tasks/clean.ts"() {
+    init_CleanSummary();
+    init_utils();
+    init_task();
+    CONFIG_ERROR_INTERACTIVE_MODE = "Git clean interactive mode is not supported";
+    CONFIG_ERROR_MODE_REQUIRED = 'Git clean mode parameter ("n" or "f") is required';
+    CONFIG_ERROR_UNKNOWN_OPTION = "Git clean unknown option found in: ";
+    CleanOptions = /* @__PURE__ */ ((CleanOptions2) => {
+      CleanOptions2["DRY_RUN"] = "n";
+      CleanOptions2["FORCE"] = "f";
+      CleanOptions2["IGNORED_INCLUDED"] = "x";
+      CleanOptions2["IGNORED_ONLY"] = "X";
+      CleanOptions2["EXCLUDING"] = "e";
+      CleanOptions2["QUIET"] = "q";
+      CleanOptions2["RECURSIVE"] = "d";
+      return CleanOptions2;
+    })(CleanOptions || {});
+    CleanOptionValues = /* @__PURE__ */ new Set([
+      "i",
+      ...asStringArray(Object.values(CleanOptions))
+    ]);
+  }
+});
+
+// src/lib/responses/ConfigList.ts
+function configListParser(text) {
+  const config = new ConfigList();
+  for (const item of configParser(text)) {
+    config.addValue(item.file, String(item.key), item.value);
+  }
+  return config;
+}
+function configGetParser(text, key) {
+  let value = null;
+  const values = [];
+  const scopes = /* @__PURE__ */ new Map();
+  for (const item of configParser(text, key)) {
+    if (item.key !== key) {
+      continue;
+    }
+    values.push(value = item.value);
+    if (!scopes.has(item.file)) {
+      scopes.set(item.file, []);
+    }
+    scopes.get(item.file).push(value);
+  }
+  return {
+    key,
+    paths: Array.from(scopes.keys()),
+    scopes,
+    value,
+    values
+  };
+}
+function configFilePath(filePath) {
+  return filePath.replace(/^(file):/, "");
+}
+function* configParser(text, requestedKey = null) {
+  const lines = text.split("\0");
+  for (let i = 0, max = lines.length - 1; i < max; ) {
+    const file = configFilePath(lines[i++]);
+    let value = lines[i++];
+    let key = requestedKey;
+    if (value.includes("\n")) {
+      const line = splitOn(value, "\n");
+      key = line[0];
+      value = line[1];
+    }
+    yield { file, key, value };
+  }
+}
+var ConfigList;
+var init_ConfigList = __esm({
+  "src/lib/responses/ConfigList.ts"() {
+    init_utils();
+    ConfigList = class {
+      constructor() {
+        this.files = [];
+        this.values = /* @__PURE__ */ Object.create(null);
+      }
+      get all() {
+        if (!this._all) {
+          this._all = this.files.reduce((all, file) => {
+            return Object.assign(all, this.values[file]);
+          }, {});
+        }
+        return this._all;
+      }
+      addFile(file) {
+        if (!(file in this.values)) {
+          const latest = last(this.files);
+          this.values[file] = latest ? Object.create(this.values[latest]) : {};
+          this.files.push(file);
+        }
+        return this.values[file];
+      }
+      addValue(file, key, value) {
+        const values = this.addFile(file);
+        if (!Object.hasOwn(values, key)) {
+          values[key] = value;
+        } else if (Array.isArray(values[key])) {
+          values[key].push(value);
+        } else {
+          values[key] = [values[key], value];
+        }
+        this._all = void 0;
+      }
+    };
+  }
+});
+
+// src/lib/tasks/config.ts
+function asConfigScope(scope, fallback) {
+  if (typeof scope === "string" && Object.hasOwn(GitConfigScope, scope)) {
+    return scope;
+  }
+  return fallback;
+}
+function addConfigTask(key, value, append2, scope) {
+  const commands = ["config", `--${scope}`];
+  if (append2) {
+    commands.push("--add");
+  }
+  commands.push(key, value);
+  return {
+    commands,
+    format: "utf-8",
+    parser(text) {
+      return text;
+    }
+  };
+}
+function getConfigTask(key, scope) {
+  const commands = ["config", "--null", "--show-origin", "--get-all", key];
+  if (scope) {
+    commands.splice(1, 0, `--${scope}`);
+  }
+  return {
+    commands,
+    format: "utf-8",
+    parser(text) {
+      return configGetParser(text, key);
+    }
+  };
+}
+function listConfigTask(scope) {
+  const commands = ["config", "--list", "--show-origin", "--null"];
+  if (scope) {
+    commands.push(`--${scope}`);
+  }
+  return {
+    commands,
+    format: "utf-8",
+    parser(text) {
+      return configListParser(text);
+    }
+  };
+}
+function config_default() {
+  return {
+    addConfig(key, value, ...rest) {
+      return this._runTask(
+        addConfigTask(
+          key,
+          value,
+          rest[0] === true,
+          asConfigScope(rest[1], "local" /* local */)
+        ),
+        trailingFunctionArgument(arguments)
+      );
+    },
+    getConfig(key, scope) {
+      return this._runTask(
+        getConfigTask(key, asConfigScope(scope, void 0)),
+        trailingFunctionArgument(arguments)
+      );
+    },
+    listConfig(...rest) {
+      return this._runTask(
+        listConfigTask(asConfigScope(rest[0], void 0)),
+        trailingFunctionArgument(arguments)
+      );
+    }
+  };
+}
+var GitConfigScope;
+var init_config = __esm({
+  "src/lib/tasks/config.ts"() {
+    init_ConfigList();
+    init_utils();
+    GitConfigScope = /* @__PURE__ */ ((GitConfigScope2) => {
+      GitConfigScope2["system"] = "system";
+      GitConfigScope2["global"] = "global";
+      GitConfigScope2["local"] = "local";
+      GitConfigScope2["worktree"] = "worktree";
+      return GitConfigScope2;
+    })(GitConfigScope || {});
+  }
+});
+
+// src/lib/tasks/diff-name-status.ts
+function isDiffNameStatus(input) {
+  return diffNameStatus.has(input);
+}
+var DiffNameStatus, diffNameStatus;
+var init_diff_name_status = __esm({
+  "src/lib/tasks/diff-name-status.ts"() {
+    DiffNameStatus = /* @__PURE__ */ ((DiffNameStatus2) => {
+      DiffNameStatus2["ADDED"] = "A";
+      DiffNameStatus2["COPIED"] = "C";
+      DiffNameStatus2["DELETED"] = "D";
+      DiffNameStatus2["MODIFIED"] = "M";
+      DiffNameStatus2["RENAMED"] = "R";
+      DiffNameStatus2["CHANGED"] = "T";
+      DiffNameStatus2["UNMERGED"] = "U";
+      DiffNameStatus2["UNKNOWN"] = "X";
+      DiffNameStatus2["BROKEN"] = "B";
+      return DiffNameStatus2;
+    })(DiffNameStatus || {});
+    diffNameStatus = new Set(Object.values(DiffNameStatus));
+  }
+});
+
+// src/lib/tasks/grep.ts
+function grepQueryBuilder(...params) {
+  return new GrepQuery().param(...params);
+}
+function parseGrep(grep) {
+  const paths = /* @__PURE__ */ new Set();
+  const results = {};
+  forEachLineWithContent(grep, (input) => {
+    const [path, line, preview] = input.split(NULL);
+    paths.add(path);
+    (results[path] = results[path] || []).push({
+      line: asNumber(line),
+      path,
+      preview
+    });
+  });
+  return {
+    paths,
+    results
+  };
+}
+function grep_default() {
+  return {
+    grep(searchTerm) {
+      const then = trailingFunctionArgument(arguments);
+      const options = getTrailingOptions(arguments);
+      for (const option of disallowedOptions) {
+        if (options.includes(option)) {
+          return this._runTask(
+            configurationErrorTask(`git.grep: use of "${option}" is not supported.`),
+            then
+          );
+        }
+      }
+      if (typeof searchTerm === "string") {
+        searchTerm = grepQueryBuilder().param(searchTerm);
+      }
+      const commands = ["grep", "--null", "-n", "--full-name", ...options, ...searchTerm];
+      return this._runTask(
+        {
+          commands,
+          format: "utf-8",
+          parser(stdOut) {
+            return parseGrep(stdOut);
+          }
+        },
+        then
+      );
+    }
+  };
+}
+var disallowedOptions, Query, _a, GrepQuery;
+var init_grep = __esm({
+  "src/lib/tasks/grep.ts"() {
+    init_utils();
+    init_task();
+    disallowedOptions = ["-h"];
+    Query = Symbol("grepQuery");
+    GrepQuery = class {
+      constructor() {
+        this[_a] = [];
+      }
+      *[(_a = Query, Symbol.iterator)]() {
+        for (const query of this[Query]) {
+          yield query;
+        }
+      }
+      and(...and) {
+        and.length && this[Query].push("--and", "(", ...prefixedArray(and, "-e"), ")");
+        return this;
+      }
+      param(...param) {
+        this[Query].push(...prefixedArray(param, "-e"));
+        return this;
+      }
+    };
+  }
+});
+
+// src/lib/tasks/reset.ts
+var reset_exports = {};
+__export(reset_exports, {
+  ResetMode: () => ResetMode,
+  getResetMode: () => getResetMode,
+  resetTask: () => resetTask
+});
+function resetTask(mode, customArgs) {
+  const commands = ["reset"];
+  if (isValidResetMode(mode)) {
+    commands.push(`--${mode}`);
+  }
+  commands.push(...customArgs);
+  return straightThroughStringTask(commands);
+}
+function getResetMode(mode) {
+  if (isValidResetMode(mode)) {
+    return mode;
+  }
+  switch (typeof mode) {
+    case "string":
+    case "undefined":
+      return "soft" /* SOFT */;
+  }
+  return;
+}
+function isValidResetMode(mode) {
+  return typeof mode === "string" && validResetModes.includes(mode);
+}
+var ResetMode, validResetModes;
+var init_reset = __esm({
+  "src/lib/tasks/reset.ts"() {
+    init_utils();
+    init_task();
+    ResetMode = /* @__PURE__ */ ((ResetMode2) => {
+      ResetMode2["MIXED"] = "mixed";
+      ResetMode2["SOFT"] = "soft";
+      ResetMode2["HARD"] = "hard";
+      ResetMode2["MERGE"] = "merge";
+      ResetMode2["KEEP"] = "keep";
+      return ResetMode2;
+    })(ResetMode || {});
+    validResetModes = asStringArray(Object.values(ResetMode));
+  }
+});
+function createLog() {
+  return debug("simple-git");
+}
+function prefixedLogger(to, prefix, forward) {
+  if (!prefix || !String(prefix).replace(/\s*/, "")) {
+    return !forward ? to : (message, ...args) => {
+      to(message, ...args);
+      forward(message, ...args);
+    };
+  }
+  return (message, ...args) => {
+    to(`%s ${message}`, prefix, ...args);
+    if (forward) {
+      forward(message, ...args);
+    }
+  };
+}
+function childLoggerName(name, childDebugger, { namespace: parentNamespace }) {
+  if (typeof name === "string") {
+    return name;
+  }
+  const childNamespace = childDebugger && childDebugger.namespace || "";
+  if (childNamespace.startsWith(parentNamespace)) {
+    return childNamespace.substr(parentNamespace.length + 1);
+  }
+  return childNamespace || parentNamespace;
+}
+function createLogger(label, verbose, initialStep, infoDebugger = createLog()) {
+  const labelPrefix = label && `[${label}]` || "";
+  const spawned = [];
+  const debugDebugger = typeof verbose === "string" ? infoDebugger.extend(verbose) : verbose;
+  const key = childLoggerName(filterType(verbose, filterString), debugDebugger, infoDebugger);
+  return step(initialStep);
+  function sibling(name, initial) {
+    return append(
+      spawned,
+      createLogger(label, key.replace(/^[^:]+/, name), initial, infoDebugger)
+    );
+  }
+  function step(phase) {
+    const stepPrefix = phase && `[${phase}]` || "";
+    const debug2 = debugDebugger && prefixedLogger(debugDebugger, stepPrefix) || NOOP;
+    const info = prefixedLogger(infoDebugger, `${labelPrefix} ${stepPrefix}`, debug2);
+    return Object.assign(debugDebugger ? debug2 : info, {
+      label,
+      sibling,
+      info,
+      step
+    });
+  }
+}
+var init_git_logger = __esm({
+  "src/lib/git-logger.ts"() {
+    init_utils();
+    debug.formatters.L = (value) => String(filterHasLength(value) ? value.length : "-");
+    debug.formatters.B = (value) => {
+      if (Buffer.isBuffer(value)) {
+        return value.toString("utf8");
+      }
+      return objectToString(value);
+    };
+  }
+});
+
+// src/lib/runners/tasks-pending-queue.ts
+var TasksPendingQueue;
+var init_tasks_pending_queue = __esm({
+  "src/lib/runners/tasks-pending-queue.ts"() {
+    init_git_error();
+    init_git_logger();
+    TasksPendingQueue = class _TasksPendingQueue {
+      constructor(logLabel = "GitExecutor") {
+        this.logLabel = logLabel;
+        this._queue = /* @__PURE__ */ new Map();
+      }
+      withProgress(task) {
+        return this._queue.get(task);
+      }
+      createProgress(task) {
+        const name = _TasksPendingQueue.getName(task.commands[0]);
+        const logger = createLogger(this.logLabel, name);
+        return {
+          task,
+          logger,
+          name
+        };
+      }
+      push(task) {
+        const progress = this.createProgress(task);
+        progress.logger("Adding task to the queue, commands = %o", task.commands);
+        this._queue.set(task, progress);
+        return progress;
+      }
+      fatal(err) {
+        for (const [task, { logger }] of Array.from(this._queue.entries())) {
+          if (task === err.task) {
+            logger.info(`Failed %o`, err);
+            logger(
+              `Fatal exception, any as-yet un-started tasks run through this executor will not be attempted`
+            );
+          } else {
+            logger.info(
+              `A fatal exception occurred in a previous task, the queue has been purged: %o`,
+              err.message
+            );
+          }
+          this.complete(task);
+        }
+        if (this._queue.size !== 0) {
+          throw new Error(`Queue size should be zero after fatal: ${this._queue.size}`);
+        }
+      }
+      complete(task) {
+        const progress = this.withProgress(task);
+        if (progress) {
+          this._queue.delete(task);
+        }
+      }
+      attempt(task) {
+        const progress = this.withProgress(task);
+        if (!progress) {
+          throw new GitError(void 0, "TasksPendingQueue: attempt called for an unknown task");
+        }
+        progress.logger("Starting task");
+        return progress;
+      }
+      static getName(name = "empty") {
+        return `task:${name}:${++_TasksPendingQueue.counter}`;
+      }
+      static {
+        this.counter = 0;
+      }
+    };
+  }
+});
+function pluginContext(task, commands) {
+  return {
+    method: first(task.commands) || "",
+    commands
+  };
+}
+function onErrorReceived(target, logger) {
+  return (err) => {
+    logger(`[ERROR] child process exception %o`, err);
+    target.push(Buffer.from(String(err.stack), "ascii"));
+  };
+}
+function onDataReceived(target, name, logger, output) {
+  return (buffer) => {
+    logger(`%s received %L bytes`, name, buffer);
+    output(`%B`, buffer);
+    target.push(buffer);
+  };
+}
+var GitExecutorChain;
+var init_git_executor_chain = __esm({
+  "src/lib/runners/git-executor-chain.ts"() {
+    init_git_error();
+    init_task();
+    init_utils();
+    init_tasks_pending_queue();
+    GitExecutorChain = class {
+      constructor(_executor, _scheduler, _plugins) {
+        this._executor = _executor;
+        this._scheduler = _scheduler;
+        this._plugins = _plugins;
+        this._chain = Promise.resolve();
+        this._queue = new TasksPendingQueue();
+      }
+      get cwd() {
+        return this._cwd || this._executor.cwd;
+      }
+      set cwd(cwd) {
+        this._cwd = cwd;
+      }
+      get env() {
+        return this._executor.env;
+      }
+      get outputHandler() {
+        return this._executor.outputHandler;
+      }
+      chain() {
+        return this;
+      }
+      push(task) {
+        this._queue.push(task);
+        return this._chain = this._chain.then(() => this.attemptTask(task));
+      }
+      async attemptTask(task) {
+        const onScheduleComplete = await this._scheduler.next();
+        const onQueueComplete = () => this._queue.complete(task);
+        try {
+          const { logger } = this._queue.attempt(task);
+          return await (isEmptyTask(task) ? this.attemptEmptyTask(task, logger) : this.attemptRemoteTask(task, logger));
+        } catch (e) {
+          throw this.onFatalException(task, e);
+        } finally {
+          onQueueComplete();
+          onScheduleComplete();
+        }
+      }
+      onFatalException(task, e) {
+        const gitError = e instanceof GitError ? Object.assign(e, { task }) : new GitError(task, e && String(e));
+        this._chain = Promise.resolve();
+        this._queue.fatal(gitError);
+        return gitError;
+      }
+      async attemptRemoteTask(task, logger) {
+        const binary = this._plugins.exec("spawn.binary", "", pluginContext(task, task.commands));
+        const args = this._plugins.exec(
+          "spawn.args",
+          [...task.commands],
+          pluginContext(task, task.commands)
+        );
+        const raw = await this.gitResponse(
+          task,
+          binary,
+          args,
+          this.outputHandler,
+          logger.step("SPAWN")
+        );
+        const outputStreams = await this.handleTaskData(task, args, raw, logger.step("HANDLE"));
+        logger(`passing response to task's parser as a %s`, task.format);
+        if (isBufferTask(task)) {
+          return callTaskParser(task.parser, outputStreams);
+        }
+        return callTaskParser(task.parser, outputStreams.asStrings());
+      }
+      async attemptEmptyTask(task, logger) {
+        logger(`empty task bypassing child process to call to task's parser`);
+        return task.parser(this);
+      }
+      handleTaskData(task, args, result, logger) {
+        const { exitCode, rejection, stdOut, stdErr } = result;
+        return new Promise((done, fail) => {
+          logger(`Preparing to handle process response exitCode=%d stdOut=`, exitCode);
+          const { error } = this._plugins.exec(
+            "task.error",
+            { error: rejection },
+            {
+              ...pluginContext(task, args),
+              ...result
+            }
+          );
+          if (error && task.onError) {
+            logger.info(`exitCode=%s handling with custom error handler`);
+            return task.onError(
+              result,
+              error,
+              (newStdOut) => {
+                logger.info(`custom error handler treated as success`);
+                logger(`custom error returned a %s`, objectToString(newStdOut));
+                done(
+                  new GitOutputStreams(
+                    Array.isArray(newStdOut) ? Buffer.concat(newStdOut) : newStdOut,
+                    Buffer.concat(stdErr)
+                  )
+                );
+              },
+              fail
+            );
+          }
+          if (error) {
+            logger.info(
+              `handling as error: exitCode=%s stdErr=%s rejection=%o`,
+              exitCode,
+              stdErr.length,
+              rejection
+            );
+            return fail(error);
+          }
+          logger.info(`retrieving task output complete`);
+          done(new GitOutputStreams(Buffer.concat(stdOut), Buffer.concat(stdErr)));
+        });
+      }
+      async gitResponse(task, command, args, outputHandler, logger) {
+        const outputLogger = logger.sibling("output");
+        const spawnOptions = this._plugins.exec(
+          "spawn.options",
+          {
+            cwd: this.cwd,
+            env: this.env,
+            windowsHide: true
+          },
+          pluginContext(task, task.commands)
+        );
+        return new Promise((done) => {
+          const stdOut = [];
+          const stdErr = [];
+          logger.info(`%s %o`, command, args);
+          logger("%O", spawnOptions);
+          let rejection = this._beforeSpawn(task, args);
+          if (rejection) {
+            return done({
+              stdOut,
+              stdErr,
+              exitCode: 9901,
+              rejection
+            });
+          }
+          this._plugins.exec("spawn.before", void 0, {
+            ...pluginContext(task, args),
+            kill(reason) {
+              rejection = reason || rejection;
+            }
+          });
+          const spawned = spawn(command, args, spawnOptions);
+          spawned.stdout.on(
+            "data",
+            onDataReceived(stdOut, "stdOut", logger, outputLogger.step("stdOut"))
+          );
+          spawned.stderr.on(
+            "data",
+            onDataReceived(stdErr, "stdErr", logger, outputLogger.step("stdErr"))
+          );
+          spawned.on("error", onErrorReceived(stdErr, logger));
+          if (outputHandler) {
+            logger(`Passing child process stdOut/stdErr to custom outputHandler`);
+            outputHandler(command, spawned.stdout, spawned.stderr, [...args]);
+          }
+          this._plugins.exec("spawn.after", void 0, {
+            ...pluginContext(task, args),
+            spawned,
+            close(exitCode, reason) {
+              done({
+                stdOut,
+                stdErr,
+                exitCode,
+                rejection: rejection || reason
+              });
+            },
+            kill(reason) {
+              if (spawned.killed) {
+                return;
+              }
+              rejection = reason;
+              spawned.kill("SIGINT");
+            }
+          });
+        });
+      }
+      _beforeSpawn(task, args) {
+        let rejection;
+        this._plugins.exec("spawn.before", void 0, {
+          ...pluginContext(task, args),
+          kill(reason) {
+            rejection = reason || rejection;
+          }
+        });
+        return rejection;
+      }
+    };
+  }
+});
+
+// src/lib/runners/git-executor.ts
+var git_executor_exports = {};
+__export(git_executor_exports, {
+  GitExecutor: () => GitExecutor
+});
+var GitExecutor;
+var init_git_executor = __esm({
+  "src/lib/runners/git-executor.ts"() {
+    init_git_executor_chain();
+    GitExecutor = class {
+      constructor(cwd, _scheduler, _plugins) {
+        this.cwd = cwd;
+        this._scheduler = _scheduler;
+        this._plugins = _plugins;
+        this._chain = new GitExecutorChain(this, this._scheduler, this._plugins);
+      }
+      chain() {
+        return new GitExecutorChain(this, this._scheduler, this._plugins);
+      }
+      push(task) {
+        return this._chain.push(task);
+      }
+    };
+  }
+});
+
+// src/lib/task-callback.ts
+function taskCallback(task, response, callback = NOOP) {
+  const onSuccess = (data) => {
+    callback(null, data);
+  };
+  const onError2 = (err) => {
+    if (err?.task === task) {
+      callback(
+        err instanceof GitResponseError ? addDeprecationNoticeToError(err) : err,
+        void 0
+      );
+    }
+  };
+  response.then(onSuccess, onError2);
+}
+function addDeprecationNoticeToError(err) {
+  let log = (name) => {
+    console.warn(
+      `simple-git deprecation notice: accessing GitResponseError.${name} should be GitResponseError.git.${name}, this will no longer be available in version 3`
+    );
+    log = NOOP;
+  };
+  return Object.create(err, Object.getOwnPropertyNames(err.git).reduce(descriptorReducer, {}));
+  function descriptorReducer(all, name) {
+    if (name in err) {
+      return all;
+    }
+    all[name] = {
+      enumerable: false,
+      configurable: false,
+      get() {
+        log(name);
+        return err.git[name];
+      }
+    };
+    return all;
+  }
+}
+var init_task_callback = __esm({
+  "src/lib/task-callback.ts"() {
+    init_git_response_error();
+    init_utils();
+  }
+});
+
+// src/lib/tasks/change-working-directory.ts
+function changeWorkingDirectoryTask(directory, root) {
+  return adhocExecTask((instance) => {
+    if (!folderExists(directory)) {
+      throw new Error(`Git.cwd: cannot change to non-directory "${directory}"`);
+    }
+    return (root || instance).cwd = directory;
+  });
+}
+var init_change_working_directory = __esm({
+  "src/lib/tasks/change-working-directory.ts"() {
+    init_utils();
+    init_task();
+  }
+});
+
+// src/lib/tasks/checkout.ts
+function checkoutTask(args) {
+  const commands = ["checkout", ...args];
+  if (commands[1] === "-b" && commands.includes("-B")) {
+    commands[1] = remove(commands, "-B");
+  }
+  return straightThroughStringTask(commands);
+}
+function checkout_default() {
+  return {
+    checkout() {
+      return this._runTask(
+        checkoutTask(getTrailingOptions(arguments, 1)),
+        trailingFunctionArgument(arguments)
+      );
+    },
+    checkoutBranch(branchName, startPoint) {
+      return this._runTask(
+        checkoutTask(["-b", branchName, startPoint, ...getTrailingOptions(arguments)]),
+        trailingFunctionArgument(arguments)
+      );
+    },
+    checkoutLocalBranch(branchName) {
+      return this._runTask(
+        checkoutTask(["-b", branchName, ...getTrailingOptions(arguments)]),
+        trailingFunctionArgument(arguments)
+      );
+    }
+  };
+}
+var init_checkout = __esm({
+  "src/lib/tasks/checkout.ts"() {
+    init_utils();
+    init_task();
+  }
+});
+
+// src/lib/tasks/count-objects.ts
+function countObjectsResponse() {
+  return {
+    count: 0,
+    garbage: 0,
+    inPack: 0,
+    packs: 0,
+    prunePackable: 0,
+    size: 0,
+    sizeGarbage: 0,
+    sizePack: 0
+  };
+}
+function count_objects_default() {
+  return {
+    countObjects() {
+      return this._runTask({
+        commands: ["count-objects", "--verbose"],
+        format: "utf-8",
+        parser(stdOut) {
+          return parseStringResponse(countObjectsResponse(), [parser2], stdOut);
+        }
+      });
+    }
+  };
+}
+var parser2;
+var init_count_objects = __esm({
+  "src/lib/tasks/count-objects.ts"() {
+    init_utils();
+    parser2 = new LineParser(
+      /([a-z-]+): (\d+)$/,
+      (result, [key, value]) => {
+        const property = asCamelCase(key);
+        if (Object.hasOwn(result, property)) {
+          result[property] = asNumber(value);
+        }
+      }
+    );
+  }
+});
+
+// src/lib/parsers/parse-commit.ts
+function parseCommitResult(stdOut) {
+  const result = {
+    author: null,
+    branch: "",
+    commit: "",
+    root: false,
+    summary: {
+      changes: 0,
+      insertions: 0,
+      deletions: 0
+    }
+  };
+  return parseStringResponse(result, parsers, stdOut);
+}
+var parsers;
+var init_parse_commit = __esm({
+  "src/lib/parsers/parse-commit.ts"() {
+    init_utils();
+    parsers = [
+      new LineParser(/^\[([^\s]+)( \([^)]+\))? ([^\]]+)/, (result, [branch, root, commit]) => {
+        result.branch = branch;
+        result.commit = commit;
+        result.root = !!root;
+      }),
+      new LineParser(/\s*Author:\s(.+)/i, (result, [author]) => {
+        const parts = author.split("<");
+        const email = parts.pop();
+        if (!email || !email.includes("@")) {
+          return;
+        }
+        result.author = {
+          email: email.substr(0, email.length - 1),
+          name: parts.join("<").trim()
+        };
+      }),
+      new LineParser(
+        /(\d+)[^,]*(?:,\s*(\d+)[^,]*)(?:,\s*(\d+))/g,
+        (result, [changes, insertions, deletions]) => {
+          result.summary.changes = parseInt(changes, 10) || 0;
+          result.summary.insertions = parseInt(insertions, 10) || 0;
+          result.summary.deletions = parseInt(deletions, 10) || 0;
+        }
+      ),
+      new LineParser(
+        /^(\d+)[^,]*(?:,\s*(\d+)[^(]+\(([+-]))?/,
+        (result, [changes, lines, direction]) => {
+          result.summary.changes = parseInt(changes, 10) || 0;
+          const count = parseInt(lines, 10) || 0;
+          if (direction === "-") {
+            result.summary.deletions = count;
+          } else if (direction === "+") {
+            result.summary.insertions = count;
+          }
+        }
+      )
+    ];
+  }
+});
+
+// src/lib/tasks/commit.ts
+function commitTask(message, files, customArgs) {
+  const commands = [
+    "-c",
+    "core.abbrev=40",
+    "commit",
+    ...prefixedArray(message, "-m"),
+    ...files,
+    ...customArgs
+  ];
+  return {
+    commands,
+    format: "utf-8",
+    parser: parseCommitResult
+  };
+}
+function commit_default() {
+  return {
+    commit(message, ...rest) {
+      const next = trailingFunctionArgument(arguments);
+      const task = rejectDeprecatedSignatures(message) || commitTask(
+        asArray(message),
+        asArray(filterType(rest[0], filterStringOrStringArray, [])),
+        [
+          ...asStringArray(filterType(rest[1], filterArray, [])),
+          ...getTrailingOptions(arguments, 0, true)
+        ]
+      );
+      return this._runTask(task, next);
+    }
+  };
+  function rejectDeprecatedSignatures(message) {
+    return !filterStringOrStringArray(message) && configurationErrorTask(
+      `git.commit: requires the commit message to be supplied as a string/string[]`
+    );
+  }
+}
+var init_commit = __esm({
+  "src/lib/tasks/commit.ts"() {
+    init_parse_commit();
+    init_utils();
+    init_task();
+  }
+});
+
+// src/lib/tasks/first-commit.ts
+function first_commit_default() {
+  return {
+    firstCommit() {
+      return this._runTask(
+        straightThroughStringTask(["rev-list", "--max-parents=0", "HEAD"], true),
+        trailingFunctionArgument(arguments)
+      );
+    }
+  };
+}
+var init_first_commit = __esm({
+  "src/lib/tasks/first-commit.ts"() {
+    init_utils();
+    init_task();
+  }
+});
+
+// src/lib/tasks/hash-object.ts
+function hashObjectTask(filePath, write) {
+  const commands = ["hash-object", filePath];
+  if (write) {
+    commands.push("-w");
+  }
+  return straightThroughStringTask(commands, true);
+}
+var init_hash_object = __esm({
+  "src/lib/tasks/hash-object.ts"() {
+    init_task();
+  }
+});
+
+// src/lib/responses/InitSummary.ts
+function parseInit(bare, path, text) {
+  const response = String(text).trim();
+  let result;
+  if (result = initResponseRegex.exec(response)) {
+    return new InitSummary(bare, path, false, result[1]);
+  }
+  if (result = reInitResponseRegex.exec(response)) {
+    return new InitSummary(bare, path, true, result[1]);
+  }
+  let gitDir = "";
+  const tokens = response.split(" ");
+  while (tokens.length) {
+    const token = tokens.shift();
+    if (token === "in") {
+      gitDir = tokens.join(" ");
+      break;
+    }
+  }
+  return new InitSummary(bare, path, /^re/i.test(response), gitDir);
+}
+var InitSummary, initResponseRegex, reInitResponseRegex;
+var init_InitSummary = __esm({
+  "src/lib/responses/InitSummary.ts"() {
+    InitSummary = class {
+      constructor(bare, path, existing, gitDir) {
+        this.bare = bare;
+        this.path = path;
+        this.existing = existing;
+        this.gitDir = gitDir;
+      }
+    };
+    initResponseRegex = /^Init.+ repository in (.+)$/;
+    reInitResponseRegex = /^Rein.+ in (.+)$/;
+  }
+});
+
+// src/lib/tasks/init.ts
+function hasBareCommand(command) {
+  return command.includes(bareCommand);
+}
+function initTask(bare = false, path, customArgs) {
+  const commands = ["init", ...customArgs];
+  if (bare && !hasBareCommand(commands)) {
+    commands.splice(1, 0, bareCommand);
+  }
+  return {
+    commands,
+    format: "utf-8",
+    parser(text) {
+      return parseInit(commands.includes("--bare"), path, text);
+    }
+  };
+}
+var bareCommand;
+var init_init = __esm({
+  "src/lib/tasks/init.ts"() {
+    init_InitSummary();
+    bareCommand = "--bare";
+  }
+});
+
+// src/lib/args/log-format.ts
+function logFormatFromCommand(customArgs) {
+  for (let i = 0; i < customArgs.length; i++) {
+    const format = logFormatRegex.exec(customArgs[i]);
+    if (format) {
+      return `--${format[1]}`;
+    }
+  }
+  return "" /* NONE */;
+}
+function isLogFormat(customArg) {
+  return logFormatRegex.test(customArg);
+}
+var logFormatRegex;
+var init_log_format = __esm({
+  "src/lib/args/log-format.ts"() {
+    logFormatRegex = /^--(stat|numstat|name-only|name-status)(=|$)/;
+  }
+});
+
+// src/lib/responses/DiffSummary.ts
+var DiffSummary;
+var init_DiffSummary = __esm({
+  "src/lib/responses/DiffSummary.ts"() {
+    DiffSummary = class {
+      constructor() {
+        this.changed = 0;
+        this.deletions = 0;
+        this.insertions = 0;
+        this.files = [];
+      }
+    };
+  }
+});
+
+// src/lib/parsers/parse-diff-summary.ts
+function getDiffParser(format = "" /* NONE */) {
+  const parser4 = diffSummaryParsers[format];
+  return (stdOut) => parseStringResponse(new DiffSummary(), parser4, stdOut, false);
+}
+var statParser, numStatParser, nameOnlyParser, nameStatusParser, diffSummaryParsers;
+var init_parse_diff_summary = __esm({
+  "src/lib/parsers/parse-diff-summary.ts"() {
+    init_log_format();
+    init_DiffSummary();
+    init_diff_name_status();
+    init_utils();
+    statParser = [
+      new LineParser(
+        /^(.+)\s+\|\s+(\d+)(\s+[+\-]+)?$/,
+        (result, [file, changes, alterations = ""]) => {
+          result.files.push({
+            file: file.trim(),
+            changes: asNumber(changes),
+            insertions: alterations.replace(/[^+]/g, "").length,
+            deletions: alterations.replace(/[^-]/g, "").length,
+            binary: false
+          });
+        }
+      ),
+      new LineParser(
+        /^(.+) \|\s+Bin ([0-9.]+) -> ([0-9.]+) ([a-z]+)/,
+        (result, [file, before, after]) => {
+          result.files.push({
+            file: file.trim(),
+            before: asNumber(before),
+            after: asNumber(after),
+            binary: true
+          });
+        }
+      ),
+      new LineParser(
+        /(\d+) files? changed\s*((?:, \d+ [^,]+){0,2})/,
+        (result, [changed, summary]) => {
+          const inserted = /(\d+) i/.exec(summary);
+          const deleted = /(\d+) d/.exec(summary);
+          result.changed = asNumber(changed);
+          result.insertions = asNumber(inserted?.[1]);
+          result.deletions = asNumber(deleted?.[1]);
+        }
+      )
+    ];
+    numStatParser = [
+      new LineParser(
+        /(\d+)\t(\d+)\t(.+)$/,
+        (result, [changesInsert, changesDelete, file]) => {
+          const insertions = asNumber(changesInsert);
+          const deletions = asNumber(changesDelete);
+          result.changed++;
+          result.insertions += insertions;
+          result.deletions += deletions;
+          result.files.push({
+            file,
+            changes: insertions + deletions,
+            insertions,
+            deletions,
+            binary: false
+          });
+        }
+      ),
+      new LineParser(/-\t-\t(.+)$/, (result, [file]) => {
+        result.changed++;
+        result.files.push({
+          file,
+          after: 0,
+          before: 0,
+          binary: true
+        });
+      })
+    ];
+    nameOnlyParser = [
+      new LineParser(/(.+)$/, (result, [file]) => {
+        result.changed++;
+        result.files.push({
+          file,
+          changes: 0,
+          insertions: 0,
+          deletions: 0,
+          binary: false
+        });
+      })
+    ];
+    nameStatusParser = [
+      new LineParser(
+        /([ACDMRTUXB])([0-9]{0,3})\t(.[^\t]*)(\t(.[^\t]*))?$/,
+        (result, [status, similarity, from, _to, to]) => {
+          result.changed++;
+          result.files.push({
+            file: to ?? from,
+            changes: 0,
+            insertions: 0,
+            deletions: 0,
+            binary: false,
+            status: orVoid(isDiffNameStatus(status) && status),
+            from: orVoid(!!to && from !== to && from),
+            similarity: asNumber(similarity)
+          });
+        }
+      )
+    ];
+    diffSummaryParsers = {
+      ["" /* NONE */]: statParser,
+      ["--stat" /* STAT */]: statParser,
+      ["--numstat" /* NUM_STAT */]: numStatParser,
+      ["--name-status" /* NAME_STATUS */]: nameStatusParser,
+      ["--name-only" /* NAME_ONLY */]: nameOnlyParser
+    };
+  }
+});
+
+// src/lib/parsers/parse-list-log-summary.ts
+function lineBuilder(tokens, fields) {
+  return fields.reduce(
+    (line, field, index) => {
+      line[field] = tokens[index] || "";
+      return line;
+    },
+    /* @__PURE__ */ Object.create({ diff: null })
+  );
+}
+function createListLogSummaryParser(splitter = SPLITTER, fields = defaultFieldNames, logFormat = "" /* NONE */) {
+  const parseDiffResult = getDiffParser(logFormat);
+  return function(stdOut) {
+    const all = toLinesWithContent(
+      stdOut.trim(),
+      false,
+      START_BOUNDARY
+    ).map(function(item) {
+      const lineDetail = item.split(COMMIT_BOUNDARY);
+      const listLogLine = lineBuilder(lineDetail[0].split(splitter), fields);
+      if (lineDetail.length > 1 && !!lineDetail[1].trim()) {
+        listLogLine.diff = parseDiffResult(lineDetail[1]);
+      }
+      return listLogLine;
+    });
+    return {
+      all,
+      latest: all.length && all[0] || null,
+      total: all.length
+    };
+  };
+}
+var START_BOUNDARY, COMMIT_BOUNDARY, SPLITTER, defaultFieldNames;
+var init_parse_list_log_summary = __esm({
+  "src/lib/parsers/parse-list-log-summary.ts"() {
+    init_utils();
+    init_parse_diff_summary();
+    init_log_format();
+    START_BOUNDARY = "\xF2\xF2\xF2\xF2\xF2\xF2 ";
+    COMMIT_BOUNDARY = " \xF2\xF2";
+    SPLITTER = " \xF2 ";
+    defaultFieldNames = ["hash", "date", "message", "refs", "author_name", "author_email"];
+  }
+});
+
+// src/lib/tasks/diff.ts
+var diff_exports = {};
+__export(diff_exports, {
+  diffSummaryTask: () => diffSummaryTask,
+  validateLogFormatConfig: () => validateLogFormatConfig
+});
+function diffSummaryTask(customArgs) {
+  let logFormat = logFormatFromCommand(customArgs);
+  const commands = ["diff"];
+  if (logFormat === "" /* NONE */) {
+    logFormat = "--stat" /* STAT */;
+    commands.push("--stat=4096");
+  }
+  commands.push(...customArgs);
+  return validateLogFormatConfig(commands) || {
+    commands,
+    format: "utf-8",
+    parser: getDiffParser(logFormat)
+  };
+}
+function validateLogFormatConfig(customArgs) {
+  const flags = customArgs.filter(isLogFormat);
+  if (flags.length > 1) {
+    return configurationErrorTask(
+      `Summary flags are mutually exclusive - pick one of ${flags.join(",")}`
+    );
+  }
+  if (flags.length && customArgs.includes("-z")) {
+    return configurationErrorTask(
+      `Summary flag ${flags} parsing is not compatible with null termination option '-z'`
+    );
+  }
+}
+var init_diff = __esm({
+  "src/lib/tasks/diff.ts"() {
+    init_log_format();
+    init_parse_diff_summary();
+    init_task();
+  }
+});
+
+// src/lib/tasks/log.ts
+function prettyFormat(format, splitter) {
+  const fields = [];
+  const formatStr = [];
+  Object.keys(format).forEach((field) => {
+    fields.push(field);
+    formatStr.push(String(format[field]));
+  });
+  return [fields, formatStr.join(splitter)];
+}
+function userOptions(input) {
+  return Object.keys(input).reduce((out, key) => {
+    if (!(key in excludeOptions)) {
+      out[key] = input[key];
+    }
+    return out;
+  }, {});
+}
+function parseLogOptions(opt = {}, customArgs = []) {
+  const splitter = filterType(opt.splitter, filterString, SPLITTER);
+  const format = filterPlainObject(opt.format) ? opt.format : {
+    hash: "%H",
+    date: opt.strictDate === false ? "%ai" : "%aI",
+    message: "%s",
+    refs: "%D",
+    body: opt.multiLine ? "%B" : "%b",
+    author_name: opt.mailMap !== false ? "%aN" : "%an",
+    author_email: opt.mailMap !== false ? "%aE" : "%ae"
+  };
+  const [fields, formatStr] = prettyFormat(format, splitter);
+  const suffix = [];
+  const command = [
+    `--pretty=format:${START_BOUNDARY}${formatStr}${COMMIT_BOUNDARY}`,
+    ...customArgs
+  ];
+  const maxCount = opt.n || opt["max-count"] || opt.maxCount;
+  if (maxCount) {
+    command.push(`--max-count=${maxCount}`);
+  }
+  if (opt.from || opt.to) {
+    const rangeOperator = opt.symmetric !== false ? "..." : "..";
+    suffix.push(`${opt.from || ""}${rangeOperator}${opt.to || ""}`);
+  }
+  if (filterString(opt.file)) {
+    command.push("--follow", pathspec(opt.file));
+  }
+  appendTaskOptions(userOptions(opt), command);
+  return {
+    fields,
+    splitter,
+    commands: [...command, ...suffix]
+  };
+}
+function logTask(splitter, fields, customArgs) {
+  const parser4 = createListLogSummaryParser(splitter, fields, logFormatFromCommand(customArgs));
+  return {
+    commands: ["log", ...customArgs],
+    format: "utf-8",
+    parser: parser4
+  };
+}
+function log_default() {
+  return {
+    log(...rest) {
+      const next = trailingFunctionArgument(arguments);
+      const options = parseLogOptions(
+        trailingOptionsArgument(arguments),
+        asStringArray(filterType(arguments[0], filterArray, []))
+      );
+      const task = rejectDeprecatedSignatures(...rest) || validateLogFormatConfig(options.commands) || createLogTask(options);
+      return this._runTask(task, next);
+    }
+  };
+  function createLogTask(options) {
+    return logTask(options.splitter, options.fields, options.commands);
+  }
+  function rejectDeprecatedSignatures(from, to) {
+    return filterString(from) && filterString(to) && configurationErrorTask(
+      `git.log(string, string) should be replaced with git.log({ from: string, to: string })`
+    );
+  }
+}
+var excludeOptions;
+var init_log = __esm({
+  "src/lib/tasks/log.ts"() {
+    init_log_format();
+    init_pathspec();
+    init_parse_list_log_summary();
+    init_utils();
+    init_task();
+    init_diff();
+    excludeOptions = /* @__PURE__ */ ((excludeOptions2) => {
+      excludeOptions2[excludeOptions2["--pretty"] = 0] = "--pretty";
+      excludeOptions2[excludeOptions2["max-count"] = 1] = "max-count";
+      excludeOptions2[excludeOptions2["maxCount"] = 2] = "maxCount";
+      excludeOptions2[excludeOptions2["n"] = 3] = "n";
+      excludeOptions2[excludeOptions2["file"] = 4] = "file";
+      excludeOptions2[excludeOptions2["format"] = 5] = "format";
+      excludeOptions2[excludeOptions2["from"] = 6] = "from";
+      excludeOptions2[excludeOptions2["to"] = 7] = "to";
+      excludeOptions2[excludeOptions2["splitter"] = 8] = "splitter";
+      excludeOptions2[excludeOptions2["symmetric"] = 9] = "symmetric";
+      excludeOptions2[excludeOptions2["mailMap"] = 10] = "mailMap";
+      excludeOptions2[excludeOptions2["multiLine"] = 11] = "multiLine";
+      excludeOptions2[excludeOptions2["strictDate"] = 12] = "strictDate";
+      return excludeOptions2;
+    })(excludeOptions || {});
+  }
+});
+
+// src/lib/responses/MergeSummary.ts
+var MergeSummaryConflict, MergeSummaryDetail;
+var init_MergeSummary = __esm({
+  "src/lib/responses/MergeSummary.ts"() {
+    MergeSummaryConflict = class {
+      constructor(reason, file = null, meta) {
+        this.reason = reason;
+        this.file = file;
+        this.meta = meta;
+      }
+      toString() {
+        return `${this.file}:${this.reason}`;
+      }
+    };
+    MergeSummaryDetail = class {
+      constructor() {
+        this.conflicts = [];
+        this.merges = [];
+        this.result = "success";
+      }
+      get failed() {
+        return this.conflicts.length > 0;
+      }
+      get reason() {
+        return this.result;
+      }
+      toString() {
+        if (this.conflicts.length) {
+          return `CONFLICTS: ${this.conflicts.join(", ")}`;
+        }
+        return "OK";
+      }
+    };
+  }
+});
+
+// src/lib/responses/PullSummary.ts
+var PullSummary, PullFailedSummary;
+var init_PullSummary = __esm({
+  "src/lib/responses/PullSummary.ts"() {
+    PullSummary = class {
+      constructor() {
+        this.remoteMessages = {
+          all: []
+        };
+        this.created = [];
+        this.deleted = [];
+        this.files = [];
+        this.deletions = {};
+        this.insertions = {};
+        this.summary = {
+          changes: 0,
+          deletions: 0,
+          insertions: 0
+        };
+      }
+    };
+    PullFailedSummary = class {
+      constructor() {
+        this.remote = "";
+        this.hash = {
+          local: "",
+          remote: ""
+        };
+        this.branch = {
+          local: "",
+          remote: ""
+        };
+        this.message = "";
+      }
+      toString() {
+        return this.message;
+      }
+    };
+  }
+});
+
+// src/lib/parsers/parse-remote-objects.ts
+function objectEnumerationResult(remoteMessages) {
+  return remoteMessages.objects = remoteMessages.objects || {
+    compressing: 0,
+    counting: 0,
+    enumerating: 0,
+    packReused: 0,
+    reused: { count: 0, delta: 0 },
+    total: { count: 0, delta: 0 }
+  };
+}
+function asObjectCount(source) {
+  const count = /^\s*(\d+)/.exec(source);
+  const delta = /delta (\d+)/i.exec(source);
+  return {
+    count: asNumber(count && count[1] || "0"),
+    delta: asNumber(delta && delta[1] || "0")
+  };
+}
+var remoteMessagesObjectParsers;
+var init_parse_remote_objects = __esm({
+  "src/lib/parsers/parse-remote-objects.ts"() {
+    init_utils();
+    remoteMessagesObjectParsers = [
+      new RemoteLineParser(
+        /^remote:\s*(enumerating|counting|compressing) objects: (\d+),/i,
+        (result, [action, count]) => {
+          const key = action.toLowerCase();
+          const enumeration = objectEnumerationResult(result.remoteMessages);
+          Object.assign(enumeration, { [key]: asNumber(count) });
+        }
+      ),
+      new RemoteLineParser(
+        /^remote:\s*(enumerating|counting|compressing) objects: \d+% \(\d+\/(\d+)\),/i,
+        (result, [action, count]) => {
+          const key = action.toLowerCase();
+          const enumeration = objectEnumerationResult(result.remoteMessages);
+          Object.assign(enumeration, { [key]: asNumber(count) });
+        }
+      ),
+      new RemoteLineParser(
+        /total ([^,]+), reused ([^,]+), pack-reused (\d+)/i,
+        (result, [total, reused, packReused]) => {
+          const objects = objectEnumerationResult(result.remoteMessages);
+          objects.total = asObjectCount(total);
+          objects.reused = asObjectCount(reused);
+          objects.packReused = asNumber(packReused);
+        }
+      )
+    ];
+  }
+});
+
+// src/lib/parsers/parse-remote-messages.ts
+function parseRemoteMessages(_stdOut, stdErr) {
+  return parseStringResponse({ remoteMessages: new RemoteMessageSummary() }, parsers2, stdErr);
+}
+var parsers2, RemoteMessageSummary;
+var init_parse_remote_messages = __esm({
+  "src/lib/parsers/parse-remote-messages.ts"() {
+    init_utils();
+    init_parse_remote_objects();
+    parsers2 = [
+      new RemoteLineParser(/^remote:\s*(.+)$/, (result, [text]) => {
+        result.remoteMessages.all.push(text.trim());
+        return false;
+      }),
+      ...remoteMessagesObjectParsers,
+      new RemoteLineParser(
+        [/create a (?:pull|merge) request/i, /\s(https?:\/\/\S+)$/],
+        (result, [pullRequestUrl]) => {
+          result.remoteMessages.pullRequestUrl = pullRequestUrl;
+        }
+      ),
+      new RemoteLineParser(
+        [/found (\d+) vulnerabilities.+\(([^)]+)\)/i, /\s(https?:\/\/\S+)$/],
+        (result, [count, summary, url]) => {
+          result.remoteMessages.vulnerabilities = {
+            count: asNumber(count),
+            summary,
+            url
+          };
+        }
+      )
+    ];
+    RemoteMessageSummary = class {
+      constructor() {
+        this.all = [];
+      }
+    };
+  }
+});
+
+// src/lib/parsers/parse-pull.ts
+function parsePullErrorResult(stdOut, stdErr) {
+  const pullError = parseStringResponse(new PullFailedSummary(), errorParsers, [stdOut, stdErr]);
+  return pullError.message && pullError;
+}
+var FILE_UPDATE_REGEX, SUMMARY_REGEX, ACTION_REGEX, parsers3, errorParsers, parsePullDetail, parsePullResult;
+var init_parse_pull = __esm({
+  "src/lib/parsers/parse-pull.ts"() {
+    init_PullSummary();
+    init_utils();
+    init_parse_remote_messages();
+    FILE_UPDATE_REGEX = /^\s*(.+?)\s+\|\s+\d+\s*(\+*)(-*)/;
+    SUMMARY_REGEX = /(\d+)\D+((\d+)\D+\(\+\))?(\D+(\d+)\D+\(-\))?/;
+    ACTION_REGEX = /^(create|delete) mode \d+ (.+)/;
+    parsers3 = [
+      new LineParser(FILE_UPDATE_REGEX, (result, [file, insertions, deletions]) => {
+        result.files.push(file);
+        if (insertions) {
+          result.insertions[file] = insertions.length;
+        }
+        if (deletions) {
+          result.deletions[file] = deletions.length;
+        }
+      }),
+      new LineParser(SUMMARY_REGEX, (result, [changes, , insertions, , deletions]) => {
+        if (insertions !== void 0 || deletions !== void 0) {
+          result.summary.changes = +changes || 0;
+          result.summary.insertions = +insertions || 0;
+          result.summary.deletions = +deletions || 0;
+          return true;
+        }
+        return false;
+      }),
+      new LineParser(ACTION_REGEX, (result, [action, file]) => {
+        append(result.files, file);
+        append(action === "create" ? result.created : result.deleted, file);
+      })
+    ];
+    errorParsers = [
+      new LineParser(/^from\s(.+)$/i, (result, [remote]) => void (result.remote = remote)),
+      new LineParser(/^fatal:\s(.+)$/, (result, [message]) => void (result.message = message)),
+      new LineParser(
+        /([a-z0-9]+)\.\.([a-z0-9]+)\s+(\S+)\s+->\s+(\S+)$/,
+        (result, [hashLocal, hashRemote, branchLocal, branchRemote]) => {
+          result.branch.local = branchLocal;
+          result.hash.local = hashLocal;
+          result.branch.remote = branchRemote;
+          result.hash.remote = hashRemote;
+        }
+      )
+    ];
+    parsePullDetail = (stdOut, stdErr) => {
+      return parseStringResponse(new PullSummary(), parsers3, [stdOut, stdErr]);
+    };
+    parsePullResult = (stdOut, stdErr) => {
+      return Object.assign(
+        new PullSummary(),
+        parsePullDetail(stdOut, stdErr),
+        parseRemoteMessages(stdOut, stdErr)
+      );
+    };
+  }
+});
+
+// src/lib/parsers/parse-merge.ts
+var parsers4, parseMergeResult, parseMergeDetail;
+var init_parse_merge = __esm({
+  "src/lib/parsers/parse-merge.ts"() {
+    init_MergeSummary();
+    init_utils();
+    init_parse_pull();
+    parsers4 = [
+      new LineParser(/^Auto-merging\s+(.+)$/, (summary, [autoMerge]) => {
+        summary.merges.push(autoMerge);
+      }),
+      new LineParser(/^CONFLICT\s+\((.+)\): Merge conflict in (.+)$/, (summary, [reason, file]) => {
+        summary.conflicts.push(new MergeSummaryConflict(reason, file));
+      }),
+      new LineParser(
+        /^CONFLICT\s+\((.+\/delete)\): (.+) deleted in (.+) and/,
+        (summary, [reason, file, deleteRef]) => {
+          summary.conflicts.push(new MergeSummaryConflict(reason, file, { deleteRef }));
+        }
+      ),
+      new LineParser(/^CONFLICT\s+\((.+)\):/, (summary, [reason]) => {
+        summary.conflicts.push(new MergeSummaryConflict(reason, null));
+      }),
+      new LineParser(/^Automatic merge failed;\s+(.+)$/, (summary, [result]) => {
+        summary.result = result;
+      })
+    ];
+    parseMergeResult = (stdOut, stdErr) => {
+      return Object.assign(parseMergeDetail(stdOut, stdErr), parsePullResult(stdOut, stdErr));
+    };
+    parseMergeDetail = (stdOut) => {
+      return parseStringResponse(new MergeSummaryDetail(), parsers4, stdOut);
+    };
+  }
+});
+
+// src/lib/tasks/merge.ts
+function mergeTask(customArgs) {
+  if (!customArgs.length) {
+    return configurationErrorTask("Git.merge requires at least one option");
+  }
+  return {
+    commands: ["merge", ...customArgs],
+    format: "utf-8",
+    parser(stdOut, stdErr) {
+      const merge = parseMergeResult(stdOut, stdErr);
+      if (merge.failed) {
+        throw new GitResponseError(merge);
+      }
+      return merge;
+    }
+  };
+}
+var init_merge = __esm({
+  "src/lib/tasks/merge.ts"() {
+    init_git_response_error();
+    init_parse_merge();
+    init_task();
+  }
+});
+
+// src/lib/parsers/parse-push.ts
+function pushResultPushedItem(local, remote, status) {
+  const deleted = status.includes("deleted");
+  const tag = status.includes("tag") || /^refs\/tags/.test(local);
+  const alreadyUpdated = !status.includes("new");
+  return {
+    deleted,
+    tag,
+    branch: !tag,
+    new: !alreadyUpdated,
+    alreadyUpdated,
+    local,
+    remote
+  };
+}
+var parsers5, parsePushResult, parsePushDetail;
+var init_parse_push = __esm({
+  "src/lib/parsers/parse-push.ts"() {
+    init_utils();
+    init_parse_remote_messages();
+    parsers5 = [
+      new LineParser(/^Pushing to (.+)$/, (result, [repo]) => {
+        result.repo = repo;
+      }),
+      new LineParser(/^updating local tracking ref '(.+)'/, (result, [local]) => {
+        result.ref = {
+          ...result.ref || {},
+          local
+        };
+      }),
+      new LineParser(/^[=*-]\s+([^:]+):(\S+)\s+\[(.+)]$/, (result, [local, remote, type]) => {
+        result.pushed.push(pushResultPushedItem(local, remote, type));
+      }),
+      new LineParser(
+        /^Branch '([^']+)' set up to track remote branch '([^']+)' from '([^']+)'/,
+        (result, [local, remote, remoteName]) => {
+          result.branch = {
+            ...result.branch || {},
+            local,
+            remote,
+            remoteName
+          };
+        }
+      ),
+      new LineParser(
+        /^([^:]+):(\S+)\s+([a-z0-9]+)\.\.([a-z0-9]+)$/,
+        (result, [local, remote, from, to]) => {
+          result.update = {
+            head: {
+              local,
+              remote
+            },
+            hash: {
+              from,
+              to
+            }
+          };
+        }
+      )
+    ];
+    parsePushResult = (stdOut, stdErr) => {
+      const pushDetail = parsePushDetail(stdOut, stdErr);
+      const responseDetail = parseRemoteMessages(stdOut, stdErr);
+      return {
+        ...pushDetail,
+        ...responseDetail
+      };
+    };
+    parsePushDetail = (stdOut, stdErr) => {
+      return parseStringResponse({ pushed: [] }, parsers5, [stdOut, stdErr]);
+    };
+  }
+});
+
+// src/lib/tasks/push.ts
+var push_exports = {};
+__export(push_exports, {
+  pushTagsTask: () => pushTagsTask,
+  pushTask: () => pushTask
+});
+function pushTagsTask(ref = {}, customArgs) {
+  append(customArgs, "--tags");
+  return pushTask(ref, customArgs);
+}
+function pushTask(ref = {}, customArgs) {
+  const commands = ["push", ...customArgs];
+  if (ref.branch) {
+    commands.splice(1, 0, ref.branch);
+  }
+  if (ref.remote) {
+    commands.splice(1, 0, ref.remote);
+  }
+  remove(commands, "-v");
+  append(commands, "--verbose");
+  append(commands, "--porcelain");
+  return {
+    commands,
+    format: "utf-8",
+    parser: parsePushResult
+  };
+}
+var init_push = __esm({
+  "src/lib/tasks/push.ts"() {
+    init_parse_push();
+    init_utils();
+  }
+});
+
+// src/lib/tasks/show.ts
+function show_default() {
+  return {
+    showBuffer() {
+      const commands = ["show", ...getTrailingOptions(arguments, 1)];
+      if (!commands.includes("--binary")) {
+        commands.splice(1, 0, "--binary");
+      }
+      return this._runTask(
+        straightThroughBufferTask(commands),
+        trailingFunctionArgument(arguments)
+      );
+    },
+    show() {
+      const commands = ["show", ...getTrailingOptions(arguments, 1)];
+      return this._runTask(
+        straightThroughStringTask(commands),
+        trailingFunctionArgument(arguments)
+      );
+    }
+  };
+}
+var init_show = __esm({
+  "src/lib/tasks/show.ts"() {
+    init_utils();
+    init_task();
+  }
+});
+
+// src/lib/responses/FileStatusSummary.ts
+var fromPathRegex, FileStatusSummary;
+var init_FileStatusSummary = __esm({
+  "src/lib/responses/FileStatusSummary.ts"() {
+    fromPathRegex = /^(.+)\0(.+)$/;
+    FileStatusSummary = class {
+      constructor(path, index, working_dir) {
+        this.path = path;
+        this.index = index;
+        this.working_dir = working_dir;
+        if (index === "R" || working_dir === "R") {
+          const detail = fromPathRegex.exec(path) || [null, path, path];
+          this.from = detail[2] || "";
+          this.path = detail[1] || "";
+        }
+      }
+    };
+  }
+});
+
+// src/lib/responses/StatusSummary.ts
+function renamedFile(line) {
+  const [to, from] = line.split(NULL);
+  return {
+    from: from || to,
+    to
+  };
+}
+function parser3(indexX, indexY, handler) {
+  return [`${indexX}${indexY}`, handler];
+}
+function conflicts(indexX, ...indexY) {
+  return indexY.map((y) => parser3(indexX, y, (result, file) => append(result.conflicted, file)));
+}
+function splitLine(result, lineStr) {
+  const trimmed2 = lineStr.trim();
+  switch (" ") {
+    case trimmed2.charAt(2):
+      return data(trimmed2.charAt(0), trimmed2.charAt(1), trimmed2.substr(3));
+    case trimmed2.charAt(1):
+      return data(" " /* NONE */, trimmed2.charAt(0), trimmed2.substr(2));
+    default:
+      return;
+  }
+  function data(index, workingDir, path) {
+    const raw = `${index}${workingDir}`;
+    const handler = parsers6.get(raw);
+    if (handler) {
+      handler(result, path);
+    }
+    if (raw !== "##" && raw !== "!!") {
+      result.files.push(new FileStatusSummary(path, index, workingDir));
+    }
+  }
+}
+var StatusSummary, parsers6, parseStatusSummary;
+var init_StatusSummary = __esm({
+  "src/lib/responses/StatusSummary.ts"() {
+    init_utils();
+    init_FileStatusSummary();
+    StatusSummary = class {
+      constructor() {
+        this.not_added = [];
+        this.conflicted = [];
+        this.created = [];
+        this.deleted = [];
+        this.ignored = void 0;
+        this.modified = [];
+        this.renamed = [];
+        this.files = [];
+        this.staged = [];
+        this.ahead = 0;
+        this.behind = 0;
+        this.current = null;
+        this.tracking = null;
+        this.detached = false;
+        this.isClean = () => {
+          return !this.files.length;
+        };
+      }
+    };
+    parsers6 = new Map([
+      parser3(
+        " " /* NONE */,
+        "A" /* ADDED */,
+        (result, file) => append(result.created, file)
+      ),
+      parser3(
+        " " /* NONE */,
+        "D" /* DELETED */,
+        (result, file) => append(result.deleted, file)
+      ),
+      parser3(
+        " " /* NONE */,
+        "M" /* MODIFIED */,
+        (result, file) => append(result.modified, file)
+      ),
+      parser3(
+        "A" /* ADDED */,
+        " " /* NONE */,
+        (result, file) => append(result.created, file) && append(result.staged, file)
+      ),
+      parser3(
+        "A" /* ADDED */,
+        "M" /* MODIFIED */,
+        (result, file) => append(result.created, file) && append(result.staged, file) && append(result.modified, file)
+      ),
+      parser3(
+        "D" /* DELETED */,
+        " " /* NONE */,
+        (result, file) => append(result.deleted, file) && append(result.staged, file)
+      ),
+      parser3(
+        "M" /* MODIFIED */,
+        " " /* NONE */,
+        (result, file) => append(result.modified, file) && append(result.staged, file)
+      ),
+      parser3(
+        "M" /* MODIFIED */,
+        "M" /* MODIFIED */,
+        (result, file) => append(result.modified, file) && append(result.staged, file)
+      ),
+      parser3("R" /* RENAMED */, " " /* NONE */, (result, file) => {
+        append(result.renamed, renamedFile(file));
+      }),
+      parser3("R" /* RENAMED */, "M" /* MODIFIED */, (result, file) => {
+        const renamed = renamedFile(file);
+        append(result.renamed, renamed);
+        append(result.modified, renamed.to);
+      }),
+      parser3("!" /* IGNORED */, "!" /* IGNORED */, (_result, _file) => {
+        append(_result.ignored = _result.ignored || [], _file);
+      }),
+      parser3(
+        "?" /* UNTRACKED */,
+        "?" /* UNTRACKED */,
+        (result, file) => append(result.not_added, file)
+      ),
+      ...conflicts("A" /* ADDED */, "A" /* ADDED */, "U" /* UNMERGED */),
+      ...conflicts(
+        "D" /* DELETED */,
+        "D" /* DELETED */,
+        "U" /* UNMERGED */
+      ),
+      ...conflicts(
+        "U" /* UNMERGED */,
+        "A" /* ADDED */,
+        "D" /* DELETED */,
+        "U" /* UNMERGED */
+      ),
+      [
+        "##",
+        (result, line) => {
+          const aheadReg = /ahead (\d+)/;
+          const behindReg = /behind (\d+)/;
+          const currentReg = /^(.+?(?=(?:\.{3}|\s|$)))/;
+          const trackingReg = /\.{3}(\S*)/;
+          const onEmptyBranchReg = /\son\s(\S+?)(?=\.{3}|$)/;
+          let regexResult = aheadReg.exec(line);
+          result.ahead = regexResult && +regexResult[1] || 0;
+          regexResult = behindReg.exec(line);
+          result.behind = regexResult && +regexResult[1] || 0;
+          regexResult = currentReg.exec(line);
+          result.current = filterType(regexResult?.[1], filterString, null);
+          regexResult = trackingReg.exec(line);
+          result.tracking = filterType(regexResult?.[1], filterString, null);
+          regexResult = onEmptyBranchReg.exec(line);
+          if (regexResult) {
+            result.current = filterType(regexResult?.[1], filterString, result.current);
+          }
+          result.detached = /\(no branch\)/.test(line);
+        }
+      ]
+    ]);
+    parseStatusSummary = function(text) {
+      const lines = text.split(NULL);
+      const status = new StatusSummary();
+      for (let i = 0, l = lines.length; i < l; ) {
+        let line = lines[i++].trim();
+        if (!line) {
+          continue;
+        }
+        if (line.charAt(0) === "R" /* RENAMED */) {
+          line += NULL + (lines[i++] || "");
+        }
+        splitLine(status, line);
+      }
+      return status;
+    };
+  }
+});
+
+// src/lib/tasks/status.ts
+function statusTask(customArgs) {
+  const commands = [
+    "status",
+    "--porcelain",
+    "-b",
+    "-u",
+    "--null",
+    ...customArgs.filter((arg) => !ignoredOptions.includes(arg))
+  ];
+  return {
+    format: "utf-8",
+    commands,
+    parser(text) {
+      return parseStatusSummary(text);
+    }
+  };
+}
+var ignoredOptions;
+var init_status = __esm({
+  "src/lib/tasks/status.ts"() {
+    init_StatusSummary();
+    ignoredOptions = ["--null", "-z"];
+  }
+});
+
+// src/lib/tasks/version.ts
+function versionResponse(major = 0, minor = 0, patch = 0, agent = "", installed = true) {
+  return Object.defineProperty(
+    {
+      major,
+      minor,
+      patch,
+      agent,
+      installed
+    },
+    "toString",
+    {
+      value() {
+        return `${this.major}.${this.minor}.${this.patch}`;
+      },
+      configurable: false,
+      enumerable: false
+    }
+  );
+}
+function notInstalledResponse() {
+  return versionResponse(0, 0, 0, "", false);
+}
+function version_default() {
+  return {
+    version() {
+      return this._runTask({
+        commands: ["--version"],
+        format: "utf-8",
+        parser: versionParser,
+        onError(result, error, done, fail) {
+          if (result.exitCode === -2 /* NOT_FOUND */) {
+            return done(Buffer.from(NOT_INSTALLED));
+          }
+          fail(error);
+        }
+      });
+    }
+  };
+}
+function versionParser(stdOut) {
+  if (stdOut === NOT_INSTALLED) {
+    return notInstalledResponse();
+  }
+  return parseStringResponse(versionResponse(0, 0, 0, stdOut), parsers7, stdOut);
+}
+var NOT_INSTALLED, parsers7;
+var init_version = __esm({
+  "src/lib/tasks/version.ts"() {
+    init_utils();
+    NOT_INSTALLED = "installed=false";
+    parsers7 = [
+      new LineParser(
+        /version (\d+)\.(\d+)\.(\d+)(?:\s*\((.+)\))?/,
+        (result, [major, minor, patch, agent = ""]) => {
+          Object.assign(
+            result,
+            versionResponse(asNumber(major), asNumber(minor), asNumber(patch), agent)
+          );
+        }
+      ),
+      new LineParser(
+        /version (\d+)\.(\d+)\.(\D+)(.+)?$/,
+        (result, [major, minor, patch, agent = ""]) => {
+          Object.assign(result, versionResponse(asNumber(major), asNumber(minor), patch, agent));
+        }
+      )
+    ];
+  }
+});
+
+// src/lib/simple-git-api.ts
+var simple_git_api_exports = {};
+__export(simple_git_api_exports, {
+  SimpleGitApi: () => SimpleGitApi
+});
+var SimpleGitApi;
+var init_simple_git_api = __esm({
+  "src/lib/simple-git-api.ts"() {
+    init_task_callback();
+    init_change_working_directory();
+    init_checkout();
+    init_count_objects();
+    init_commit();
+    init_config();
+    init_first_commit();
+    init_grep();
+    init_hash_object();
+    init_init();
+    init_log();
+    init_merge();
+    init_push();
+    init_show();
+    init_status();
+    init_task();
+    init_version();
+    init_utils();
+    SimpleGitApi = class {
+      constructor(_executor) {
+        this._executor = _executor;
+      }
+      _runTask(task, then) {
+        const chain = this._executor.chain();
+        const promise = chain.push(task);
+        if (then) {
+          taskCallback(task, promise, then);
+        }
+        return Object.create(this, {
+          then: { value: promise.then.bind(promise) },
+          catch: { value: promise.catch.bind(promise) },
+          _executor: { value: chain }
+        });
+      }
+      add(files) {
+        return this._runTask(
+          straightThroughStringTask(["add", ...asArray(files)]),
+          trailingFunctionArgument(arguments)
+        );
+      }
+      cwd(directory) {
+        const next = trailingFunctionArgument(arguments);
+        if (typeof directory === "string") {
+          return this._runTask(changeWorkingDirectoryTask(directory, this._executor), next);
+        }
+        if (typeof directory?.path === "string") {
+          return this._runTask(
+            changeWorkingDirectoryTask(
+              directory.path,
+              directory.root && this._executor || void 0
+            ),
+            next
+          );
+        }
+        return this._runTask(
+          configurationErrorTask("Git.cwd: workingDirectory must be supplied as a string"),
+          next
+        );
+      }
+      hashObject(path, write) {
+        return this._runTask(
+          hashObjectTask(path, write === true),
+          trailingFunctionArgument(arguments)
+        );
+      }
+      init(bare) {
+        return this._runTask(
+          initTask(bare === true, this._executor.cwd, getTrailingOptions(arguments)),
+          trailingFunctionArgument(arguments)
+        );
+      }
+      merge() {
+        return this._runTask(
+          mergeTask(getTrailingOptions(arguments)),
+          trailingFunctionArgument(arguments)
+        );
+      }
+      mergeFromTo(remote, branch) {
+        if (!(filterString(remote) && filterString(branch))) {
+          return this._runTask(
+            configurationErrorTask(
+              `Git.mergeFromTo requires that the 'remote' and 'branch' arguments are supplied as strings`
+            )
+          );
+        }
+        return this._runTask(
+          mergeTask([remote, branch, ...getTrailingOptions(arguments)]),
+          trailingFunctionArgument(arguments, false)
+        );
+      }
+      outputHandler(handler) {
+        this._executor.outputHandler = handler;
+        return this;
+      }
+      push() {
+        const task = pushTask(
+          {
+            remote: filterType(arguments[0], filterString),
+            branch: filterType(arguments[1], filterString)
+          },
+          getTrailingOptions(arguments)
+        );
+        return this._runTask(task, trailingFunctionArgument(arguments));
+      }
+      stash() {
+        return this._runTask(
+          straightThroughStringTask(["stash", ...getTrailingOptions(arguments)]),
+          trailingFunctionArgument(arguments)
+        );
+      }
+      status() {
+        return this._runTask(
+          statusTask(getTrailingOptions(arguments)),
+          trailingFunctionArgument(arguments)
+        );
+      }
+    };
+    Object.assign(
+      SimpleGitApi.prototype,
+      checkout_default(),
+      commit_default(),
+      config_default(),
+      count_objects_default(),
+      first_commit_default(),
+      grep_default(),
+      log_default(),
+      show_default(),
+      version_default()
+    );
+  }
+});
+
+// src/lib/runners/scheduler.ts
+var scheduler_exports = {};
+__export(scheduler_exports, {
+  Scheduler: () => Scheduler
+});
+var createScheduledTask, Scheduler;
+var init_scheduler = __esm({
+  "src/lib/runners/scheduler.ts"() {
+    init_utils();
+    init_git_logger();
+    createScheduledTask = /* @__PURE__ */ (() => {
+      let id = 0;
+      return () => {
+        id++;
+        const { promise, done } = distExports.createDeferred();
+        return {
+          promise,
+          done,
+          id
+        };
+      };
+    })();
+    Scheduler = class {
+      constructor(concurrency = 2) {
+        this.concurrency = concurrency;
+        this.logger = createLogger("", "scheduler");
+        this.pending = [];
+        this.running = [];
+        this.logger(`Constructed, concurrency=%s`, concurrency);
+      }
+      schedule() {
+        if (!this.pending.length || this.running.length >= this.concurrency) {
+          this.logger(
+            `Schedule attempt ignored, pending=%s running=%s concurrency=%s`,
+            this.pending.length,
+            this.running.length,
+            this.concurrency
+          );
+          return;
+        }
+        const task = append(this.running, this.pending.shift());
+        this.logger(`Attempting id=%s`, task.id);
+        task.done(() => {
+          this.logger(`Completing id=`, task.id);
+          remove(this.running, task);
+          this.schedule();
+        });
+      }
+      next() {
+        const { promise, id } = append(this.pending, createScheduledTask());
+        this.logger(`Scheduling id=%s`, id);
+        this.schedule();
+        return promise;
+      }
+    };
+  }
+});
+
+// src/lib/tasks/apply-patch.ts
+var apply_patch_exports = {};
+__export(apply_patch_exports, {
+  applyPatchTask: () => applyPatchTask
+});
+function applyPatchTask(patches, customArgs) {
+  return straightThroughStringTask(["apply", ...customArgs, ...patches]);
+}
+var init_apply_patch = __esm({
+  "src/lib/tasks/apply-patch.ts"() {
+    init_task();
+  }
+});
+
+// src/lib/responses/BranchDeleteSummary.ts
+function branchDeletionSuccess(branch, hash) {
+  return {
+    branch,
+    hash,
+    success: true
+  };
+}
+function branchDeletionFailure(branch) {
+  return {
+    branch,
+    hash: null,
+    success: false
+  };
+}
+var BranchDeletionBatch;
+var init_BranchDeleteSummary = __esm({
+  "src/lib/responses/BranchDeleteSummary.ts"() {
+    BranchDeletionBatch = class {
+      constructor() {
+        this.all = [];
+        this.branches = {};
+        this.errors = [];
+      }
+      get success() {
+        return !this.errors.length;
+      }
+    };
+  }
+});
+
+// src/lib/parsers/parse-branch-delete.ts
+function hasBranchDeletionError(data, processExitCode) {
+  return processExitCode === 1 /* ERROR */ && deleteErrorRegex.test(data);
+}
+var deleteSuccessRegex, deleteErrorRegex, parsers8, parseBranchDeletions;
+var init_parse_branch_delete = __esm({
+  "src/lib/parsers/parse-branch-delete.ts"() {
+    init_BranchDeleteSummary();
+    init_utils();
+    deleteSuccessRegex = /(\S+)\s+\(\S+\s([^)]+)\)/;
+    deleteErrorRegex = /^error[^']+'([^']+)'/m;
+    parsers8 = [
+      new LineParser(deleteSuccessRegex, (result, [branch, hash]) => {
+        const deletion = branchDeletionSuccess(branch, hash);
+        result.all.push(deletion);
+        result.branches[branch] = deletion;
+      }),
+      new LineParser(deleteErrorRegex, (result, [branch]) => {
+        const deletion = branchDeletionFailure(branch);
+        result.errors.push(deletion);
+        result.all.push(deletion);
+        result.branches[branch] = deletion;
+      })
+    ];
+    parseBranchDeletions = (stdOut, stdErr) => {
+      return parseStringResponse(new BranchDeletionBatch(), parsers8, [stdOut, stdErr]);
+    };
+  }
+});
+
+// src/lib/responses/BranchSummary.ts
+var BranchSummaryResult;
+var init_BranchSummary = __esm({
+  "src/lib/responses/BranchSummary.ts"() {
+    BranchSummaryResult = class {
+      constructor() {
+        this.all = [];
+        this.branches = {};
+        this.current = "";
+        this.detached = false;
+      }
+      push(status, detached, name, commit, label) {
+        if (status === "*" /* CURRENT */) {
+          this.detached = detached;
+          this.current = name;
+        }
+        this.all.push(name);
+        this.branches[name] = {
+          current: status === "*" /* CURRENT */,
+          linkedWorkTree: status === "+" /* LINKED */,
+          name,
+          commit,
+          label
+        };
+      }
+    };
+  }
+});
+
+// src/lib/parsers/parse-branch.ts
+function branchStatus(input) {
+  return input ? input.charAt(0) : "";
+}
+function parseBranchSummary(stdOut, currentOnly = false) {
+  return parseStringResponse(
+    new BranchSummaryResult(),
+    currentOnly ? [currentBranchParser] : parsers9,
+    stdOut
+  );
+}
+var parsers9, currentBranchParser;
+var init_parse_branch = __esm({
+  "src/lib/parsers/parse-branch.ts"() {
+    init_BranchSummary();
+    init_utils();
+    parsers9 = [
+      new LineParser(
+        /^([*+]\s)?\((?:HEAD )?detached (?:from|at) (\S+)\)\s+([a-z0-9]+)\s(.*)$/,
+        (result, [current, name, commit, label]) => {
+          result.push(branchStatus(current), true, name, commit, label);
+        }
+      ),
+      new LineParser(
+        /^([*+]\s)?(\S+)\s+([a-z0-9]+)\s?(.*)$/s,
+        (result, [current, name, commit, label]) => {
+          result.push(branchStatus(current), false, name, commit, label);
+        }
+      )
+    ];
+    currentBranchParser = new LineParser(/^(\S+)$/s, (result, [name]) => {
+      result.push("*" /* CURRENT */, false, name, "", "");
+    });
+  }
+});
+
+// src/lib/tasks/branch.ts
+var branch_exports = {};
+__export(branch_exports, {
+  branchLocalTask: () => branchLocalTask,
+  branchTask: () => branchTask,
+  containsDeleteBranchCommand: () => containsDeleteBranchCommand,
+  deleteBranchTask: () => deleteBranchTask,
+  deleteBranchesTask: () => deleteBranchesTask
+});
+function containsDeleteBranchCommand(commands) {
+  const deleteCommands = ["-d", "-D", "--delete"];
+  return commands.some((command) => deleteCommands.includes(command));
+}
+function branchTask(customArgs) {
+  const isDelete = containsDeleteBranchCommand(customArgs);
+  const isCurrentOnly = customArgs.includes("--show-current");
+  const commands = ["branch", ...customArgs];
+  if (commands.length === 1) {
+    commands.push("-a");
+  }
+  if (!commands.includes("-v")) {
+    commands.splice(1, 0, "-v");
+  }
+  return {
+    format: "utf-8",
+    commands,
+    parser(stdOut, stdErr) {
+      if (isDelete) {
+        return parseBranchDeletions(stdOut, stdErr).all[0];
+      }
+      return parseBranchSummary(stdOut, isCurrentOnly);
+    }
+  };
+}
+function branchLocalTask() {
+  return {
+    format: "utf-8",
+    commands: ["branch", "-v"],
+    parser(stdOut) {
+      return parseBranchSummary(stdOut);
+    }
+  };
+}
+function deleteBranchesTask(branches, forceDelete = false) {
+  return {
+    format: "utf-8",
+    commands: ["branch", "-v", forceDelete ? "-D" : "-d", ...branches],
+    parser(stdOut, stdErr) {
+      return parseBranchDeletions(stdOut, stdErr);
+    },
+    onError({ exitCode, stdOut }, error, done, fail) {
+      if (!hasBranchDeletionError(String(error), exitCode)) {
+        return fail(error);
+      }
+      done(stdOut);
+    }
+  };
+}
+function deleteBranchTask(branch, forceDelete = false) {
+  const task = {
+    format: "utf-8",
+    commands: ["branch", "-v", forceDelete ? "-D" : "-d", branch],
+    parser(stdOut, stdErr) {
+      return parseBranchDeletions(stdOut, stdErr).branches[branch];
+    },
+    onError({ exitCode, stdErr, stdOut }, error, _, fail) {
+      if (!hasBranchDeletionError(String(error), exitCode)) {
+        return fail(error);
+      }
+      throw new GitResponseError(
+        task.parser(bufferToString(stdOut), bufferToString(stdErr)),
+        String(error)
+      );
+    }
+  };
+  return task;
+}
+var init_branch = __esm({
+  "src/lib/tasks/branch.ts"() {
+    init_git_response_error();
+    init_parse_branch_delete();
+    init_parse_branch();
+    init_utils();
+  }
+});
+function toPath(input) {
+  const path = input.trim().replace(/^["']|["']$/g, "");
+  return path && normalize(path);
+}
+var parseCheckIgnore;
+var init_CheckIgnore = __esm({
+  "src/lib/responses/CheckIgnore.ts"() {
+    parseCheckIgnore = (text) => {
+      return text.split(/\n/g).map(toPath).filter(Boolean);
+    };
+  }
+});
+
+// src/lib/tasks/check-ignore.ts
+var check_ignore_exports = {};
+__export(check_ignore_exports, {
+  checkIgnoreTask: () => checkIgnoreTask
+});
+function checkIgnoreTask(paths) {
+  return {
+    commands: ["check-ignore", ...paths],
+    format: "utf-8",
+    parser: parseCheckIgnore
+  };
+}
+var init_check_ignore = __esm({
+  "src/lib/tasks/check-ignore.ts"() {
+    init_CheckIgnore();
+  }
+});
+
+// src/lib/tasks/clone.ts
+var clone_exports = {};
+__export(clone_exports, {
+  cloneMirrorTask: () => cloneMirrorTask,
+  cloneTask: () => cloneTask
+});
+function disallowedCommand(command) {
+  return /^--upload-pack(=|$)/.test(command);
+}
+function cloneTask(repo, directory, customArgs) {
+  const commands = ["clone", ...customArgs];
+  filterString(repo) && commands.push(repo);
+  filterString(directory) && commands.push(directory);
+  const banned = commands.find(disallowedCommand);
+  if (banned) {
+    return configurationErrorTask(`git.fetch: potential exploit argument blocked.`);
+  }
+  return straightThroughStringTask(commands);
+}
+function cloneMirrorTask(repo, directory, customArgs) {
+  append(customArgs, "--mirror");
+  return cloneTask(repo, directory, customArgs);
+}
+var init_clone = __esm({
+  "src/lib/tasks/clone.ts"() {
+    init_task();
+    init_utils();
+  }
+});
+
+// src/lib/parsers/parse-fetch.ts
+function parseFetchResult(stdOut, stdErr) {
+  const result = {
+    raw: stdOut,
+    remote: null,
+    branches: [],
+    tags: [],
+    updated: [],
+    deleted: []
+  };
+  return parseStringResponse(result, parsers10, [stdOut, stdErr]);
+}
+var parsers10;
+var init_parse_fetch = __esm({
+  "src/lib/parsers/parse-fetch.ts"() {
+    init_utils();
+    parsers10 = [
+      new LineParser(/From (.+)$/, (result, [remote]) => {
+        result.remote = remote;
+      }),
+      new LineParser(/\* \[new branch]\s+(\S+)\s*-> (.+)$/, (result, [name, tracking]) => {
+        result.branches.push({
+          name,
+          tracking
+        });
+      }),
+      new LineParser(/\* \[new tag]\s+(\S+)\s*-> (.+)$/, (result, [name, tracking]) => {
+        result.tags.push({
+          name,
+          tracking
+        });
+      }),
+      new LineParser(/- \[deleted]\s+\S+\s*-> (.+)$/, (result, [tracking]) => {
+        result.deleted.push({
+          tracking
+        });
+      }),
+      new LineParser(
+        /\s*([^.]+)\.\.(\S+)\s+(\S+)\s*-> (.+)$/,
+        (result, [from, to, name, tracking]) => {
+          result.updated.push({
+            name,
+            tracking,
+            to,
+            from
+          });
+        }
+      )
+    ];
+  }
+});
+
+// src/lib/tasks/fetch.ts
+var fetch_exports = {};
+__export(fetch_exports, {
+  fetchTask: () => fetchTask
+});
+function disallowedCommand2(command) {
+  return /^--upload-pack(=|$)/.test(command);
+}
+function fetchTask(remote, branch, customArgs) {
+  const commands = ["fetch", ...customArgs];
+  if (remote && branch) {
+    commands.push(remote, branch);
+  }
+  const banned = commands.find(disallowedCommand2);
+  if (banned) {
+    return configurationErrorTask(`git.fetch: potential exploit argument blocked.`);
+  }
+  return {
+    commands,
+    format: "utf-8",
+    parser: parseFetchResult
+  };
+}
+var init_fetch = __esm({
+  "src/lib/tasks/fetch.ts"() {
+    init_parse_fetch();
+    init_task();
+  }
+});
+
+// src/lib/parsers/parse-move.ts
+function parseMoveResult(stdOut) {
+  return parseStringResponse({ moves: [] }, parsers11, stdOut);
+}
+var parsers11;
+var init_parse_move = __esm({
+  "src/lib/parsers/parse-move.ts"() {
+    init_utils();
+    parsers11 = [
+      new LineParser(/^Renaming (.+) to (.+)$/, (result, [from, to]) => {
+        result.moves.push({ from, to });
+      })
+    ];
+  }
+});
+
+// src/lib/tasks/move.ts
+var move_exports = {};
+__export(move_exports, {
+  moveTask: () => moveTask
+});
+function moveTask(from, to) {
+  return {
+    commands: ["mv", "-v", ...asArray(from), to],
+    format: "utf-8",
+    parser: parseMoveResult
+  };
+}
+var init_move = __esm({
+  "src/lib/tasks/move.ts"() {
+    init_parse_move();
+    init_utils();
+  }
+});
+
+// src/lib/tasks/pull.ts
+var pull_exports = {};
+__export(pull_exports, {
+  pullTask: () => pullTask
+});
+function pullTask(remote, branch, customArgs) {
+  const commands = ["pull", ...customArgs];
+  if (remote && branch) {
+    commands.splice(1, 0, remote, branch);
+  }
+  return {
+    commands,
+    format: "utf-8",
+    parser(stdOut, stdErr) {
+      return parsePullResult(stdOut, stdErr);
+    },
+    onError(result, _error, _done, fail) {
+      const pullError = parsePullErrorResult(
+        bufferToString(result.stdOut),
+        bufferToString(result.stdErr)
+      );
+      if (pullError) {
+        return fail(new GitResponseError(pullError));
+      }
+      fail(_error);
+    }
+  };
+}
+var init_pull = __esm({
+  "src/lib/tasks/pull.ts"() {
+    init_git_response_error();
+    init_parse_pull();
+    init_utils();
+  }
+});
+
+// src/lib/responses/GetRemoteSummary.ts
+function parseGetRemotes(text) {
+  const remotes = {};
+  forEach(text, ([name]) => remotes[name] = { name });
+  return Object.values(remotes);
+}
+function parseGetRemotesVerbose(text) {
+  const remotes = {};
+  forEach(text, ([name, url, purpose]) => {
+    if (!Object.hasOwn(remotes, name)) {
+      remotes[name] = {
+        name,
+        refs: { fetch: "", push: "" }
+      };
+    }
+    if (purpose && url) {
+      remotes[name].refs[purpose.replace(/[^a-z]/g, "")] = url;
+    }
+  });
+  return Object.values(remotes);
+}
+function forEach(text, handler) {
+  forEachLineWithContent(text, (line) => handler(line.split(/\s+/)));
+}
+var init_GetRemoteSummary = __esm({
+  "src/lib/responses/GetRemoteSummary.ts"() {
+    init_utils();
+  }
+});
+
+// src/lib/tasks/remote.ts
+var remote_exports = {};
+__export(remote_exports, {
+  addRemoteTask: () => addRemoteTask,
+  getRemotesTask: () => getRemotesTask,
+  listRemotesTask: () => listRemotesTask,
+  remoteTask: () => remoteTask,
+  removeRemoteTask: () => removeRemoteTask
+});
+function addRemoteTask(remoteName, remoteRepo, customArgs) {
+  return straightThroughStringTask(["remote", "add", ...customArgs, remoteName, remoteRepo]);
+}
+function getRemotesTask(verbose) {
+  const commands = ["remote"];
+  if (verbose) {
+    commands.push("-v");
+  }
+  return {
+    commands,
+    format: "utf-8",
+    parser: verbose ? parseGetRemotesVerbose : parseGetRemotes
+  };
+}
+function listRemotesTask(customArgs) {
+  const commands = [...customArgs];
+  if (commands[0] !== "ls-remote") {
+    commands.unshift("ls-remote");
+  }
+  return straightThroughStringTask(commands);
+}
+function remoteTask(customArgs) {
+  const commands = [...customArgs];
+  if (commands[0] !== "remote") {
+    commands.unshift("remote");
+  }
+  return straightThroughStringTask(commands);
+}
+function removeRemoteTask(remoteName) {
+  return straightThroughStringTask(["remote", "remove", remoteName]);
+}
+var init_remote = __esm({
+  "src/lib/tasks/remote.ts"() {
+    init_GetRemoteSummary();
+    init_task();
+  }
+});
+
+// src/lib/tasks/stash-list.ts
+var stash_list_exports = {};
+__export(stash_list_exports, {
+  stashListTask: () => stashListTask
+});
+function stashListTask(opt = {}, customArgs) {
+  const options = parseLogOptions(opt);
+  const commands = ["stash", "list", ...options.commands, ...customArgs];
+  const parser4 = createListLogSummaryParser(
+    options.splitter,
+    options.fields,
+    logFormatFromCommand(commands)
+  );
+  return validateLogFormatConfig(commands) || {
+    commands,
+    format: "utf-8",
+    parser: parser4
+  };
+}
+var init_stash_list = __esm({
+  "src/lib/tasks/stash-list.ts"() {
+    init_log_format();
+    init_parse_list_log_summary();
+    init_diff();
+    init_log();
+  }
+});
+
+// src/lib/tasks/sub-module.ts
+var sub_module_exports = {};
+__export(sub_module_exports, {
+  addSubModuleTask: () => addSubModuleTask,
+  initSubModuleTask: () => initSubModuleTask,
+  subModuleTask: () => subModuleTask,
+  updateSubModuleTask: () => updateSubModuleTask
+});
+function addSubModuleTask(repo, path) {
+  return subModuleTask(["add", repo, path]);
+}
+function initSubModuleTask(customArgs) {
+  return subModuleTask(["init", ...customArgs]);
+}
+function subModuleTask(customArgs) {
+  const commands = [...customArgs];
+  if (commands[0] !== "submodule") {
+    commands.unshift("submodule");
+  }
+  return straightThroughStringTask(commands);
+}
+function updateSubModuleTask(customArgs) {
+  return subModuleTask(["update", ...customArgs]);
+}
+var init_sub_module = __esm({
+  "src/lib/tasks/sub-module.ts"() {
+    init_task();
+  }
+});
+
+// src/lib/responses/TagList.ts
+function singleSorted(a, b) {
+  const aIsNum = Number.isNaN(a);
+  const bIsNum = Number.isNaN(b);
+  if (aIsNum !== bIsNum) {
+    return aIsNum ? 1 : -1;
+  }
+  return aIsNum ? sorted(a, b) : 0;
+}
+function sorted(a, b) {
+  return a === b ? 0 : a > b ? 1 : -1;
+}
+function trimmed(input) {
+  return input.trim();
+}
+function toNumber(input) {
+  if (typeof input === "string") {
+    return parseInt(input.replace(/^\D+/g, ""), 10) || 0;
+  }
+  return 0;
+}
+var TagList, parseTagList;
+var init_TagList = __esm({
+  "src/lib/responses/TagList.ts"() {
+    TagList = class {
+      constructor(all, latest) {
+        this.all = all;
+        this.latest = latest;
+      }
+    };
+    parseTagList = function(data, customSort = false) {
+      const tags = data.split("\n").map(trimmed).filter(Boolean);
+      if (!customSort) {
+        tags.sort(function(tagA, tagB) {
+          const partsA = tagA.split(".");
+          const partsB = tagB.split(".");
+          if (partsA.length === 1 || partsB.length === 1) {
+            return singleSorted(toNumber(partsA[0]), toNumber(partsB[0]));
+          }
+          for (let i = 0, l = Math.max(partsA.length, partsB.length); i < l; i++) {
+            const diff = sorted(toNumber(partsA[i]), toNumber(partsB[i]));
+            if (diff) {
+              return diff;
+            }
+          }
+          return 0;
+        });
+      }
+      const latest = customSort ? tags[0] : [...tags].reverse().find((tag) => tag.indexOf(".") >= 0);
+      return new TagList(tags, latest);
+    };
+  }
+});
+
+// src/lib/tasks/tag.ts
+var tag_exports = {};
+__export(tag_exports, {
+  addAnnotatedTagTask: () => addAnnotatedTagTask,
+  addTagTask: () => addTagTask,
+  tagListTask: () => tagListTask
+});
+function tagListTask(customArgs = []) {
+  const hasCustomSort = customArgs.some((option) => /^--sort=/.test(option));
+  return {
+    format: "utf-8",
+    commands: ["tag", "-l", ...customArgs],
+    parser(text) {
+      return parseTagList(text, hasCustomSort);
+    }
+  };
+}
+function addTagTask(name) {
+  return {
+    format: "utf-8",
+    commands: ["tag", name],
+    parser() {
+      return { name };
+    }
+  };
+}
+function addAnnotatedTagTask(name, tagMessage) {
+  return {
+    format: "utf-8",
+    commands: ["tag", "-a", "-m", tagMessage, name],
+    parser() {
+      return { name };
+    }
+  };
+}
+var init_tag = __esm({
+  "src/lib/tasks/tag.ts"() {
+    init_TagList();
+  }
+});
+
+// src/git.js
+var require_git = __commonJS({
+  "src/git.js"(exports$1, module) {
+    var { GitExecutor: GitExecutor2 } = (init_git_executor(), __toCommonJS(git_executor_exports));
+    var { SimpleGitApi: SimpleGitApi2 } = (init_simple_git_api(), __toCommonJS(simple_git_api_exports));
+    var { Scheduler: Scheduler2 } = (init_scheduler(), __toCommonJS(scheduler_exports));
+    var { configurationErrorTask: configurationErrorTask2 } = (init_task(), __toCommonJS(task_exports));
+    var {
+      asArray: asArray2,
+      filterArray: filterArray2,
+      filterPrimitives: filterPrimitives2,
+      filterString: filterString2,
+      filterStringOrStringArray: filterStringOrStringArray2,
+      filterType: filterType2,
+      getTrailingOptions: getTrailingOptions2,
+      trailingFunctionArgument: trailingFunctionArgument2,
+      trailingOptionsArgument: trailingOptionsArgument2
+    } = (init_utils(), __toCommonJS(utils_exports));
+    var { applyPatchTask: applyPatchTask2 } = (init_apply_patch(), __toCommonJS(apply_patch_exports));
+    var {
+      branchTask: branchTask2,
+      branchLocalTask: branchLocalTask2,
+      deleteBranchesTask: deleteBranchesTask2,
+      deleteBranchTask: deleteBranchTask2
+    } = (init_branch(), __toCommonJS(branch_exports));
+    var { checkIgnoreTask: checkIgnoreTask2 } = (init_check_ignore(), __toCommonJS(check_ignore_exports));
+    var { checkIsRepoTask: checkIsRepoTask2 } = (init_check_is_repo(), __toCommonJS(check_is_repo_exports));
+    var { cloneTask: cloneTask2, cloneMirrorTask: cloneMirrorTask2 } = (init_clone(), __toCommonJS(clone_exports));
+    var { cleanWithOptionsTask: cleanWithOptionsTask2, isCleanOptionsArray: isCleanOptionsArray2 } = (init_clean(), __toCommonJS(clean_exports));
+    var { diffSummaryTask: diffSummaryTask2 } = (init_diff(), __toCommonJS(diff_exports));
+    var { fetchTask: fetchTask2 } = (init_fetch(), __toCommonJS(fetch_exports));
+    var { moveTask: moveTask2 } = (init_move(), __toCommonJS(move_exports));
+    var { pullTask: pullTask2 } = (init_pull(), __toCommonJS(pull_exports));
+    var { pushTagsTask: pushTagsTask2 } = (init_push(), __toCommonJS(push_exports));
+    var {
+      addRemoteTask: addRemoteTask2,
+      getRemotesTask: getRemotesTask2,
+      listRemotesTask: listRemotesTask2,
+      remoteTask: remoteTask2,
+      removeRemoteTask: removeRemoteTask2
+    } = (init_remote(), __toCommonJS(remote_exports));
+    var { getResetMode: getResetMode2, resetTask: resetTask2 } = (init_reset(), __toCommonJS(reset_exports));
+    var { stashListTask: stashListTask2 } = (init_stash_list(), __toCommonJS(stash_list_exports));
+    var {
+      addSubModuleTask: addSubModuleTask2,
+      initSubModuleTask: initSubModuleTask2,
+      subModuleTask: subModuleTask2,
+      updateSubModuleTask: updateSubModuleTask2
+    } = (init_sub_module(), __toCommonJS(sub_module_exports));
+    var { addAnnotatedTagTask: addAnnotatedTagTask2, addTagTask: addTagTask2, tagListTask: tagListTask2 } = (init_tag(), __toCommonJS(tag_exports));
+    var { straightThroughBufferTask: straightThroughBufferTask2, straightThroughStringTask: straightThroughStringTask2 } = (init_task(), __toCommonJS(task_exports));
+    function Git2(options, plugins) {
+      this._plugins = plugins;
+      this._executor = new GitExecutor2(
+        options.baseDir,
+        new Scheduler2(options.maxConcurrentProcesses),
+        plugins
+      );
+      this._trimmed = options.trimmed;
+    }
+    (Git2.prototype = Object.create(SimpleGitApi2.prototype)).constructor = Git2;
+    Git2.prototype.customBinary = function(command) {
+      this._plugins.reconfigure("binary", command);
+      return this;
+    };
+    Git2.prototype.env = function(name, value) {
+      if (arguments.length === 1 && typeof name === "object") {
+        this._executor.env = name;
+      } else {
+        (this._executor.env = this._executor.env || {})[name] = value;
+      }
+      return this;
+    };
+    Git2.prototype.stashList = function(options) {
+      return this._runTask(
+        stashListTask2(
+          trailingOptionsArgument2(arguments) || {},
+          filterArray2(options) && options || []
+        ),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    function createCloneTask(api, task, repoPath, localPath) {
+      if (typeof repoPath !== "string") {
+        return configurationErrorTask2(`git.${api}() requires a string 'repoPath'`);
+      }
+      return task(repoPath, filterType2(localPath, filterString2), getTrailingOptions2(arguments));
+    }
+    Git2.prototype.clone = function() {
+      return this._runTask(
+        createCloneTask("clone", cloneTask2, ...arguments),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.mirror = function() {
+      return this._runTask(
+        createCloneTask("mirror", cloneMirrorTask2, ...arguments),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.mv = function(from, to) {
+      return this._runTask(moveTask2(from, to), trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.checkoutLatestTag = function(then) {
+      var git = this;
+      return this.pull(function() {
+        git.tags(function(err, tags) {
+          git.checkout(tags.latest, then);
+        });
+      });
+    };
+    Git2.prototype.pull = function(remote, branch, options, then) {
+      return this._runTask(
+        pullTask2(
+          filterType2(remote, filterString2),
+          filterType2(branch, filterString2),
+          getTrailingOptions2(arguments)
+        ),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.fetch = function(remote, branch) {
+      return this._runTask(
+        fetchTask2(
+          filterType2(remote, filterString2),
+          filterType2(branch, filterString2),
+          getTrailingOptions2(arguments)
+        ),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.silent = function(silence) {
+      console.warn(
+        "simple-git deprecation notice: git.silent: logging should be configured using the `debug` library / `DEBUG` environment variable, this will be an error in version 3"
+      );
+      return this;
+    };
+    Git2.prototype.tags = function(options, then) {
+      return this._runTask(
+        tagListTask2(getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.rebase = function() {
+      return this._runTask(
+        straightThroughStringTask2(["rebase", ...getTrailingOptions2(arguments)]),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.reset = function(mode) {
+      return this._runTask(
+        resetTask2(getResetMode2(mode), getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.revert = function(commit) {
+      const next = trailingFunctionArgument2(arguments);
+      if (typeof commit !== "string") {
+        return this._runTask(configurationErrorTask2("Commit must be a string"), next);
+      }
+      return this._runTask(
+        straightThroughStringTask2(["revert", ...getTrailingOptions2(arguments, 0, true), commit]),
+        next
+      );
+    };
+    Git2.prototype.addTag = function(name) {
+      const task = typeof name === "string" ? addTagTask2(name) : configurationErrorTask2("Git.addTag requires a tag name");
+      return this._runTask(task, trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.addAnnotatedTag = function(tagName, tagMessage) {
+      return this._runTask(
+        addAnnotatedTagTask2(tagName, tagMessage),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.deleteLocalBranch = function(branchName, forceDelete, then) {
+      return this._runTask(
+        deleteBranchTask2(branchName, typeof forceDelete === "boolean" ? forceDelete : false),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.deleteLocalBranches = function(branchNames, forceDelete, then) {
+      return this._runTask(
+        deleteBranchesTask2(branchNames, typeof forceDelete === "boolean" ? forceDelete : false),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.branch = function(options, then) {
+      return this._runTask(
+        branchTask2(getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.branchLocal = function(then) {
+      return this._runTask(branchLocalTask2(), trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.raw = function(commands) {
+      const createRestCommands = !Array.isArray(commands);
+      const command = [].slice.call(createRestCommands ? arguments : commands, 0);
+      for (let i = 0; i < command.length && createRestCommands; i++) {
+        if (!filterPrimitives2(command[i])) {
+          command.splice(i, command.length - i);
+          break;
+        }
+      }
+      command.push(...getTrailingOptions2(arguments, 0, true));
+      var next = trailingFunctionArgument2(arguments);
+      if (!command.length) {
+        return this._runTask(
+          configurationErrorTask2("Raw: must supply one or more command to execute"),
+          next
+        );
+      }
+      return this._runTask(straightThroughStringTask2(command, this._trimmed), next);
+    };
+    Git2.prototype.submoduleAdd = function(repo, path, then) {
+      return this._runTask(addSubModuleTask2(repo, path), trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.submoduleUpdate = function(args, then) {
+      return this._runTask(
+        updateSubModuleTask2(getTrailingOptions2(arguments, true)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.submoduleInit = function(args, then) {
+      return this._runTask(
+        initSubModuleTask2(getTrailingOptions2(arguments, true)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.subModule = function(options, then) {
+      return this._runTask(
+        subModuleTask2(getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.listRemote = function() {
+      return this._runTask(
+        listRemotesTask2(getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.addRemote = function(remoteName, remoteRepo, then) {
+      return this._runTask(
+        addRemoteTask2(remoteName, remoteRepo, getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.removeRemote = function(remoteName, then) {
+      return this._runTask(removeRemoteTask2(remoteName), trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.getRemotes = function(verbose, then) {
+      return this._runTask(getRemotesTask2(verbose === true), trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.remote = function(options, then) {
+      return this._runTask(
+        remoteTask2(getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.tag = function(options, then) {
+      const command = getTrailingOptions2(arguments);
+      if (command[0] !== "tag") {
+        command.unshift("tag");
+      }
+      return this._runTask(straightThroughStringTask2(command), trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.updateServerInfo = function(then) {
+      return this._runTask(
+        straightThroughStringTask2(["update-server-info"]),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.pushTags = function(remote, then) {
+      const task = pushTagsTask2(
+        { remote: filterType2(remote, filterString2) },
+        getTrailingOptions2(arguments)
+      );
+      return this._runTask(task, trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.rm = function(files) {
+      return this._runTask(
+        straightThroughStringTask2(["rm", "-f", ...asArray2(files)]),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.rmKeepLocal = function(files) {
+      return this._runTask(
+        straightThroughStringTask2(["rm", "--cached", ...asArray2(files)]),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.catFile = function(options, then) {
+      return this._catFile("utf-8", arguments);
+    };
+    Git2.prototype.binaryCatFile = function() {
+      return this._catFile("buffer", arguments);
+    };
+    Git2.prototype._catFile = function(format, args) {
+      var handler = trailingFunctionArgument2(args);
+      var command = ["cat-file"];
+      var options = args[0];
+      if (typeof options === "string") {
+        return this._runTask(
+          configurationErrorTask2("Git.catFile: options must be supplied as an array of strings"),
+          handler
+        );
+      }
+      if (Array.isArray(options)) {
+        command.push.apply(command, options);
+      }
+      const task = format === "buffer" ? straightThroughBufferTask2(command) : straightThroughStringTask2(command);
+      return this._runTask(task, handler);
+    };
+    Git2.prototype.diff = function(options, then) {
+      const task = filterString2(options) ? configurationErrorTask2(
+        "git.diff: supplying options as a single string is no longer supported, switch to an array of strings"
+      ) : straightThroughStringTask2(["diff", ...getTrailingOptions2(arguments)]);
+      return this._runTask(task, trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.diffSummary = function() {
+      return this._runTask(
+        diffSummaryTask2(getTrailingOptions2(arguments, 1)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.applyPatch = function(patches) {
+      const task = !filterStringOrStringArray2(patches) ? configurationErrorTask2(
+        `git.applyPatch requires one or more string patches as the first argument`
+      ) : applyPatchTask2(asArray2(patches), getTrailingOptions2([].slice.call(arguments, 1)));
+      return this._runTask(task, trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.revparse = function() {
+      const commands = ["rev-parse", ...getTrailingOptions2(arguments, true)];
+      return this._runTask(
+        straightThroughStringTask2(commands, true),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.clean = function(mode, options, then) {
+      const usingCleanOptionsArray = isCleanOptionsArray2(mode);
+      const cleanMode = usingCleanOptionsArray && mode.join("") || filterType2(mode, filterString2) || "";
+      const customArgs = getTrailingOptions2([].slice.call(arguments, usingCleanOptionsArray ? 1 : 0));
+      return this._runTask(
+        cleanWithOptionsTask2(cleanMode, customArgs),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.exec = function(then) {
+      const task = {
+        commands: [],
+        format: "utf-8",
+        parser() {
+          if (typeof then === "function") {
+            then();
+          }
+        }
+      };
+      return this._runTask(task);
+    };
+    Git2.prototype.clearQueue = function() {
+      return this;
+    };
+    Git2.prototype.checkIgnore = function(pathnames, then) {
+      return this._runTask(
+        checkIgnoreTask2(asArray2(filterType2(pathnames, filterStringOrStringArray2, []))),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.checkIsRepo = function(checkType, then) {
+      return this._runTask(
+        checkIsRepoTask2(filterType2(checkType, filterString2)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    module.exports = Git2;
+  }
+});
+
+// src/lib/api.ts
+init_pathspec();
+
+// src/lib/errors/git-construct-error.ts
+init_git_error();
+var GitConstructError = class extends GitError {
+  constructor(config, message) {
+    super(void 0, message);
+    this.config = config;
+  }
+};
+
+// src/lib/api.ts
+init_git_error();
+
+// src/lib/errors/git-plugin-error.ts
+init_git_error();
+var GitPluginError = class extends GitError {
+  constructor(task, plugin, message) {
+    super(task, message);
+    this.task = task;
+    this.plugin = plugin;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+};
+
+// src/lib/api.ts
+init_git_response_error();
+init_task_configuration_error();
+init_check_is_repo();
+init_clean();
+init_config();
+init_diff_name_status();
+init_grep();
+init_reset();
+
+// src/lib/plugins/abort-plugin.ts
+function abortPlugin(signal) {
+  if (!signal) {
+    return;
+  }
+  const onSpawnAfter = {
+    type: "spawn.after",
+    action(_data, context) {
+      function kill() {
+        context.kill(new GitPluginError(void 0, "abort", "Abort signal received"));
+      }
+      signal.addEventListener("abort", kill);
+      context.spawned.on("close", () => signal.removeEventListener("abort", kill));
+    }
+  };
+  const onSpawnBefore = {
+    type: "spawn.before",
+    action(_data, context) {
+      if (signal.aborted) {
+        context.kill(new GitPluginError(void 0, "abort", "Abort already signaled"));
+      }
+    }
+  };
+  return [onSpawnBefore, onSpawnAfter];
+}
+
+// src/lib/plugins/block-unsafe-operations-plugin.ts
+function isConfigSwitch(arg) {
+  return typeof arg === "string" && arg.trim().toLowerCase() === "-c";
+}
+function preventProtocolOverride(arg, next) {
+  if (!isConfigSwitch(arg)) {
+    return;
+  }
+  if (!/^\s*protocol(.[a-z]+)?.allow/.test(next)) {
+    return;
+  }
+  throw new GitPluginError(
+    void 0,
+    "unsafe",
+    "Configuring protocol.allow is not permitted without enabling allowUnsafeExtProtocol"
+  );
+}
+function preventUploadPack(arg, method) {
+  if (/^\s*--(upload|receive)-pack/.test(arg)) {
+    throw new GitPluginError(
+      void 0,
+      "unsafe",
+      `Use of --upload-pack or --receive-pack is not permitted without enabling allowUnsafePack`
+    );
+  }
+  if (method === "clone" && /^\s*-u\b/.test(arg)) {
+    throw new GitPluginError(
+      void 0,
+      "unsafe",
+      `Use of clone with option -u is not permitted without enabling allowUnsafePack`
+    );
+  }
+  if (method === "push" && /^\s*--exec\b/.test(arg)) {
+    throw new GitPluginError(
+      void 0,
+      "unsafe",
+      `Use of push with option --exec is not permitted without enabling allowUnsafePack`
+    );
+  }
+}
+function blockUnsafeOperationsPlugin({
+  allowUnsafeProtocolOverride = false,
+  allowUnsafePack = false
+} = {}) {
+  return {
+    type: "spawn.args",
+    action(args, context) {
+      args.forEach((current, index) => {
+        const next = index < args.length ? args[index + 1] : "";
+        allowUnsafeProtocolOverride || preventProtocolOverride(current, next);
+        allowUnsafePack || preventUploadPack(current, context.method);
+      });
+      return args;
+    }
+  };
+}
+
+// src/lib/plugins/command-config-prefixing-plugin.ts
+init_utils();
+function commandConfigPrefixingPlugin(configuration) {
+  const prefix = prefixedArray(configuration, "-c");
+  return {
+    type: "spawn.args",
+    action(data) {
+      return [...prefix, ...data];
+    }
+  };
+}
+
+// src/lib/plugins/completion-detection.plugin.ts
+init_utils();
+var never = distExports.deferred().promise;
+function completionDetectionPlugin({
+  onClose = true,
+  onExit = 50
+} = {}) {
+  function createEvents() {
+    let exitCode = -1;
+    const events = {
+      close: distExports.deferred(),
+      closeTimeout: distExports.deferred(),
+      exit: distExports.deferred(),
+      exitTimeout: distExports.deferred()
+    };
+    const result = Promise.race([
+      onClose === false ? never : events.closeTimeout.promise,
+      onExit === false ? never : events.exitTimeout.promise
+    ]);
+    configureTimeout(onClose, events.close, events.closeTimeout);
+    configureTimeout(onExit, events.exit, events.exitTimeout);
+    return {
+      close(code) {
+        exitCode = code;
+        events.close.done();
+      },
+      exit(code) {
+        exitCode = code;
+        events.exit.done();
+      },
+      get exitCode() {
+        return exitCode;
+      },
+      result
+    };
+  }
+  function configureTimeout(flag, event, timeout) {
+    if (flag === false) {
+      return;
+    }
+    (flag === true ? event.promise : event.promise.then(() => delay(flag))).then(timeout.done);
+  }
+  return {
+    type: "spawn.after",
+    async action(_data, { spawned, close }) {
+      const events = createEvents();
+      let deferClose = true;
+      let quickClose = () => void (deferClose = false);
+      spawned.stdout?.on("data", quickClose);
+      spawned.stderr?.on("data", quickClose);
+      spawned.on("error", quickClose);
+      spawned.on("close", (code) => events.close(code));
+      spawned.on("exit", (code) => events.exit(code));
+      try {
+        await events.result;
+        if (deferClose) {
+          await delay(50);
+        }
+        close(events.exitCode);
+      } catch (err) {
+        close(events.exitCode, err);
+      }
+    }
+  };
+}
+
+// src/lib/plugins/custom-binary.plugin.ts
+init_utils();
+var WRONG_NUMBER_ERR = `Invalid value supplied for custom binary, requires a single string or an array containing either one or two strings`;
+var WRONG_CHARS_ERR = `Invalid value supplied for custom binary, restricted characters must be removed or supply the unsafe.allowUnsafeCustomBinary option`;
+function isBadArgument(arg) {
+  return !arg || !/^([a-z]:)?([a-z0-9/.\\_-]+)$/i.test(arg);
+}
+function toBinaryConfig(input, allowUnsafe) {
+  if (input.length < 1 || input.length > 2) {
+    throw new GitPluginError(void 0, "binary", WRONG_NUMBER_ERR);
+  }
+  const isBad = input.some(isBadArgument);
+  if (isBad) {
+    if (allowUnsafe) {
+      console.warn(WRONG_CHARS_ERR);
+    } else {
+      throw new GitPluginError(void 0, "binary", WRONG_CHARS_ERR);
+    }
+  }
+  const [binary, prefix] = input;
+  return {
+    binary,
+    prefix
+  };
+}
+function customBinaryPlugin(plugins, input = ["git"], allowUnsafe = false) {
+  let config = toBinaryConfig(asArray(input), allowUnsafe);
+  plugins.on("binary", (input2) => {
+    config = toBinaryConfig(asArray(input2), allowUnsafe);
+  });
+  plugins.append("spawn.binary", () => {
+    return config.binary;
+  });
+  plugins.append("spawn.args", (data) => {
+    return config.prefix ? [config.prefix, ...data] : data;
+  });
+}
+
+// src/lib/plugins/error-detection.plugin.ts
+init_git_error();
+function isTaskError(result) {
+  return !!(result.exitCode && result.stdErr.length);
+}
+function getErrorMessage(result) {
+  return Buffer.concat([...result.stdOut, ...result.stdErr]);
+}
+function errorDetectionHandler(overwrite = false, isError = isTaskError, errorMessage = getErrorMessage) {
+  return (error, result) => {
+    if (!overwrite && error || !isError(result)) {
+      return error;
+    }
+    return errorMessage(result);
+  };
+}
+function errorDetectionPlugin(config) {
+  return {
+    type: "task.error",
+    action(data, context) {
+      const error = config(data.error, {
+        stdErr: context.stdErr,
+        stdOut: context.stdOut,
+        exitCode: context.exitCode
+      });
+      if (Buffer.isBuffer(error)) {
+        return { error: new GitError(void 0, error.toString("utf-8")) };
+      }
+      return {
+        error
+      };
+    }
+  };
+}
+
+// src/lib/plugins/plugin-store.ts
+init_utils();
+var PluginStore = class {
+  constructor() {
+    this.plugins = /* @__PURE__ */ new Set();
+    this.events = new EventEmitter();
+  }
+  on(type, listener) {
+    this.events.on(type, listener);
+  }
+  reconfigure(type, data) {
+    this.events.emit(type, data);
+  }
+  append(type, action) {
+    const plugin = append(this.plugins, { type, action });
+    return () => this.plugins.delete(plugin);
+  }
+  add(plugin) {
+    const plugins = [];
+    asArray(plugin).forEach((plugin2) => plugin2 && this.plugins.add(append(plugins, plugin2)));
+    return () => {
+      plugins.forEach((plugin2) => this.plugins.delete(plugin2));
+    };
+  }
+  exec(type, data, context) {
+    let output = data;
+    const contextual = Object.freeze(Object.create(context));
+    for (const plugin of this.plugins) {
+      if (plugin.type === type) {
+        output = plugin.action(output, contextual);
+      }
+    }
+    return output;
+  }
+};
+
+// src/lib/plugins/progress-monitor-plugin.ts
+init_utils();
+function progressMonitorPlugin(progress) {
+  const progressCommand = "--progress";
+  const progressMethods = ["checkout", "clone", "fetch", "pull", "push"];
+  const onProgress = {
+    type: "spawn.after",
+    action(_data, context) {
+      if (!context.commands.includes(progressCommand)) {
+        return;
+      }
+      context.spawned.stderr?.on("data", (chunk) => {
+        const message = /^([\s\S]+?):\s*(\d+)% \((\d+)\/(\d+)\)/.exec(chunk.toString("utf8"));
+        if (!message) {
+          return;
+        }
+        progress({
+          method: context.method,
+          stage: progressEventStage(message[1]),
+          progress: asNumber(message[2]),
+          processed: asNumber(message[3]),
+          total: asNumber(message[4])
+        });
+      });
+    }
+  };
+  const onArgs = {
+    type: "spawn.args",
+    action(args, context) {
+      if (!progressMethods.includes(context.method)) {
+        return args;
+      }
+      return including(args, progressCommand);
+    }
+  };
+  return [onArgs, onProgress];
+}
+function progressEventStage(input) {
+  return String(input.toLowerCase().split(" ", 1)) || "unknown";
+}
+
+// src/lib/plugins/spawn-options-plugin.ts
+init_utils();
+function spawnOptionsPlugin(spawnOptions) {
+  const options = pick(spawnOptions, ["uid", "gid"]);
+  return {
+    type: "spawn.options",
+    action(data) {
+      return { ...options, ...data };
+    }
+  };
+}
+
+// src/lib/plugins/timout-plugin.ts
+function timeoutPlugin({
+  block,
+  stdErr = true,
+  stdOut = true
+}) {
+  if (block > 0) {
+    return {
+      type: "spawn.after",
+      action(_data, context) {
+        let timeout;
+        function wait() {
+          timeout && clearTimeout(timeout);
+          timeout = setTimeout(kill, block);
+        }
+        function stop() {
+          context.spawned.stdout?.off("data", wait);
+          context.spawned.stderr?.off("data", wait);
+          context.spawned.off("exit", stop);
+          context.spawned.off("close", stop);
+          timeout && clearTimeout(timeout);
+        }
+        function kill() {
+          stop();
+          context.kill(new GitPluginError(void 0, "timeout", `block timeout reached`));
+        }
+        stdOut && context.spawned.stdout?.on("data", wait);
+        stdErr && context.spawned.stderr?.on("data", wait);
+        context.spawned.on("exit", stop);
+        context.spawned.on("close", stop);
+        wait();
+      }
+    };
+  }
+}
+
+// src/lib/plugins/suffix-paths.plugin.ts
+init_pathspec();
+function suffixPathsPlugin() {
+  return {
+    type: "spawn.args",
+    action(data) {
+      const prefix = [];
+      let suffix;
+      function append2(args) {
+        (suffix = suffix || []).push(...args);
+      }
+      for (let i = 0; i < data.length; i++) {
+        const param = data[i];
+        if (isPathSpec(param)) {
+          append2(toPaths(param));
+          continue;
+        }
+        if (param === "--") {
+          append2(
+            data.slice(i + 1).flatMap((item) => isPathSpec(item) && toPaths(item) || item)
+          );
+          break;
+        }
+        prefix.push(param);
+      }
+      return !suffix ? prefix : [...prefix, "--", ...suffix.map(String)];
+    }
+  };
+}
+
+// src/lib/git-factory.ts
+init_utils();
+var Git = require_git();
+function gitInstanceFactory(baseDir, options) {
+  const plugins = new PluginStore();
+  const config = createInstanceConfig(
+    baseDir && (typeof baseDir === "string" ? { baseDir } : baseDir) || {},
+    options
+  );
+  if (!folderExists(config.baseDir)) {
+    throw new GitConstructError(
+      config,
+      `Cannot use simple-git on a directory that does not exist`
+    );
+  }
+  if (Array.isArray(config.config)) {
+    plugins.add(commandConfigPrefixingPlugin(config.config));
+  }
+  plugins.add(blockUnsafeOperationsPlugin(config.unsafe));
+  plugins.add(suffixPathsPlugin());
+  plugins.add(completionDetectionPlugin(config.completion));
+  config.abort && plugins.add(abortPlugin(config.abort));
+  config.progress && plugins.add(progressMonitorPlugin(config.progress));
+  config.timeout && plugins.add(timeoutPlugin(config.timeout));
+  config.spawnOptions && plugins.add(spawnOptionsPlugin(config.spawnOptions));
+  plugins.add(errorDetectionPlugin(errorDetectionHandler(true)));
+  config.errors && plugins.add(errorDetectionPlugin(config.errors));
+  customBinaryPlugin(plugins, config.binary, config.unsafe?.allowUnsafeCustomBinary);
+  return new Git(config, plugins);
+}
+
+// src/lib/runners/promise-wrapped.ts
+init_git_response_error();
+
+// src/esm.mjs
+var simpleGit = gitInstanceFactory;
+
+async function inferGitContext() {
+    if (!(await isGitRepository())) {
+        throw new Error('No git repository detected.');
+    }
+    const remoteUrl = await getRemoteUrl();
+    const parsed = parseGithubUrl(remoteUrl);
+    if (!parsed || !parsed.owner || !parsed.repo) {
+        throw new Error(`Could not parse GitHub URL: ${remoteUrl}. Expected format: https://github.com/owner/repo or git@github.com:owner/repo`);
+    }
+    const { owner, repo } = parsed;
+    // repo is parsed as owner/repo but we want to use just the repo name
+    const repoName = repo.replace(`${owner}/`, '');
+    const commitInfo = await getCommit();
+    return { owner, repo: repoName, commit: commitInfo };
+}
+async function getRemoteUrl() {
+    try {
+        const remoteUrl = await simpleGit().remote(['get-url', 'origin']);
+        if (!remoteUrl) {
+            throw new Error('No origin remote found');
+        }
+        return remoteUrl;
+    }
+    catch {
+        throw new Error('Could not determine git remote URL. Please ensure you have an origin remote configured.');
+    }
+}
+async function isGitRepository() {
+    return simpleGit().checkIsRepo();
+}
+async function getCommit(hash = 'HEAD') {
+    // format: %H: commit hash, %s: subject, %an: author name, %ae: author email, %ai: author date
+    const commit = await simpleGit().show([hash, '--format=%H|%s|%an|%ae|%ai']);
+    const [resolvedHash, message, author_name, author_email, date] = commit.trim().split('|');
+    if (!resolvedHash) {
+        throw new Error(`No commit found for ${hash}`);
+    }
+    return {
+        hash: resolvedHash,
+        message: message,
+        author: author_name || 'Unknown',
+        email: author_email || '',
+        date: date || new Date().toISOString(),
+    };
+}
+
+async function inferBuildContext() {
+    const ciEnv = envCi();
+    const gitContext = {
+        ...(await inferGitContext()),
+        branch: ('prBranch' in ciEnv && ciEnv.prBranch ? ciEnv.prBranch : ciEnv.branch) ?? undefined,
+    };
+    const buildContext = {
+        service: ciEnv.isCi ? ciEnv.service : 'unknown',
+        prNumber: 'pr' in ciEnv ? ciEnv.pr : undefined,
+        buildNumber: 'build' in ciEnv ? ciEnv.build : undefined,
+        buildUrl: 'buildUrl' in ciEnv ? ciEnv.buildUrl : undefined,
+        git: gitContext,
+    };
+    console.log('🔍 Inferred build context:');
+    if (buildContext.service) {
+        console.log(`   • service: ${buildContext.service}`);
+    }
+    console.log(`   • repository: ${gitContext.owner}/${gitContext.repo}`);
+    console.log(`   • branch: ${gitContext.branch}`);
+    console.log(`   • commit: ${gitContext.commit.hash}`);
+    console.log('');
+    return buildContext;
+}
+
 run();
 async function run() {
     try {
         const url = coreExports.getInput('url', { required: true });
         const token = coreExports.getInput('token', { required: true });
-        const githubContext = {
-            owner: githubExports.context.repo.owner,
-            repo: githubExports.context.repo.repo,
-            sha: githubExports.context.sha
-        };
+        const buildContext = await inferBuildContext();
         coreExports.debug(`Calling xcelera audit API with URL: ${url}`);
-        const response = await requestAudit(url, token, githubContext);
+        const response = await requestAudit(url, token, buildContext);
         if (!response.success) {
             const { message, details } = response.error;
             coreExports.setFailed('❌ Unable to schedule audit :(');
