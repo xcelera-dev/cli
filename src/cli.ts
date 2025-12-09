@@ -56,7 +56,6 @@ if (!token) {
 
 try {
   const buildContext = await inferBuildContext()
-
   const response = await requestAudit(url, token, buildContext)
   if (!response.success) {
     const { message, details } = response.error
@@ -70,11 +69,14 @@ try {
   const { auditId, status, integrations } = response.data
 
   console.log('✅ Audit scheduled successfully!')
+
   if (process.env.DEBUG) {
+    console.log('')
     console.log(`Audit ID: ${auditId}`)
     console.log(`Status: ${status}`)
   }
   if (integrations && integrations.github) {
+    console.log('')
     console.log('GitHub integration detected')
     const { installationId, hasRepoAccess } = integrations.github
     if (installationId && !hasRepoAccess) {

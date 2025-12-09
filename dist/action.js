@@ -36530,8 +36530,8 @@ async function getRemoteUrl() {
         }
         return remoteUrl;
     }
-    catch {
-        throw new Error('Could not determine git remote URL. Please ensure you have an origin remote configured.');
+    catch (error) {
+        throw new Error('Could not determine git remote URL. Please ensure you have an origin remote configured.', { cause: error });
     }
 }
 async function isGitRepository() {
@@ -36539,7 +36539,11 @@ async function isGitRepository() {
 }
 async function getCommit(hash = 'HEAD') {
     // format: %H: commit hash, %s: subject, %an: author name, %ae: author email, %ai: author date
-    const commit = await simpleGit().show([hash, '--format=%H|%s|%an|%ae|%ai']);
+    const commit = await simpleGit().show([
+        hash,
+        '--no-patch',
+        '--format=%H|%s|%an|%ae|%ai'
+    ]);
     const [resolvedHash, message, author_name, author_email, date] = commit
         .trim()
         .split('|');
@@ -36551,7 +36555,7 @@ async function getCommit(hash = 'HEAD') {
         message: message,
         author: author_name || 'Unknown',
         email: author_email || '',
-        date: date || new Date().toISOString()
+        date: date ? new Date(date).toISOString() : new Date().toISOString()
     };
 }
 

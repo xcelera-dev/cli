@@ -10,6 +10,7 @@ export async function inferBuildContext(): Promise<BuildContext> {
       ('prBranch' in ciEnv && ciEnv.prBranch ? ciEnv.prBranch : ciEnv.branch) ??
       undefined
   }
+
   const buildContext = {
     service: ciEnv.isCi ? ciEnv.service : 'unknown',
     prNumber: 'pr' in ciEnv ? ciEnv.pr : undefined,

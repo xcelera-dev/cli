@@ -19,7 +19,6 @@ export async function inferGitContext(): Promise<GitContext> {
   const { owner, repo } = parsed
   // repo is parsed as owner/repo but we want to use just the repo name
   const repoName = repo.replace(`${owner}/`, '')
-
   const commitInfo = await getCommit()
 
   return { owner, repo: repoName, commit: commitInfo }
@@ -28,15 +27,14 @@ export async function inferGitContext(): Promise<GitContext> {
 async function getRemoteUrl(): Promise<string> {
   try {
     const remoteUrl = await simpleGit().remote(['get-url', 'origin'])
-
     if (!remoteUrl) {
       throw new Error('No origin remote found')
     }
-
     return remoteUrl
-  } catch {
+  } catch (error) {
     throw new Error(
-      'Could not determine git remote URL. Please ensure you have an origin remote configured.'
+      'Could not determine git remote URL. Please ensure you have an origin remote configured.',
+      { cause: error }
     )
   }
 }
@@ -47,7 +45,11 @@ export async function isGitRepository(): Promise<boolean> {
 
 async function getCommit(hash = 'HEAD'): Promise<CommitInfo> {
   // format: %H: commit hash, %s: subject, %an: author name, %ae: author email, %ai: author date
-  const commit = await simpleGit().show([hash, '--format=%H|%s|%an|%ae|%ai'])
+  const commit = await simpleGit().show([
+    hash,
+    '--no-patch',
+    '--format=%H|%s|%an|%ae|%ai'
+  ])
   const [resolvedHash, message, author_name, author_email, date] = commit
     .trim()
     .split('|')
@@ -60,6 +62,6 @@ async function getCommit(hash = 'HEAD'): Promise<CommitInfo> {
     message: message,
     author: author_name || 'Unknown',
     email: author_email || '',
-    date: date || new Date().toISOString()
+    date: date ? new Date(date).toISOString() : new Date().toISOString()
   }
 }
