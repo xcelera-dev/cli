@@ -10,14 +10,19 @@ export type ErrorResponse<E> = {
 
 export type ApiResponse<T, E> = SuccessResponse<T> | ErrorResponse<E>
 
+export interface CommandResult {
+  exitCode: number
+  output: string[]
+  errors: string[]
+}
+
 export type BuildContext = {
   service: string
   prNumber?: string
-  build?: string
+  buildNumber?: string
   buildUrl?: string
   git?: GitContext
 }
-
 export interface GitContext {
   owner: string
   repo: string
@@ -32,3 +37,22 @@ export type CommitInfo = {
   email: string
   date: string
 }
+
+export type GithubIntegrationContext =
+  | {
+      status: 'success'
+      installationId: number
+      checkRunId: number
+    }
+  | {
+      status: 'skipped'
+      reason: 'no_git_context' | 'no_installation'
+    }
+  | {
+      status: 'misconfigured'
+      reason: 'no_repo_access'
+      installationId: number
+    }
+  | {
+      status: 'error'
+    }

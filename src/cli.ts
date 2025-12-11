@@ -1,8 +1,8 @@
 #!/usr/bin/env node
+/* istanbul ignore file */
 
 import { parseArgs } from 'node:util'
-import { requestAudit } from './api.js'
-import { inferBuildContext } from './buildContext.js'
+import { runAuditCommand } from './lib/commands/audit.js'
 
 const options = {
   url: {
@@ -32,6 +32,7 @@ if (!command) {
 
 if (command === 'help') {
   printHelp()
+  process.exit(0)
 }
 
 if (command !== 'audit') {
@@ -54,51 +55,10 @@ if (!token) {
   process.exit(1)
 }
 
-try {
-  const buildContext = await inferBuildContext()
-  const response = await requestAudit(url, token, buildContext)
-  if (!response.success) {
-    const { message, details } = response.error
-    console.error('❌ Unable to schedule audit :(')
-    console.error(` ↳ ${message}`)
-    if (details) {
-      console.error(` ↳ ${details}`)
-    }
-    process.exit(1)
-  }
-  const { auditId, status, integrations } = response.data
-
-  console.log('✅ Audit scheduled successfully!')
-
-  if (process.env.DEBUG) {
-    console.log('')
-    console.log(`Audit ID: ${auditId}`)
-    console.log(`Status: ${status}`)
-  }
-  if (integrations && integrations.github) {
-    console.log('')
-    console.log('GitHub integration detected')
-    const { installationId, hasRepoAccess } = integrations.github
-    if (installationId && !hasRepoAccess) {
-      console.log(
-        'Warning: The xcelera.dev Github app is installed, but it does not have repository access.'
-      )
-    }
-
-    if (process.env.DEBUG) {
-      console.log(` ↳ installation ID: ${integrations.github.installationId}`)
-      console.log(` ↳ check run ID: ${integrations.github.checkRunId}`)
-      console.log(
-        ` ↳ installation has repo access: ${integrations.github.hasRepoAccess}`
-      )
-    }
-  }
-} catch (error) {
-  const errorMessage =
-    error instanceof Error ? error.message : 'Unknown error occurred'
-  console.error(`❌ ${errorMessage}`)
-  process.exit(1)
-}
+const result = await runAuditCommand(url, token)
+result.output.forEach((line: string) => console.log(line))
+result.errors.forEach((line: string) => console.error(line))
+process.exit(result.exitCode)
 
 function printHelp() {
   console.log('Usage: xcelera audit --url <url> [--token <token>]')

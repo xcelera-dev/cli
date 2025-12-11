@@ -36566,62 +36566,124 @@ async function inferBuildContext() {
         branch: ('prBranch' in ciEnv && ciEnv.prBranch ? ciEnv.prBranch : ciEnv.branch) ??
             undefined
     };
-    const buildContext = {
+    return {
         service: ciEnv.isCi ? ciEnv.service : 'unknown',
         prNumber: 'pr' in ciEnv ? ciEnv.pr : undefined,
         buildNumber: 'build' in ciEnv ? ciEnv.build : undefined,
         buildUrl: 'buildUrl' in ciEnv ? ciEnv.buildUrl : undefined,
         git: gitContext
     };
-    console.log('🔍 Inferred build context:');
-    if (buildContext.service) {
-        console.log(`   • service: ${buildContext.service}`);
-    }
-    console.log(`   • repository: ${gitContext.owner}/${gitContext.repo}`);
-    console.log(`   • branch: ${gitContext.branch}`);
-    console.log(`   • commit: ${gitContext.commit.hash}`);
-    console.log('');
-    return buildContext;
 }
 
-run();
-async function run() {
+async function runAuditCommand(url, token) {
+    const output = [];
+    const errors = [];
     try {
-        const url = coreExports.getInput('url', { required: true });
-        const token = coreExports.getInput('token', { required: true });
         const buildContext = await inferBuildContext();
-        coreExports.debug(`Calling xcelera audit API with URL: ${url}`);
+        output.push(...formatBuildContext(buildContext));
         const response = await requestAudit(url, token, buildContext);
         if (!response.success) {
             const { message, details } = response.error;
-            coreExports.setFailed('❌ Unable to schedule audit :(');
-            coreExports.error(message);
+            errors.push('❌ Unable to schedule audit :(');
+            errors.push(` ↳ ${message}`);
             if (details) {
-                coreExports.error(` ↳ ${details}`);
+                errors.push(` ↳ ${details}`);
             }
-            coreExports.setOutput('status', 'failed');
-            return;
+            return { exitCode: 1, output, errors };
         }
         const { auditId, status, integrations } = response.data;
-        coreExports.info('✅ Audit scheduled successfully!');
-        coreExports.debug(`Audit ID: ${auditId}`);
-        coreExports.debug(`Status: ${status}`);
-        if (integrations && integrations.github) {
-            coreExports.info('GitHub integration detected');
-            const { installationId, hasRepoAccess } = integrations.github;
-            if (installationId && !hasRepoAccess) {
-                coreExports.warning('The xcelera.dev Github app is installed, but it does not have repository access.');
+        output.push('✅ Audit scheduled successfully!');
+        if (process.env.DEBUG) {
+            output.push('');
+            output.push(`Audit ID: ${auditId}`);
+            output.push(`Status: ${status}`);
+            if (Object.keys(integrations).length === 0) {
+                output.push('No integrations detected');
             }
-            coreExports.debug(` ↳ installation ID: ${integrations.github.installationId}`);
-            coreExports.debug(` ↳ check run ID: ${integrations.github.checkRunId}`);
-            coreExports.debug(` ↳ installation has repo access: ${integrations.github.hasRepoAccess}`);
         }
+        if (integrations?.github) {
+            const githubOutput = formatGitHubIntegrationStatus(integrations.github);
+            output.push(...githubOutput.output);
+            errors.push(...githubOutput.errors);
+        }
+        return { exitCode: 0, output, errors };
     }
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-        coreExports.error(`❌ ${errorMessage}`);
-        coreExports.setFailed(errorMessage);
+        errors.push(`❌ ${errorMessage}`);
+        return { exitCode: 1, output, errors };
+    }
+}
+function formatBuildContext(context) {
+    const logs = [];
+    logs.push('🔍 Inferred build context:');
+    if (context.service) {
+        logs.push(`   • service: ${context.service}`);
+    }
+    if (context.git) {
+        logs.push(`   • repository: ${context.git.owner}/${context.git.repo}`);
+        logs.push(`   • branch: ${context.git.branch}`);
+        logs.push(`   • commit: ${context.git.commit.hash}`);
+    }
+    logs.push('');
+    return logs;
+}
+function formatGitHubIntegrationStatus(context) {
+    const output = [];
+    const errors = [];
+    output.push('');
+    switch (context.status) {
+        case 'success': {
+            output.push('✅ GitHub integration detected!');
+            if (process.env.DEBUG) {
+                output.push(` ↳ installation ID: ${context.installationId}`);
+                output.push(` ↳ check run ID: ${context.checkRunId}`);
+            }
+            break;
+        }
+        case 'skipped': {
+            if (process.env.DEBUG) {
+                const reasonMessage = context.reason === 'no_git_context'
+                    ? 'no git context detected; skipping GitHub integration.'
+                    : 'GitHub app not installed; skipping GitHub integration.';
+                output.push(`↳ GitHub integration skipped: ${reasonMessage}`);
+            }
+            break;
+        }
+        case 'misconfigured': {
+            errors.push('⚠️ GitHub integration is misconfigured.');
+            if (context.reason === 'no_repo_access') {
+                errors.push('The xcelera.dev GitHub app is installed, but it does not have access to this repository.');
+                errors.push('Please update the GitHub app installation and grant access to this repository.');
+            }
+            if (process.env.DEBUG) {
+                errors.push(` ↳ installation ID: ${context.installationId}`);
+            }
+            break;
+        }
+        case 'error': {
+            errors.push('⚠️ Something went wrong with the GitHub integration.');
+            errors.push('Your audit was scheduled successfully, but we could not create or update the GitHub check run.');
+            break;
+        }
+    }
+    return { output, errors };
+}
+
+/* istanbul ignore file */
+run();
+async function run() {
+    const url = coreExports.getInput('url', { required: true });
+    const token = coreExports.getInput('token', { required: true });
+    const result = await runAuditCommand(url, token);
+    result.output.forEach((line) => coreExports.info(line));
+    result.errors.forEach((line) => coreExports.error(line));
+    if (result.exitCode !== 0) {
+        coreExports.setFailed('Audit command failed');
         coreExports.setOutput('status', 'failed');
+    }
+    else {
+        coreExports.setOutput('status', 'success');
     }
 }
 //# sourceMappingURL=action.js.map

@@ -16,6 +16,7 @@
     "noUnusedParameters": false,
     "pretty": true,
     "resolveJsonModule": true,
+    "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
     "target": "ES2022"
