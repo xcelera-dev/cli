@@ -25,7 +25,7 @@
   "scripts": {
     "bundle": "npm run format:write && npm run package",
     "coverage": "npx make-coverage-badge --output-path ./badges/coverage.svg",
-    "check": "npx @biomejs/biome check",
+    "check": "npx @biomejs/biome check && npx tsc --noEmit",
     "format:write": "npx @biomejs/biome format --write",
     "local-action": "npx @github/local-action . src/action.ts .env",
     "package": "npx rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",

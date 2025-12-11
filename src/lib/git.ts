@@ -1,6 +1,6 @@
 import parseGithubUrl from 'parse-github-url'
 import { simpleGit } from 'simple-git'
-import type { CommitInfo, GitContext } from './types/index.js'
+import type { CommitInfo, GitContext } from '../types/index.js'
 
 export async function inferGitContext(): Promise<GitContext> {
   if (!(await isGitRepository())) {

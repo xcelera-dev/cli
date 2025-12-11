@@ -4,18 +4,15 @@ import {
   ApiResponse,
   BuildContext,
   ErrorResponse,
+  GithubIntegrationContext,
   SuccessResponse
-} from './types/index.js'
+} from '../types/index.js'
 
 type AuditData = {
   auditId: string
   status: string
   integrations: {
-    github: {
-      installationId?: number
-      checkRunId?: number
-      hasRepoAccess?: boolean
-    }
+    github?: GithubIntegrationContext
   }
 }
 
