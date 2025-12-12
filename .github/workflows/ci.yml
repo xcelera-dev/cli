@@ -102,6 +102,7 @@ jobs:
         run: node dist/cli.js audit --url https://xcelera.dev/login
         env:
           XCELERA_TOKEN: ${{ secrets.XCELERA_TOKEN }}
+          DEBUG: true
 
   call-release:
     needs: [test-typescript, test-action, test-cli]
