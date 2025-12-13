@@ -30,7 +30,6 @@ test('should be able to request an audit', async () => {
         hash: '123',
         message: 'test',
         author: 'test',
-        email: 'test',
         date: '2021-01-01'
       }
     }
@@ -61,7 +60,6 @@ test('should handle a network error', async () => {
         hash: '123',
         message: 'test',
         author: 'test',
-        email: 'test',
         date: '2021-01-01'
       }
     }
@@ -101,7 +99,6 @@ test('should handle an expected API error', async () => {
         hash: '123',
         message: 'test',
         author: 'test',
-        email: 'test',
         date: '2021-01-01'
       }
     }
