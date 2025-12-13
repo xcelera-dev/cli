@@ -62,14 +62,12 @@ describe('runAuditCommand', () => {
       })
     )
 
-    await withTempGitRepo(async () => {
-      const result = await runAuditCommand('https://example.com', 'test-token')
+    const result = await runAuditCommand('https://example.com', 'test-token')
 
-      expect(result.exitCode).toBe(0)
-      expect(result.output).toContain('✅ Audit scheduled successfully!')
-      expect(result.output).toContain('✅ GitHub integration detected!')
-      expect(result.errors).toHaveLength(0)
-    })
+    expect(result.exitCode).toBe(0)
+    expect(result.output).toContain('✅ Audit scheduled successfully!')
+    expect(result.output).toContain('✅ GitHub integration detected!')
+    expect(result.errors).toHaveLength(0)
   })
 
   test('API error returns correct exit code and message', async () => {
@@ -88,14 +86,12 @@ describe('runAuditCommand', () => {
       })
     )
 
-    await withTempGitRepo(async () => {
-      const result = await runAuditCommand('https://example.com', 'bad-token')
+    const result = await runAuditCommand('https://example.com', 'bad-token')
 
-      expect(result.exitCode).toBe(1)
-      expect(result.errors).toContain('❌ Unable to schedule audit :(')
-      expect(result.errors).toContain(' ↳ Invalid token')
-      expect(result.errors).toContain(' ↳ Token expired')
-    })
+    expect(result.exitCode).toBe(1)
+    expect(result.errors).toContain('❌ Unable to schedule audit :(')
+    expect(result.errors).toContain(' ↳ Invalid token')
+    expect(result.errors).toContain(' ↳ Token expired')
   })
 
   test('no git repo returns correct error', async () => {
@@ -129,16 +125,14 @@ describe('runAuditCommand', () => {
         })
       })
     )
-    await withTempGitRepo(async () => {
-      const result = await runAuditCommand('https://example.com', 'test-token')
+    const result = await runAuditCommand('https://example.com', 'test-token')
 
-      expect(result.exitCode).toBe(0)
-      expect(result.output).toContain('✅ Audit scheduled successfully!')
-      expect(result.errors).toContain('⚠️ GitHub integration is misconfigured.')
-      expect(result.errors).toContain(
-        'The xcelera.dev GitHub app is installed, but it does not have access to this repository.'
-      )
-    })
+    expect(result.exitCode).toBe(0)
+    expect(result.output).toContain('✅ Audit scheduled successfully!')
+    expect(result.errors).toContain('⚠️ GitHub integration is misconfigured.')
+    expect(result.errors).toContain(
+      'The xcelera.dev GitHub app is installed, but it does not have access to this repository.'
+    )
   })
 
   test('GitHub integration error shows warning', async () => {
@@ -159,14 +153,27 @@ describe('runAuditCommand', () => {
       })
     )
 
-    await withTempGitRepo(async () => {
-      const result = await runAuditCommand('https://example.com', 'test-token')
+    const result = await runAuditCommand('https://example.com', 'test-token')
 
-      expect(result.exitCode).toBe(0)
-      expect(result.output).toContain('✅ Audit scheduled successfully!')
-      expect(result.errors).toContain(
-        '⚠️ Something went wrong with the GitHub integration.'
-      )
-    })
+    expect(result.exitCode).toBe(0)
+    expect(result.output).toContain('✅ Audit scheduled successfully!')
+    expect(result.errors).toContain(
+      '⚠️ Something went wrong with the GitHub integration.'
+    )
+  })
+
+  test('handles unexpected errors', async () => {
+    server.use(
+      http.post('https://xcelera.dev/api/v1/audit', () => {
+        throw new Error('Unexpected error')
+      })
+    )
+
+    const result = await runAuditCommand('https://example.com', 'test-token')
+
+    expect(result.exitCode).toBe(1)
+    expect(result.errors[0]).toContain('❌')
+    // should include stack trace
+    expect(result.errors).toContainEqual(expect.stringMatching(/at /))
   })
 })
