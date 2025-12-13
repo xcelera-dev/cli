@@ -53,6 +53,12 @@ export async function runAuditCommand(
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error occurred'
     errors.push(`❌ ${errorMessage}`)
+
+    if (error instanceof Error && error.stack) {
+      errors.push('')
+      errors.push(error.stack)
+    }
+
     return { exitCode: 1, output, errors }
   }
 }
