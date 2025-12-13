@@ -45,14 +45,15 @@ export async function isGitRepository(): Promise<boolean> {
 
 async function getCommit(hash = 'HEAD'): Promise<CommitInfo> {
   // format: %H: commit hash, %s: subject, %an: author name, %ae: author email, %ai: author date
+  // Use null byte (%x00) as delimiter - cannot appear in commit data
   const commit = await simpleGit().show([
     hash,
     '--no-patch',
-    '--format=%H|%s|%an|%ae|%ai'
+    '--format=%H%x00%s%x00%an%x00%ae%x00%ai'
   ])
   const [resolvedHash, message, author_name, author_email, date] = commit
     .trim()
-    .split('|')
+    .split('\0')
 
   if (!resolvedHash) {
     throw new Error(`No commit found for ${hash}`)

@@ -36539,14 +36539,15 @@ async function isGitRepository() {
 }
 async function getCommit(hash = 'HEAD') {
     // format: %H: commit hash, %s: subject, %an: author name, %ae: author email, %ai: author date
+    // Use null byte (%x00) as delimiter - cannot appear in commit data
     const commit = await simpleGit().show([
         hash,
         '--no-patch',
-        '--format=%H|%s|%an|%ae|%ai'
+        '--format=%H%x00%s%x00%an%x00%ae%x00%ai'
     ]);
     const [resolvedHash, message, author_name, author_email, date] = commit
         .trim()
-        .split('|');
+        .split('\0');
     if (!resolvedHash) {
         throw new Error(`No commit found for ${hash}`);
     }
@@ -36611,6 +36612,10 @@ async function runAuditCommand(url, token) {
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         errors.push(`❌ ${errorMessage}`);
+        if (error instanceof Error && error.stack) {
+            errors.push('');
+            errors.push(error.stack);
+        }
         return { exitCode: 1, output, errors };
     }
 }

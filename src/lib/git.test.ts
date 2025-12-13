@@ -35,6 +35,17 @@ describe('git', () => {
     })
   })
 
+  test('handles commit messages containing pipe characters', async () => {
+    await withTempGitRepo(
+      async () => {
+        const context = await inferGitContext()
+
+        expect(context.commit.message).toBe('fix: handle edge case | add tests')
+      },
+      { initialCommitMessage: 'fix: handle edge case | add tests' }
+    )
+  })
+
   test('handles error when not in a git repository', async () => {
     await withTempDir(async () => {
       await expect(inferGitContext()).rejects.toThrow(
