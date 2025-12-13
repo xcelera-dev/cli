@@ -26,7 +26,6 @@ describe('git', () => {
           hash: expect.stringMatching(/^[0-9a-f]{40}$/),
           message: 'initial commit',
           author: 'Test User',
-          email: 'test@example.com',
           date: expect.stringMatching(
             /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
           )

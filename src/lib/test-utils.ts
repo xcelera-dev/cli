@@ -15,7 +15,6 @@ interface TempGitRepo extends TempDir {
 interface InitGitRepoOptions {
   remoteUrl?: string | null
   userName?: string
-  userEmail?: string
   initialCommitMessage?: string
 }
 
@@ -64,7 +63,6 @@ async function createTempGitRepo(
   const {
     remoteUrl = 'git@github.com:owner/repo.git',
     userName = 'Test User',
-    userEmail = 'test@example.com',
     initialCommitMessage = 'initial commit'
   } = options
 
@@ -73,7 +71,6 @@ async function createTempGitRepo(
 
   await git.init()
   await git.addConfig('user.name', userName)
-  await git.addConfig('user.email', userEmail)
 
   writeFileSync(join(dir, 'README.md'), '# test repo\n')
   await git.add(['README.md'])

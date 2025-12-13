@@ -34,7 +34,6 @@ export type CommitInfo = {
   hash: string
   message: string
   author: string
-  email: string
   date: string
 }
 
