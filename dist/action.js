@@ -27303,7 +27303,7 @@ function isNetworkError(error) {
 	return errorMessages.has(message);
 }
 
-async function requestAudit(url, token, context) {
+async function requestAudit(url, token, context, auth) {
     const apiUrl = `${getApiBaseUrl()}/api/v1/audit`;
     try {
         const response = await fetch(apiUrl, {
@@ -27314,7 +27314,8 @@ async function requestAudit(url, token, context) {
             },
             body: JSON.stringify({
                 url,
-                context
+                context,
+                ...(auth && { auth })
             })
         });
         if (!response.ok) {
@@ -27346,6 +27347,7 @@ async function requestAudit(url, token, context) {
         throw error;
     }
 }
+/* istanbul ignore next */
 function getApiBaseUrl() {
     if (process.env.NODE_ENV === 'development') {
         return 'http://localhost:3000';
@@ -36573,13 +36575,18 @@ async function inferBuildContext() {
     };
 }
 
-async function runAuditCommand(url, token) {
+async function runAuditCommand(url, token, authOptions) {
     const output = [];
     const errors = [];
     try {
         const buildContext = await inferBuildContext();
         output.push(...formatBuildContext(buildContext));
-        const response = await requestAudit(url, token, buildContext);
+        const auth = parseAuthCredentials(authOptions);
+        if (auth) {
+            output.push('🔐 Authentication credentials detected');
+            output.push('');
+        }
+        const response = await requestAudit(url, token, buildContext, auth);
         if (!response.success) {
             const { message, details } = response.error;
             errors.push('❌ Unable to schedule audit :(');
@@ -36671,13 +36678,67 @@ function formatGitHubIntegrationStatus(context) {
     }
     return { output, errors };
 }
+function parseAuthCredentials(options) {
+    const envAuth = process.env.XCELERA_AUTH;
+    if (envAuth) {
+        try {
+            return JSON.parse(envAuth);
+        }
+        catch {
+            throw new Error('XCELERA_AUTH environment variable contains invalid JSON');
+        }
+    }
+    // Check for --auth JSON option
+    if (options?.authJson) {
+        try {
+            return JSON.parse(options.authJson);
+        }
+        catch {
+            throw new Error('--auth option contains invalid JSON');
+        }
+    }
+    // Build auth from --cookie and --header options
+    const hasCookies = options?.cookies && options.cookies.length > 0;
+    const hasHeaders = options?.headers && options.headers.length > 0;
+    if (!hasCookies && !hasHeaders) {
+        return undefined;
+    }
+    const auth = {};
+    if (hasCookies && options.cookies) {
+        auth.cookies = options.cookies.map(parseCookie);
+    }
+    if (hasHeaders && options.headers) {
+        auth.headers = {};
+        for (const header of options.headers) {
+            const colonIndex = header.indexOf(':');
+            if (colonIndex === -1) {
+                throw new Error(`Invalid header format: "${header}". Expected "Name: Value"`);
+            }
+            const name = header.slice(0, colonIndex).trim();
+            const value = header.slice(colonIndex + 1).trim();
+            auth.headers[name] = value;
+        }
+    }
+    return auth;
+}
+function parseCookie(cookie) {
+    const equalsIndex = cookie.indexOf('=');
+    if (equalsIndex === -1) {
+        throw new Error(`Invalid cookie format: "${cookie}". Expected "name=value"`);
+    }
+    return {
+        name: cookie.slice(0, equalsIndex),
+        value: cookie.slice(equalsIndex + 1)
+    };
+}
 
 /* istanbul ignore file */
 run();
 async function run() {
     const url = coreExports.getInput('url', { required: true });
     const token = coreExports.getInput('token', { required: true });
-    const result = await runAuditCommand(url, token);
+    const authOptions = parseAuthInputs();
+    const result = await runAuditCommand(url, token, authOptions);
     result.output.forEach((line) => coreExports.info(line));
     result.errors.forEach((line) => coreExports.error(line));
     if (result.exitCode !== 0) {
@@ -36687,5 +36748,18 @@ async function run() {
     else {
         coreExports.setOutput('status', 'success');
     }
+}
+function parseAuthInputs() {
+    const auth = coreExports.getInput('auth');
+    const cookie = coreExports.getInput('cookie');
+    const header = coreExports.getInput('header');
+    if (!auth && !cookie && !header) {
+        return undefined;
+    }
+    return {
+        authJson: auth || undefined,
+        cookies: cookie ? [cookie] : undefined,
+        headers: header ? [header] : undefined
+    };
 }
 //# sourceMappingURL=action.js.map

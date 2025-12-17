@@ -1,14 +1,23 @@
 import type {
+  AuthCredentials,
   BuildContext,
   CommandResult,
+  Cookie,
   GithubIntegrationContext
 } from '../../types/index.js'
 import { requestAudit } from '../api.js'
 import { inferBuildContext } from '../buildContext.js'
 
+export interface AuthOptions {
+  authJson?: string
+  cookies?: string[]
+  headers?: string[]
+}
+
 export async function runAuditCommand(
   url: string,
-  token: string
+  token: string,
+  authOptions?: AuthOptions
 ): Promise<CommandResult> {
   const output: string[] = []
   const errors: string[] = []
@@ -16,7 +25,14 @@ export async function runAuditCommand(
   try {
     const buildContext = await inferBuildContext()
     output.push(...formatBuildContext(buildContext))
-    const response = await requestAudit(url, token, buildContext)
+
+    const auth = parseAuthCredentials(authOptions)
+    if (auth) {
+      output.push('🔐 Authentication credentials detected')
+      output.push('')
+    }
+
+    const response = await requestAudit(url, token, buildContext, auth)
 
     if (!response.success) {
       const { message, details } = response.error
@@ -133,4 +149,68 @@ function formatGitHubIntegrationStatus(context: GithubIntegrationContext): {
   }
 
   return { output, errors }
+}
+
+function parseAuthCredentials(
+  options?: AuthOptions
+): AuthCredentials | undefined {
+  const envAuth = process.env.XCELERA_AUTH
+  if (envAuth) {
+    try {
+      return JSON.parse(envAuth) as AuthCredentials
+    } catch {
+      throw new Error('XCELERA_AUTH environment variable contains invalid JSON')
+    }
+  }
+
+  // Check for --auth JSON option
+  if (options?.authJson) {
+    try {
+      return JSON.parse(options.authJson) as AuthCredentials
+    } catch {
+      throw new Error('--auth option contains invalid JSON')
+    }
+  }
+
+  // Build auth from --cookie and --header options
+  const hasCookies = options?.cookies && options.cookies.length > 0
+  const hasHeaders = options?.headers && options.headers.length > 0
+
+  if (!hasCookies && !hasHeaders) {
+    return undefined
+  }
+
+  const auth: AuthCredentials = {}
+
+  if (hasCookies && options.cookies) {
+    auth.cookies = options.cookies.map(parseCookie)
+  }
+
+  if (hasHeaders && options.headers) {
+    auth.headers = {}
+    for (const header of options.headers) {
+      const colonIndex = header.indexOf(':')
+      if (colonIndex === -1) {
+        throw new Error(
+          `Invalid header format: "${header}". Expected "Name: Value"`
+        )
+      }
+      const name = header.slice(0, colonIndex).trim()
+      const value = header.slice(colonIndex + 1).trim()
+      auth.headers[name] = value
+    }
+  }
+
+  return auth
+}
+
+function parseCookie(cookie: string): Cookie {
+  const equalsIndex = cookie.indexOf('=')
+  if (equalsIndex === -1) {
+    throw new Error(`Invalid cookie format: "${cookie}". Expected "name=value"`)
+  }
+  return {
+    name: cookie.slice(0, equalsIndex),
+    value: cookie.slice(equalsIndex + 1)
+  }
 }

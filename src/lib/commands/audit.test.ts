@@ -176,4 +176,56 @@ describe('runAuditCommand', () => {
     // should include stack trace
     expect(result.errors).toContainEqual(expect.stringMatching(/at /))
   })
+
+  test('shows auth detected message when cookie provided', async () => {
+    server.use(
+      http.post('https://xcelera.dev/api/v1/audit', () => {
+        return HttpResponse.json({
+          success: true,
+          data: {
+            auditId: 'abc-123',
+            status: 'scheduled',
+            integrations: {}
+          }
+        })
+      })
+    )
+
+    const result = await runAuditCommand('https://example.com', 'test-token', {
+      cookies: ['session=abc123']
+    })
+
+    expect(result.exitCode).toBe(0)
+    expect(result.output).toContain('🔐 Authentication credentials detected')
+    expect(result.output).toContain('✅ Audit scheduled successfully!')
+  })
+
+  test('fails with invalid auth JSON', async () => {
+    const result = await runAuditCommand('https://example.com', 'test-token', {
+      authJson: 'not valid json'
+    })
+
+    expect(result.exitCode).toBe(1)
+    expect(result.errors[0]).toContain('--auth option contains invalid JSON')
+  })
+
+  test('fails with invalid cookie format', async () => {
+    const result = await runAuditCommand('https://example.com', 'test-token', {
+      cookies: ['invalid-cookie-no-equals']
+    })
+
+    expect(result.exitCode).toBe(1)
+    expect(result.errors[0]).toContain('Invalid cookie format')
+    expect(result.errors[0]).toContain('Expected "name=value"')
+  })
+
+  test('fails with invalid header format', async () => {
+    const result = await runAuditCommand('https://example.com', 'test-token', {
+      headers: ['InvalidHeaderNoColon']
+    })
+
+    expect(result.exitCode).toBe(1)
+    expect(result.errors[0]).toContain('Invalid header format')
+    expect(result.errors[0]).toContain('Expected "Name: Value"')
+  })
 })

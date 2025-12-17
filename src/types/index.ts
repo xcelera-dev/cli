@@ -3,6 +3,21 @@ export type SuccessResponse<T> = {
   data: T
 }
 
+export interface Cookie {
+  name: string
+  value: string
+  domain?: string
+  path?: string
+  secure?: boolean
+  httpOnly?: boolean
+  sameSite?: 'Strict' | 'Lax' | 'None'
+}
+
+export interface AuthCredentials {
+  cookies?: Cookie[]
+  headers?: Record<string, string>
+}
+
 export type ErrorResponse<E> = {
   success: false
   error: E
