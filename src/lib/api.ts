@@ -2,6 +2,7 @@ import isNetworkError from 'is-network-error'
 
 import {
   ApiResponse,
+  AuthCredentials,
   BuildContext,
   ErrorResponse,
   GithubIntegrationContext,
@@ -26,7 +27,8 @@ type AuditResponse = ApiResponse<AuditData, AuditError>
 export async function requestAudit(
   url: string,
   token: string,
-  context: BuildContext
+  context: BuildContext,
+  auth?: AuthCredentials
 ): Promise<AuditResponse> {
   const apiUrl = `${getApiBaseUrl()}/api/v1/audit`
 
@@ -39,7 +41,8 @@ export async function requestAudit(
       },
       body: JSON.stringify({
         url,
-        context
+        context,
+        ...(auth && { auth })
       })
     })
     if (!response.ok) {
@@ -75,6 +78,7 @@ export async function requestAudit(
   }
 }
 
+/* istanbul ignore next */
 function getApiBaseUrl(): string {
   if (process.env.NODE_ENV === 'development') {
     return 'http://localhost:3000'

@@ -15,6 +15,15 @@ inputs:
   token:
     description: Xcelera API token for authentication
     required: true
+  auth:
+    description: Full auth config as JSON string (for authenticated pages)
+    required: false
+  cookie:
+    description: Cookie in "name=value" format (for authenticated pages)
+    required: false
+  header:
+    description: 'Header in "Name: Value" format (for authenticated pages)'
+    required: false
 
 outputs:
   auditId:

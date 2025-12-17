@@ -4,6 +4,38 @@ A CLI for running Lighthouse performance audits using xcelera.dev
 
 ## Usage
 
+### CLI Usage
+
+```bash
+# Basic audit
+xcelera audit --url https://example.com --token your-api-token
+```
+
+### Authenticated Pages
+
+For pages behind login, you can pass authentication credentials:
+
+```bash
+# With session cookie
+xcelera audit --url https://myapp.com/dashboard --cookie "session=abc123"
+
+# With bearer token header
+xcelera audit --url https://api.myapp.com/admin \
+  --header "Authorization: Bearer eyJhbG..."
+
+# Multiple cookies
+xcelera audit --url https://myapp.com/dashboard \
+  --cookie "session=abc123" --cookie "csrf=xyz"
+
+# Full auth JSON (multiple cookies and custom headers)
+xcelera audit --url https://myapp.com/dashboard \
+  --auth '{"cookies":[{"name":"session","value":"abc123"}],"headers":{"X-Custom":"value"}}'
+
+# Using environment variable
+export XCELERA_AUTH='{"cookies":[{"name":"session","value":"abc123"}]}'
+xcelera audit --url https://myapp.com/dashboard
+```
+
 ### GitHub Action Usage
 
 ```yaml
@@ -12,6 +44,34 @@ A CLI for running Lighthouse performance audits using xcelera.dev
   with:
     url: https://example.com
     token: ${{ secrets.XCELERA_TOKEN }}
+```
+
+For authenticated pages in CI:
+
+```yaml
+# With session cookie
+- name: Lighthouse Audit (Cookie Auth)
+  uses: xcelera/cli@v1
+  with:
+    url: https://example.com/dashboard
+    token: ${{ secrets.XCELERA_TOKEN }}
+    cookie: "session=value"
+
+# With bearer token header
+- name: Lighthouse Audit (Bearer Auth)
+  uses: xcelera/cli@v1
+  with:
+    url: https://example.com/admin
+    token: ${{ secrets.XCELERA_TOKEN }}
+    header: "Authorization: Bearer eybDfd..."
+
+# With full auth JSON (multiple cookies/headers)
+- name: Lighthouse Audit (Full Auth)
+  uses: xcelera/cli@v1
+  with:
+    url: https://example.com/dashboard
+    token: ${{ secrets.XCELERA_TOKEN }}
+    auth: '{"cookies":[{"name":"session","value":"session_value"},{"name":"csrf","value":"csrf_value"}]}'
 ```
 
 ## Setup
