@@ -19,9 +19,9 @@ describe('git', () => {
     await withTempGitRepo(async () => {
       const context = await inferGitContext()
 
-      expect(context.owner).toBe('owner')
-      expect(context.repo).toBe('repo')
-      expect(context.commit).toEqual(
+      expect(context?.owner).toBe('owner')
+      expect(context?.repo).toBe('repo')
+      expect(context?.commit).toEqual(
         expect.objectContaining({
           hash: expect.stringMatching(/^[0-9a-f]{40}$/),
           message: 'initial commit',
@@ -38,18 +38,17 @@ describe('git', () => {
     await withTempGitRepo(
       async () => {
         const context = await inferGitContext()
-
-        expect(context.commit.message).toBe('fix: handle edge case | add tests')
+        expect(context?.commit.message).toBe(
+          'fix: handle edge case | add tests'
+        )
       },
       { initialCommitMessage: 'fix: handle edge case | add tests' }
     )
   })
 
-  test('handles error when not in a git repository', async () => {
+  test('returns undefined when not in a git repository', async () => {
     await withTempDir(async () => {
-      await expect(inferGitContext()).rejects.toThrow(
-        'No git repository detected.'
-      )
+      await expect(inferGitContext()).resolves.toBeUndefined()
     })
   })
 
