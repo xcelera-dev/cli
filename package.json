@@ -11,23 +11,14 @@
   "bugs": {
     "url": "https://github.com/xcelera-dev/cli/issues"
   },
-  "keywords": [
-    "actions",
-    "xcelera",
-    "performance",
-    "lighthouse"
-  ],
+  "keywords": ["actions", "xcelera", "performance", "lighthouse"],
   "exports": {
     ".": "./dist/action.js"
   },
   "bin": {
     "xcelera": "dist/cli.js"
   },
-  "files": [
-    "dist",
-    "LICENSE",
-    "README.md"
-  ],
+  "files": ["dist", "LICENSE", "README.md"],
   "engines": {
     "node": ">=22"
   },
