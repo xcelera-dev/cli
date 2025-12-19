@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: CI
 
 on:
   pull_request:
@@ -7,14 +7,160 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '31 7 * * 3'
 
 permissions:
   contents: read
 
 jobs:
-  test-typescript:
-    name: TypeScript Tests
+  lint:
+    name: Lint Codebase
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      statuses: write
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        id: setup-node
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install Dependencies
+        id: install
+        run: npm ci
+
+      - name: Lint Codebase
+        id: super-linter
+        uses: super-linter/super-linter/slim@502f4fe48a81a392756e173e39a861f8c8efe056 # v8.3.0
+        env:
+          DEFAULT_BRANCH: main
+          FILTER_REGEX_EXCLUDE: dist/**/*
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LINTER_RULES_PATH: ${{ github.workspace }}
+          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_JAVASCRIPT_ES: false
+          VALIDATE_JSCPD: false
+          VALIDATE_TYPESCRIPT_ES: false
+          VALIDATE_JSON: false
+          VALIDATE_JAVASCRIPT_PRETTIER: false
+          VALIDATE_TYPESCRIPT_PRETTIER: false
+          VALIDATE_JSON_PRETTIER: false
+          VALIDATE_YAML_PRETTIER: false
+          VALIDATE_CHECKOV: false # not relevant as we don't use IaC
+
+  check-dist:
+    name: Check dist/
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        id: setup-node
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install Dependencies
+        id: install
+        run: npm ci
+
+      - name: Build dist/ Directory
+        id: build
+        run: npm run bundle
+
+      - name: Compare Directories
+        id: diff
+        run: |
+          if [ ! -d dist/ ]; then
+            echo "Expected dist/ directory does not exist.  See status below:"
+            echo 'Did you forget to run npm run bundle to update the dist/ directory?'
+            ls -la ./
+            exit 1
+          fi
+          if [ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt "0" ]; then
+            echo "Detected uncommitted changes after build. See status below:"
+            echo 'Did you forget to run npm run bundle to update the dist/ directory?'
+            git diff --ignore-space-at-eol --text dist/
+            exit 1
+          fi
+
+      - if: ${{ failure() && steps.diff.outcome == 'failure' }}
+        name: Upload Artifact
+        id: upload
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: dist
+          path: dist/
+
+  codeql:
+    name: CodeQL Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      checks: write
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - TypeScript
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        id: initialize
+        uses: github/codeql-action/init@fe4161a26a8629af62121b670040955b330f9af2 # v4.31.6
+        with:
+          languages: ${{ matrix.language }}
+          source-root: src
+
+      - name: Autobuild
+        id: autobuild
+        uses: github/codeql-action/autobuild@fe4161a26a8629af62121b670040955b330f9af2 # v4.31.6
+
+      - name: Perform CodeQL Analysis
+        id: analyze
+        uses: github/codeql-action/analyze@fe4161a26a8629af62121b670040955b330f9af2 # v4.31.6
+
+  ci:
+    name: CI
+    if: github.event_name != 'schedule'
+    needs:
+      - lint
+      - check-dist
+      - codeql
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -33,63 +179,10 @@ jobs:
       - name: Install Dependencies
         id: npm-ci
         run: npm ci
-
-      - name: Lint
-        id: npm-lint
-        run: npm run check
 
       - name: Test
-        id: npm-ci-test
+        id: npm-test
         run: npm run test
-
-  test-action:
-    name: GitHub Actions Test
-    runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]' # skip for Dependabot runs because they don't have access to secrets
-
-    steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-        with:
-          persist-credentials: false
-
-      - name: Test Local Action
-        id: test-action
-        uses: ./
-        with:
-          url: https://xcelera.dev
-          token: ${{ secrets.XCELERA_TOKEN }}
-
-      - name: Print Output
-        id: output
-        run: echo "${STEPS_TEST_ACTION_OUTPUTS_STATUS}"
-        env:
-          STEPS_TEST_ACTION_OUTPUTS_STATUS:
-            ${{ steps.test-action.outputs.status }}
-
-  test-cli:
-    name: CLI Tests
-    runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]' # skip for Dependabot runs because they don't have access to secrets
-
-    steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        id: setup-node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
-        with:
-          node-version-file: .node-version
-          cache: npm
-
-      - name: Install Dependencies
-        id: npm-ci
-        run: npm ci
 
       - name: Build CLI
         id: build-cli
@@ -97,18 +190,67 @@ jobs:
 
       - name: Run CLI
         id: run-cli
+        if: github.actor != 'dependabot[bot]' # Dependabot doesn't have access to secrets
         run: node dist/cli.js audit --url https://xcelera.dev/login
         env:
           XCELERA_TOKEN: ${{ secrets.XCELERA_TOKEN }}
           DEBUG: true
 
-  call-release:
-    needs: [test-typescript, test-action, test-cli]
+      - name: Test Local Action
+        id: test-action
+        if: github.actor != 'dependabot[bot]' # Dependabot doesn't have access to secrets
+        uses: ./
+        with:
+          url: https://xcelera.dev
+          token: ${{ secrets.XCELERA_TOKEN }}
+
+      - name: Print Output
+        id: output
+        if: github.actor != 'dependabot[bot]' # Dependabot doesn't have access to secrets
+        run: echo "${STEPS_TEST_ACTION_OUTPUTS_STATUS}"
+        env:
+          STEPS_TEST_ACTION_OUTPUTS_STATUS: ${{ steps.test-action.outputs.status }}
+
+  release:
+    name: Release
+    needs:
+      - ci
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       issues: write
       pull-requests: write
       id-token: write
-    uses: ./.github/workflows/release.yml
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Setup Node.js
+        id: setup-node
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm clean-install
+
+      - name:
+          Verify the integrity of provenance attestations and registry
+          signatures for installed dependencies
+        run: npm audit signatures
+
+      - name: package
+        run: npm run package
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
