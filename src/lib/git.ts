@@ -2,9 +2,9 @@ import parseGithubUrl from 'parse-github-url'
 import { simpleGit } from 'simple-git'
 import type { CommitInfo, GitContext } from '../types/index.js'
 
-export async function inferGitContext(): Promise<GitContext> {
+export async function inferGitContext(): Promise<GitContext | undefined> {
   if (!(await isGitRepository())) {
-    throw new Error('No git repository detected.')
+    return undefined
   }
 
   const remoteUrl = await getRemoteUrl()
