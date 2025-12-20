@@ -18,6 +18,9 @@ inputs:
   auth:
     description: Full auth config as JSON string (for authenticated pages)
     required: false
+  cookie-file:
+    description: Path to a Netscape cookie file (cookies.txt) (for authenticated pages)
+    required: false
   cookie:
     description: Cookie in "name=value" format (for authenticated pages)
     required: false

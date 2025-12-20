@@ -36573,13 +36573,88 @@ async function inferBuildContext() {
     };
 }
 
+function readNetscapeCookieFileSync(filePath, now = new Date()) {
+    try {
+        const contents = readFileSync(filePath, 'utf8');
+        return parseNetscapeCookieFileContents(contents, filePath, now);
+    }
+    catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`Unable to read cookie file "${filePath}": ${message}`);
+    }
+}
+function parseNetscapeCookieFileContents(contents, sourceLabel = 'cookie file', now = new Date()) {
+    const cookies = [];
+    const expiredCookieNames = [];
+    const nowEpochSeconds = Math.floor(now.getTime() / 1000);
+    const lines = contents.split(/\r?\n/);
+    for (let index = 0; index < lines.length; index++) {
+        const rawLine = lines[index];
+        const line = rawLine.trim();
+        if (!line) {
+            continue;
+        }
+        if (line.startsWith('#') && !line.startsWith('#HttpOnly_')) {
+            continue;
+        }
+        const fields = line.split('\t');
+        if (fields.length !== 7) {
+            throw new Error(`Invalid Netscape cookie line ${index + 1} in ${sourceLabel}: expected 7 tab-separated fields`);
+        }
+        let domain = fields[0];
+        const path = fields[2] || undefined;
+        const secure = toBool(fields[3]);
+        const expiresEpochSeconds = parseEpochSeconds(fields[4], index + 1, sourceLabel);
+        const name = fields[5];
+        const value = fields[6] ?? '';
+        let httpOnly;
+        if (domain.startsWith('#HttpOnly_')) {
+            httpOnly = true;
+            domain = domain.slice('#HttpOnly_'.length);
+        }
+        const isExpired = expiresEpochSeconds > 0 && expiresEpochSeconds < nowEpochSeconds;
+        if (isExpired) {
+            expiredCookieNames.push(name);
+            continue;
+        }
+        const cookie = {
+            name,
+            value,
+            ...(domain && { domain }),
+            ...(path && { path }),
+            ...(secure && { secure: true }),
+            ...(httpOnly && { httpOnly: true })
+        };
+        cookies.push(cookie);
+    }
+    const warnings = [];
+    if (expiredCookieNames.length > 0) {
+        const preview = expiredCookieNames.slice(0, 5).join(', ');
+        const suffix = expiredCookieNames.length > 5 ? ', …' : '';
+        warnings.push(`⚠️ Dropped ${expiredCookieNames.length} expired cookie(s) from ${sourceLabel}: ${preview}${suffix}`);
+    }
+    return { cookies, warnings };
+}
+function toBool(value) {
+    return value.trim().toUpperCase() === 'TRUE';
+}
+function parseEpochSeconds(value, lineNumber, sourceLabel) {
+    const trimmed = value.trim();
+    const num = Number.parseInt(trimmed, 10);
+    if (Number.isNaN(num)) {
+        throw new Error(`Invalid expiration epoch seconds at line ${lineNumber} in ${sourceLabel}`);
+    }
+    return num;
+}
+
 async function runAuditCommand(url, token, authOptions) {
     const output = [];
     const errors = [];
     try {
         const buildContext = await inferBuildContext();
         output.push(...formatBuildContext(buildContext));
-        const auth = parseAuthCredentials(authOptions);
+        const { auth, warnings } = parseAuthCredentials(authOptions);
+        errors.push(...warnings);
         if (auth) {
             output.push('🔐 Authentication credentials detected');
             output.push('');
@@ -36677,35 +36752,26 @@ function formatGitHubIntegrationStatus(context) {
     return { output, errors };
 }
 function parseAuthCredentials(options) {
-    const envAuth = process.env.XCELERA_AUTH;
-    if (envAuth) {
-        try {
-            return JSON.parse(envAuth);
-        }
-        catch {
-            throw new Error('XCELERA_AUTH environment variable contains invalid JSON');
-        }
+    const warnings = [];
+    const cookies = [];
+    if (options?.cookieFile) {
+        const parsed = readNetscapeCookieFileSync(options.cookieFile);
+        warnings.push(...parsed.warnings);
+        cookies.push(...parsed.cookies);
     }
-    // Check for --auth JSON option
-    if (options?.authJson) {
-        try {
-            return JSON.parse(options.authJson);
-        }
-        catch {
-            throw new Error('--auth option contains invalid JSON');
-        }
+    if (options?.cookies && options.cookies.length > 0) {
+        cookies.push(...options.cookies.map(parseCookie));
     }
-    // Build auth from --cookie and --header options
-    const hasCookies = options?.cookies && options.cookies.length > 0;
     const hasHeaders = options?.headers && options.headers.length > 0;
+    const hasCookies = cookies.length > 0;
     if (!hasCookies && !hasHeaders) {
-        return undefined;
+        return { auth: undefined, warnings };
     }
     const auth = {};
-    if (hasCookies && options.cookies) {
-        auth.cookies = options.cookies.map(parseCookie);
+    if (hasCookies) {
+        auth.cookies = cookies;
     }
-    if (hasHeaders && options.headers) {
+    if (hasHeaders && options?.headers) {
         auth.headers = {};
         for (const header of options.headers) {
             const colonIndex = header.indexOf(':');
@@ -36717,7 +36783,7 @@ function parseAuthCredentials(options) {
             auth.headers[name] = value;
         }
     }
-    return auth;
+    return { auth, warnings };
 }
 function parseCookie(cookie) {
     const equalsIndex = cookie.indexOf('=');
@@ -36748,14 +36814,14 @@ async function run() {
     }
 }
 function parseAuthInputs() {
-    const auth = coreExports.getInput('auth');
+    const cookieFile = coreExports.getInput('cookie-file');
     const cookie = coreExports.getInput('cookie');
     const header = coreExports.getInput('header');
-    if (!auth && !cookie && !header) {
+    if (!cookieFile && !cookie && !header) {
         return undefined;
     }
     return {
-        authJson: auth || undefined,
+        cookieFile: cookieFile || undefined,
         cookies: cookie ? [cookie] : undefined,
         headers: header ? [header] : undefined
     };

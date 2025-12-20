@@ -7,9 +7,10 @@ import type {
 } from '../../types/index.js'
 import { requestAudit } from '../api.js'
 import { inferBuildContext } from '../buildContext.js'
+import { readNetscapeCookieFileSync } from '../cookies/netscape.js'
 
 export interface AuthOptions {
-  authJson?: string
+  cookieFile?: string
   cookies?: string[]
   headers?: string[]
 }
@@ -26,7 +27,8 @@ export async function runAuditCommand(
     const buildContext = await inferBuildContext()
     output.push(...formatBuildContext(buildContext))
 
-    const auth = parseAuthCredentials(authOptions)
+    const { auth, warnings } = parseAuthCredentials(authOptions)
+    errors.push(...warnings)
     if (auth) {
       output.push('🔐 Authentication credentials detected')
       output.push('')
@@ -151,42 +153,36 @@ function formatGitHubIntegrationStatus(context: GithubIntegrationContext): {
   return { output, errors }
 }
 
-function parseAuthCredentials(
-  options?: AuthOptions
-): AuthCredentials | undefined {
-  const envAuth = process.env.XCELERA_AUTH
-  if (envAuth) {
-    try {
-      return JSON.parse(envAuth) as AuthCredentials
-    } catch {
-      throw new Error('XCELERA_AUTH environment variable contains invalid JSON')
-    }
+function parseAuthCredentials(options?: AuthOptions): {
+  auth?: AuthCredentials
+  warnings: string[]
+} {
+  const warnings: string[] = []
+  const cookies: Cookie[] = []
+  if (options?.cookieFile) {
+    const parsed = readNetscapeCookieFileSync(options.cookieFile)
+    warnings.push(...parsed.warnings)
+    cookies.push(...parsed.cookies)
   }
 
-  // Check for --auth JSON option
-  if (options?.authJson) {
-    try {
-      return JSON.parse(options.authJson) as AuthCredentials
-    } catch {
-      throw new Error('--auth option contains invalid JSON')
-    }
+  if (options?.cookies && options.cookies.length > 0) {
+    cookies.push(...options.cookies.map(parseCookie))
   }
 
-  // Build auth from --cookie and --header options
-  const hasCookies = options?.cookies && options.cookies.length > 0
   const hasHeaders = options?.headers && options.headers.length > 0
+  const hasCookies = cookies.length > 0
 
   if (!hasCookies && !hasHeaders) {
-    return undefined
+    return { auth: undefined, warnings }
   }
 
   const auth: AuthCredentials = {}
 
-  if (hasCookies && options.cookies) {
-    auth.cookies = options.cookies.map(parseCookie)
+  if (hasCookies) {
+    auth.cookies = cookies
   }
 
-  if (hasHeaders && options.headers) {
+  if (hasHeaders && options?.headers) {
     auth.headers = {}
     for (const header of options.headers) {
       const colonIndex = header.indexOf(':')
@@ -201,7 +197,7 @@ function parseAuthCredentials(
     }
   }
 
-  return auth
+  return { auth, warnings }
 }
 
 function parseCookie(cookie: string): Cookie {
