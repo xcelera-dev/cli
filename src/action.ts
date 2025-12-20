@@ -11,7 +11,7 @@ async function run(): Promise<void> {
 
   const authOptions = parseAuthInputs()
 
-  const result = await runAuditCommand(url, token, authOptions)
+  const result = await runAuditCommand(url, token, authOptions, 'github-action')
 
   result.output.forEach((line: string) => core.info(line))
   result.errors.forEach((line: string) => core.error(line))

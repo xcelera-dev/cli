@@ -10,7 +10,29 @@ afterAll(() => server.close())
 
 test('should be able to request an audit', async () => {
   server.use(
-    http.post('https://xcelera.dev/api/v1/audit', () => {
+    http.post('https://xcelera.dev/api/v1/audit', async ({ request }) => {
+      const body = await request.json()
+
+      expect(body).toEqual(
+        expect.objectContaining({
+          url: 'https://xcelera.dev',
+          context: {
+            service: 'github',
+            git: {
+              owner: 'xcelera',
+              repo: 'cli',
+              commit: {
+                hash: '123',
+                message: 'test',
+                author: 'test',
+                date: '2021-01-01'
+              }
+            }
+          },
+          source: 'cli'
+        })
+      )
+
       return HttpResponse.json({
         success: true,
         data: {

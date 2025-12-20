@@ -31,6 +31,8 @@ export interface CommandResult {
   errors: string[]
 }
 
+export type AuditSource = 'github-action' | 'cli'
+
 export type BuildContext = {
   service: string
   prNumber?: string
