@@ -32,6 +32,7 @@
     "package:watch": "npm run package -- --watch",
     "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest --passWithNoTests",
     "all": "npm run format:write && npm run check && npm run test && npm run coverage && npm run package",
+    "check:dist": "bash scripts/check-dist.sh",
     "prepare": "husky"
   },
   "license": "MIT",

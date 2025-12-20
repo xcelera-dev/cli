@@ -87,25 +87,9 @@ jobs:
         id: install
         run: npm ci
 
-      - name: Build dist/ Directory
-        id: build
-        run: npm run bundle
-
-      - name: Compare Directories
+      - name: Build dist/ Directory and Compare
         id: diff
-        run: |
-          if [ ! -d dist/ ]; then
-            echo "Expected dist/ directory does not exist.  See status below:"
-            echo 'Did you forget to run npm run bundle to update the dist/ directory?'
-            ls -la ./
-            exit 1
-          fi
-          if [ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt "0" ]; then
-            echo "Detected uncommitted changes after build. See status below:"
-            echo 'Did you forget to run npm run bundle to update the dist/ directory?'
-            git diff --ignore-space-at-eol --text dist/
-            exit 1
-          fi
+        run: bash scripts/check-dist.sh
 
       - if: ${{ failure() && steps.diff.outcome == 'failure' }}
         name: Upload Artifact
