@@ -20,7 +20,10 @@ afterAll(() => server.close())
 describe('runAuditCommand', () => {
   test('successful audit returns correct output', async () => {
     server.use(
-      http.post('https://xcelera.dev/api/v1/audit', () => {
+      http.post('https://xcelera.dev/api/v1/audit', async ({ request }) => {
+        const body = await request.json()
+        expect(body.source).toBe('cli')
+
         return HttpResponse.json({
           success: true,
           data: {
@@ -40,6 +43,35 @@ describe('runAuditCommand', () => {
       expect(result.output).toContain('   • repository: owner/repo')
       expect(result.output).toContain('✅ Audit scheduled successfully!')
       expect(result.errors).toHaveLength(0)
+    })
+  })
+
+  test('sends source from GitHub Action when provided', async () => {
+    server.use(
+      http.post('https://xcelera.dev/api/v1/audit', async ({ request }) => {
+        const body = await request.json()
+        expect(body.source).toBe('github-action')
+
+        return HttpResponse.json({
+          success: true,
+          data: {
+            auditId: 'abc-123',
+            status: 'scheduled',
+            integrations: {}
+          }
+        })
+      })
+    )
+
+    await withTempGitRepo(async () => {
+      const result = await runAuditCommand(
+        'https://example.com',
+        'test-token',
+        undefined,
+        'github-action'
+      )
+
+      expect(result.exitCode).toBe(0)
     })
   })
 

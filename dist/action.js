@@ -27303,7 +27303,7 @@ function isNetworkError(error) {
 	return errorMessages.has(message);
 }
 
-async function requestAudit(url, token, context, auth) {
+async function requestAudit(url, token, context, auth, source = 'cli') {
     const apiUrl = `${getApiBaseUrl()}/api/v1/audit`;
     try {
         const response = await fetch(apiUrl, {
@@ -27315,6 +27315,7 @@ async function requestAudit(url, token, context, auth) {
             body: JSON.stringify({
                 url,
                 context,
+                source,
                 ...(auth && { auth })
             })
         });
@@ -36647,7 +36648,7 @@ function parseEpochSeconds(value, lineNumber, sourceLabel) {
     return num;
 }
 
-async function runAuditCommand(url, token, authOptions) {
+async function runAuditCommand(url, token, authOptions, source = 'cli') {
     const output = [];
     const errors = [];
     try {
@@ -36659,7 +36660,7 @@ async function runAuditCommand(url, token, authOptions) {
             output.push('🔐 Authentication credentials detected');
             output.push('');
         }
-        const response = await requestAudit(url, token, buildContext, auth);
+        const response = await requestAudit(url, token, buildContext, auth, source);
         if (!response.success) {
             const { message, details } = response.error;
             errors.push('❌ Unable to schedule audit :(');
@@ -36802,7 +36803,7 @@ async function run() {
     const url = coreExports.getInput('url', { required: true });
     const token = coreExports.getInput('token', { required: true });
     const authOptions = parseAuthInputs();
-    const result = await runAuditCommand(url, token, authOptions);
+    const result = await runAuditCommand(url, token, authOptions, 'github-action');
     result.output.forEach((line) => coreExports.info(line));
     result.errors.forEach((line) => coreExports.error(line));
     if (result.exitCode !== 0) {

@@ -1,4 +1,5 @@
 import type {
+  AuditSource,
   AuthCredentials,
   BuildContext,
   CommandResult,
@@ -18,7 +19,8 @@ export interface AuthOptions {
 export async function runAuditCommand(
   url: string,
   token: string,
-  authOptions?: AuthOptions
+  authOptions?: AuthOptions,
+  source: AuditSource = 'cli'
 ): Promise<CommandResult> {
   const output: string[] = []
   const errors: string[] = []
@@ -34,7 +36,7 @@ export async function runAuditCommand(
       output.push('')
     }
 
-    const response = await requestAudit(url, token, buildContext, auth)
+    const response = await requestAudit(url, token, buildContext, auth, source)
 
     if (!response.success) {
       const { message, details } = response.error

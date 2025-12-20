@@ -1,6 +1,7 @@
 import isNetworkError from 'is-network-error'
 
 import {
+  AuditSource,
   ApiResponse,
   AuthCredentials,
   BuildContext,
@@ -28,7 +29,8 @@ export async function requestAudit(
   url: string,
   token: string,
   context: BuildContext,
-  auth?: AuthCredentials
+  auth?: AuthCredentials,
+  source: AuditSource = 'cli'
 ): Promise<AuditResponse> {
   const apiUrl = `${getApiBaseUrl()}/api/v1/audit`
 
@@ -42,6 +44,7 @@ export async function requestAudit(
       body: JSON.stringify({
         url,
         context,
+        source,
         ...(auth && { auth })
       })
     })
