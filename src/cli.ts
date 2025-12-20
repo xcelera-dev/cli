@@ -14,7 +14,7 @@ const options = {
     required: true,
     default: process.env.XCELERA_TOKEN
   },
-  auth: {
+  'cookie-file': {
     type: 'string' as const
   },
   cookie: {
@@ -52,7 +52,8 @@ if (command !== 'audit') {
   process.exit(1)
 }
 
-const { url, token, auth, cookie, header } = values
+const { url, token, cookie, header } = values
+const cookieFile = values['cookie-file'] as string | undefined
 
 if (!url) {
   console.error('URL is required. Use --url <url> to specify the URL to audit.')
@@ -67,7 +68,7 @@ if (!token) {
 }
 
 const result = await runAuditCommand(url, token, {
-  authJson: auth,
+  cookieFile,
   cookies: cookie as string[] | undefined,
   headers: header as string[] | undefined
 })
@@ -90,8 +91,10 @@ function printHelp() {
   console.log('                     Can be specified multiple times.')
   console.log('  --header <header>  Header in "Name: Value" format.')
   console.log('                     Can be specified multiple times.')
-  console.log('  --auth <json>      Full auth config as JSON.')
-  console.log('                     Can also be set with XCELERA_AUTH env var.')
+  console.log('  --cookie-file <path> Netscape cookie file (cookies.txt).')
+  console.log(
+    '                     Expired cookies are ignored with a warning.'
+  )
   console.log('')
   console.log('Examples:')
   console.log('  # Basic audit')
@@ -110,10 +113,9 @@ function printHelp() {
   console.log('  xcelera audit --url https://myapp.com/dashboard \\')
   console.log('    --cookie "session=abc123" --cookie "csrf=xyz"')
   console.log('')
-  console.log('  # Full auth JSON (multiple cookies and headers)')
-  console.log('  xcelera audit --url https://myapp.com/dashboard \\')
+  console.log('  # With cookie file (Netscape cookies.txt format)')
   console.log(
-    '    --auth \'{"cookies":[{"name":"session","value":"abc123"}],"headers":{"X-Custom":"value"}}\''
+    '  xcelera audit --url https://myapp.com/dashboard --cookie-file ./cookies.txt'
   )
   console.log('')
 }

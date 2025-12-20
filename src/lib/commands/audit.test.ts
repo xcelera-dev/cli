@@ -1,3 +1,4 @@
+import { writeFileSync } from 'node:fs'
 import {
   afterAll,
   afterEach,
@@ -8,7 +9,7 @@ import {
 } from '@jest/globals'
 import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
-import { withTempGitRepo } from '../test-utils.js'
+import { withTempDir, withTempGitRepo } from '../test-utils.js'
 import { runAuditCommand } from './audit.js'
 
 const server = setupServer()
@@ -200,15 +201,6 @@ describe('runAuditCommand', () => {
     expect(result.output).toContain('✅ Audit scheduled successfully!')
   })
 
-  test('fails with invalid auth JSON', async () => {
-    const result = await runAuditCommand('https://example.com', 'test-token', {
-      authJson: 'not valid json'
-    })
-
-    expect(result.exitCode).toBe(1)
-    expect(result.errors[0]).toContain('--auth option contains invalid JSON')
-  })
-
   test('fails with invalid cookie format', async () => {
     const result = await runAuditCommand('https://example.com', 'test-token', {
       cookies: ['invalid-cookie-no-equals']
@@ -227,5 +219,56 @@ describe('runAuditCommand', () => {
     expect(result.exitCode).toBe(1)
     expect(result.errors[0]).toContain('Invalid header format')
     expect(result.errors[0]).toContain('Expected "Name: Value"')
+  })
+
+  test('cookie file is parsed and cookies are sent to API', async () => {
+    const cookieFileContents =
+      '.example.com\tTRUE\t/\tFALSE\t9999999999\tsession\tabc123\n'
+
+    server.use(
+      http.post('https://xcelera.dev/api/v1/audit', async ({ request }) => {
+        const body = await request.json()
+
+        expect(body).toEqual(
+          expect.objectContaining({
+            auth: {
+              cookies: [
+                {
+                  name: 'session',
+                  value: 'abc123',
+                  domain: '.example.com',
+                  path: '/'
+                }
+              ]
+            }
+          })
+        )
+
+        return HttpResponse.json({
+          success: true,
+          data: {
+            auditId: 'abc-123',
+            status: 'scheduled',
+            integrations: {}
+          }
+        })
+      })
+    )
+
+    await withTempDir(async ({ dir }) => {
+      const cookieFilePath = `${dir}/cookies.txt`
+      writeFileSync(cookieFilePath, cookieFileContents, 'utf8')
+
+      const result = await runAuditCommand(
+        'https://example.com',
+        'test-token',
+        {
+          cookieFile: cookieFilePath
+        }
+      )
+
+      expect(result.exitCode).toBe(0)
+      expect(result.output).toContain('🔐 Authentication credentials detected')
+    })
   })
 })

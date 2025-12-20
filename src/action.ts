@@ -25,16 +25,16 @@ async function run(): Promise<void> {
 }
 
 function parseAuthInputs(): AuthOptions | undefined {
-  const auth = core.getInput('auth')
+  const cookieFile = core.getInput('cookie-file')
   const cookie = core.getInput('cookie')
   const header = core.getInput('header')
 
-  if (!auth && !cookie && !header) {
+  if (!cookieFile && !cookie && !header) {
     return undefined
   }
 
   return {
-    authJson: auth || undefined,
+    cookieFile: cookieFile || undefined,
     cookies: cookie ? [cookie] : undefined,
     headers: header ? [header] : undefined
   }

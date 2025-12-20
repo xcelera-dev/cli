@@ -27,13 +27,10 @@ xcelera audit --url https://api.myapp.com/admin \
 xcelera audit --url https://myapp.com/dashboard \
   --cookie "session=abc123" --cookie "csrf=xyz"
 
-# Full auth JSON (multiple cookies and custom headers)
+# With Netscape cookie file (cookies.txt)
 xcelera audit --url https://myapp.com/dashboard \
-  --auth '{"cookies":[{"name":"session","value":"abc123"}],"headers":{"X-Custom":"value"}}'
+  --cookie-file ./cookies.txt
 
-# Using environment variable
-export XCELERA_AUTH='{"cookies":[{"name":"session","value":"abc123"}]}'
-xcelera audit --url https://myapp.com/dashboard
 ```
 
 ### GitHub Action Usage
@@ -56,6 +53,14 @@ For authenticated pages in CI:
     url: https://example.com/dashboard
     token: ${{ secrets.XCELERA_TOKEN }}
     cookie: "session=value"
+
+# With Netscape cookie file (cookies.txt)
+- name: Lighthouse Audit (Cookie File Auth)
+  uses: xcelera/cli@v1
+  with:
+    url: https://example.com/dashboard
+    token: ${{ secrets.XCELERA_TOKEN }}
+    cookie-file: ./cookies.txt
 
 # With bearer token header
 - name: Lighthouse Audit (Bearer Auth)
