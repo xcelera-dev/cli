@@ -173,13 +173,28 @@ jobs:
         id: build-cli
         run: npm run package
 
+      - name: Generate Auth Cookie
+        id: auth-cookie
+        if: github.actor != 'dependabot[bot]'
+        run: |
+          curl -s -D - -o /dev/null \
+            -X POST https://xcelera.dev/login \
+            -H 'Content-Type: application/x-www-form-urlencoded' \
+            -d 'username=${{ secrets.XCELERA_AUTH_USER }}&password=${{ secrets.XCELERA_AUTH_PASSWORD }}' \
+            -c cookies.txt
+
       - name: Run CLI
         id: run-cli
-        if: github.actor != 'dependabot[bot]' # Dependabot doesn't have access to secrets
-        run: node dist/cli.js audit --url https://xcelera.dev/login
+        if: github.actor != 'dependabot[bot]'
+        run: node dist/cli.js audit --url https://xcelera.dev/settings/profile --cookie-file cookies.txt
         env:
           XCELERA_TOKEN: ${{ secrets.XCELERA_TOKEN }}
           DEBUG: true
+
+      - name: Cleanup Auth Cookie
+        id: cleanup-cookie
+        if: github.actor != 'dependabot[bot]'
+        run: rm -f cookies.txt
 
       - name: Test Local Action
         id: test-action
