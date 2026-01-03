@@ -177,7 +177,7 @@ jobs:
         id: auth-cookie
         if: github.actor != 'dependabot[bot]'
         run: |
-          curl -s -D - -o /dev/null \
+          curl -s -o /dev/null \
             -X POST https://xcelera.dev/login \
             -H 'Content-Type: application/x-www-form-urlencoded' \
             -d 'username=${{ secrets.XCELERA_AUTH_USER }}&password=${{ secrets.XCELERA_AUTH_PASSWORD }}' \
@@ -191,18 +191,19 @@ jobs:
           XCELERA_TOKEN: ${{ secrets.XCELERA_TOKEN }}
           DEBUG: true
 
+      - name: Test Local Action
+        id: test-action
+        if: github.actor != 'dependabot[bot]'
+        uses: ./
+        with:
+          url: https://xcelera.dev/settings/api-tokens
+          token: ${{ secrets.XCELERA_TOKEN }}
+          cookie-file: cookies.txt
+
       - name: Cleanup Auth Cookie
         id: cleanup-cookie
         if: github.actor != 'dependabot[bot]'
         run: rm -f cookies.txt
-
-      - name: Test Local Action
-        id: test-action
-        if: github.actor != 'dependabot[bot]' # Dependabot doesn't have access to secrets
-        uses: ./
-        with:
-          url: https://xcelera.dev
-          token: ${{ secrets.XCELERA_TOKEN }}
 
       - name: Print Output
         id: output
