@@ -18,7 +18,7 @@
   "bin": {
     "xcelera": "dist/cli.js"
   },
-  "files": ["dist", "LICENSE", "README.md"],
+  "files": ["dist", "LICENSE", "NOTICE", "README.md"],
   "engines": {
     "node": ">=22"
   },
@@ -33,7 +33,8 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest --passWithNoTests",
     "all": "npm run format:write && npm run check && npm run test && npm run coverage && npm run package",
     "check:dist": "bash scripts/check-dist.sh",
-    "prepare": "husky"
+    "prepare": "husky",
+    "generate-notice": "npx generate-license-file --input package.json --output NOTICE --overwrite"
   },
   "license": "MIT",
   "dependencies": {
