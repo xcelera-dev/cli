@@ -8,7 +8,7 @@ A CLI for running Lighthouse performance audits using xcelera.dev
 
 ```bash
 # Basic audit
-xcelera audit --url https://example.com --token your-api-token
+xcelera audit --ref https://example.com --token your-api-token
 ```
 
 ### Authenticated Pages
@@ -17,18 +17,18 @@ For pages behind login, you can pass authentication credentials:
 
 ```bash
 # With session cookie
-xcelera audit --url https://myapp.com/dashboard --cookie "session=abc123"
+xcelera audit --ref myapp-com-dashboard --cookie "session=abc123"
 
 # With bearer token header
-xcelera audit --url https://api.myapp.com/admin \
+xcelera audit --ref myapp-com-admin \
   --header "Authorization: Bearer eyJhbG..."
 
 # Multiple cookies
-xcelera audit --url https://myapp.com/dashboard \
+xcelera audit --ref myapp-com-dashboard \
   --cookie "session=abc123" --cookie "csrf=xyz"
 
 # With Netscape cookie file (cookies.txt)
-xcelera audit --url https://myapp.com/dashboard \
+xcelera audit --ref myapp-com-dashboard \
   --cookie-file ./cookies.txt
 
 ```
@@ -39,7 +39,7 @@ xcelera audit --url https://myapp.com/dashboard \
 - name: Lighthouse Performance Audit
   uses: xcelera/cli@v1
   with:
-    url: https://example.com
+    ref: myapp-com-dashboard
     token: ${{ secrets.XCELERA_TOKEN }}
 ```
 
@@ -50,7 +50,7 @@ For authenticated pages in CI:
 - name: Lighthouse Audit (Cookie Auth)
   uses: xcelera/cli@v1
   with:
-    url: https://example.com/dashboard
+    ref: myapp-com-dashboard
     token: ${{ secrets.XCELERA_TOKEN }}
     cookie: "session=value"
 
@@ -58,7 +58,7 @@ For authenticated pages in CI:
 - name: Lighthouse Audit (Cookie File Auth)
   uses: xcelera/cli@v1
   with:
-    url: https://example.com/dashboard
+    ref: myapp-com-dashboard
     token: ${{ secrets.XCELERA_TOKEN }}
     cookie-file: ./cookies.txt
 
@@ -66,7 +66,7 @@ For authenticated pages in CI:
 - name: Lighthouse Audit (Bearer Auth)
   uses: xcelera/cli@v1
   with:
-    url: https://example.com/admin
+    ref: myapp-com-admin
     token: ${{ secrets.XCELERA_TOKEN }}
     header: "Authorization: Bearer eybDfd..."
 
@@ -74,7 +74,7 @@ For authenticated pages in CI:
 - name: Lighthouse Audit (Full Auth)
   uses: xcelera/cli@v1
   with:
-    url: https://example.com/dashboard
+    ref: myapp-com-dashboard
     token: ${{ secrets.XCELERA_TOKEN }}
     auth: '{"cookies":[{"name":"session","value":"session_value"},{"name":"csrf","value":"csrf_value"}]}'
 ```

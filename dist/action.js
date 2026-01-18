@@ -37051,10 +37051,10 @@ function parseCookie(cookie) {
 /* istanbul ignore file */
 run();
 async function run() {
-    const url = coreExports.getInput('url', { required: true });
+    const ref = coreExports.getInput('ref', { required: true });
     const token = coreExports.getInput('token', { required: true });
     const authOptions = parseAuthInputs();
-    const result = await runAuditCommand(url, token, authOptions);
+    const result = await runAuditCommand(ref, token, authOptions);
     result.output.forEach((line) => coreExports.info(line));
     result.errors.forEach((line) => coreExports.error(line));
     if (result.exitCode !== 0) {

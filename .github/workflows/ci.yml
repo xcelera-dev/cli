@@ -8,7 +8,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '31 7 * * 3'
+    - cron: "31 7 * * 3"
 
 permissions:
   contents: read
@@ -186,7 +186,7 @@ jobs:
       - name: Run CLI
         id: run-cli
         if: github.actor != 'dependabot[bot]'
-        run: node dist/cli.js audit --url https://xcelera.dev/settings/profile --cookie-file cookies.txt
+        run: node dist/cli.js audit --ref xcelera-profile-page --cookie-file cookies.txt
         env:
           XCELERA_TOKEN: ${{ secrets.XCELERA_TOKEN }}
           DEBUG: true
@@ -196,7 +196,7 @@ jobs:
         if: github.actor != 'dependabot[bot]'
         uses: ./
         with:
-          url: https://xcelera.dev/settings/api-tokens
+          ref: xcelera-api-tokens
           token: ${{ secrets.XCELERA_TOKEN }}
           cookie-file: cookies.txt
 
@@ -242,8 +242,7 @@ jobs:
       - name: Install dependencies
         run: npm clean-install
 
-      - name:
-          Verify the integrity of provenance attestations and registry
+      - name: Verify the integrity of provenance attestations and registry
           signatures for installed dependencies
         run: npm audit signatures
 

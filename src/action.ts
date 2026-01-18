@@ -6,12 +6,12 @@ import { type AuthOptions, runAuditCommand } from './lib/commands/audit.js'
 run()
 
 async function run(): Promise<void> {
-  const url = core.getInput('url', { required: true })
+  const ref = core.getInput('ref', { required: true })
   const token = core.getInput('token', { required: true })
 
   const authOptions = parseAuthInputs()
 
-  const result = await runAuditCommand(url, token, authOptions)
+  const result = await runAuditCommand(ref, token, authOptions)
 
   result.output.forEach((line: string) => core.info(line))
   result.errors.forEach((line: string) => core.error(line))
