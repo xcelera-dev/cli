@@ -9,8 +9,8 @@ branding:
   color: yellow
 
 inputs:
-  url:
-    description: The URL of the web page to audit
+  ref:
+    description: Page reference to audit
     required: true
   token:
     description: Xcelera API token for authentication
