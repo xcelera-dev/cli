@@ -33,7 +33,7 @@ describe('runAuditCommand', () => {
     )
 
     await withTempGitRepo(async (repo) => {
-      const result = await runAuditCommand('https://example.com', 'test-token')
+      const result = await runAuditCommand('example-com', 'test-token')
 
       expect(result.exitCode).toBe(0)
       expect(result.output).toContain('🔍 Inferred build context:')
@@ -63,7 +63,7 @@ describe('runAuditCommand', () => {
       })
     )
 
-    const result = await runAuditCommand('https://example.com', 'test-token')
+    const result = await runAuditCommand('example-com', 'test-token')
 
     expect(result.exitCode).toBe(0)
     expect(result.output).toContain('✅ Audit scheduled successfully!')
@@ -87,18 +87,18 @@ describe('runAuditCommand', () => {
       })
     )
 
-    const result = await runAuditCommand('https://example.com', 'bad-token')
+    const result = await runAuditCommand('example-com', 'bad-token')
 
     expect(result.exitCode).toBe(1)
     expect(result.errors).toContain('❌ Unable to schedule audit :(')
     expect(result.errors).toContain(' ↳ Invalid token')
-    expect(result.errors).toContain(' ↳ Token expired')
+    expect(result.errors).toContain(` ↳ ${JSON.stringify('Token expired')}`)
   })
 
   test('no git repo returns correct error', async () => {
     await withTempGitRepo(
       async () => {
-        const result = await runAuditCommand('https://example.com', 'token')
+        const result = await runAuditCommand('example-com', 'token')
 
         expect(result.exitCode).toBe(1)
         expect(result.errors[0]).toMatch(/Could not determine git remote URL/)
@@ -126,7 +126,7 @@ describe('runAuditCommand', () => {
         })
       })
     )
-    const result = await runAuditCommand('https://example.com', 'test-token')
+    const result = await runAuditCommand('example-com', 'test-token')
 
     expect(result.exitCode).toBe(0)
     expect(result.output).toContain('✅ Audit scheduled successfully!')
@@ -154,7 +154,7 @@ describe('runAuditCommand', () => {
       })
     )
 
-    const result = await runAuditCommand('https://example.com', 'test-token')
+    const result = await runAuditCommand('example-com', 'test-token')
 
     expect(result.exitCode).toBe(0)
     expect(result.output).toContain('✅ Audit scheduled successfully!')
@@ -170,7 +170,7 @@ describe('runAuditCommand', () => {
       })
     )
 
-    const result = await runAuditCommand('https://example.com', 'test-token')
+    const result = await runAuditCommand('example-com', 'test-token')
 
     expect(result.exitCode).toBe(1)
     expect(result.errors[0]).toContain('❌')
@@ -192,7 +192,7 @@ describe('runAuditCommand', () => {
       })
     )
 
-    const result = await runAuditCommand('https://example.com', 'test-token', {
+    const result = await runAuditCommand('example-com', 'test-token', {
       cookies: ['session=abc123']
     })
 
@@ -202,7 +202,7 @@ describe('runAuditCommand', () => {
   })
 
   test('fails with invalid cookie format', async () => {
-    const result = await runAuditCommand('https://example.com', 'test-token', {
+    const result = await runAuditCommand('example-com', 'test-token', {
       cookies: ['invalid-cookie-no-equals']
     })
 
@@ -212,7 +212,7 @@ describe('runAuditCommand', () => {
   })
 
   test('fails with invalid header format', async () => {
-    const result = await runAuditCommand('https://example.com', 'test-token', {
+    const result = await runAuditCommand('example-com', 'test-token', {
       headers: ['InvalidHeaderNoColon']
     })
 
@@ -259,13 +259,9 @@ describe('runAuditCommand', () => {
       const cookieFilePath = `${dir}/cookies.txt`
       writeFileSync(cookieFilePath, cookieFileContents, 'utf8')
 
-      const result = await runAuditCommand(
-        'https://example.com',
-        'test-token',
-        {
-          cookieFile: cookieFilePath
-        }
-      )
+      const result = await runAuditCommand('example-com', 'test-token', {
+        cookieFile: cookieFilePath
+      })
 
       expect(result.exitCode).toBe(0)
       expect(result.output).toContain('🔐 Authentication credentials detected')

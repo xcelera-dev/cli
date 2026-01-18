@@ -21,7 +21,7 @@ test('should be able to request an audit', async () => {
     })
   )
 
-  const response = await requestAudit('https://xcelera.dev', 'fake-token', {
+  const response = await requestAudit('xcelera-dev', 'fake-token', {
     service: 'github',
     git: {
       owner: 'xcelera',
@@ -51,7 +51,7 @@ test('should handle a network error', async () => {
     })
   )
 
-  const response = await requestAudit('https://xcelera.dev', 'fake-token', {
+  const response = await requestAudit('xcelera-dev', 'fake-token', {
     service: 'github',
     git: {
       owner: 'xcelera',
@@ -90,7 +90,7 @@ test('should handle an expected API error', async () => {
     })
   )
 
-  const response = await requestAudit('https://xcelera.dev', 'fake-token', {
+  const response = await requestAudit('xcelera-dev', 'fake-token', {
     service: 'github',
     git: {
       owner: 'xcelera',
@@ -120,7 +120,7 @@ test('should handle an unexpected API error', async () => {
     })
   )
 
-  const response = requestAudit('https://xcelera.dev', 'fake-token', {
+  const response = requestAudit('xcelera-dev', 'fake-token', {
     service: 'unknown'
   })
 
