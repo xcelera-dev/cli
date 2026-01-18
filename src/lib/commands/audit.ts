@@ -41,7 +41,7 @@ export async function runAuditCommand(
       errors.push('❌ Unable to schedule audit :(')
       errors.push(` ↳ ${message}`)
       if (details) {
-        errors.push(` ↳ ${details}`)
+        errors.push(` ↳ ${JSON.stringify(details)}`)
       }
       return { exitCode: 1, output, errors }
     }
