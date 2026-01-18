@@ -25,7 +25,7 @@ type AuditError = {
 type AuditResponse = ApiResponse<AuditData, AuditError>
 
 export async function requestAudit(
-  url: string,
+  ref: string,
   token: string,
   context: BuildContext,
   auth?: AuthCredentials
@@ -40,7 +40,7 @@ export async function requestAudit(
         Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({
-        url,
+        ref,
         context,
         ...(auth && { auth })
       })

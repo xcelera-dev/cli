@@ -16,7 +16,7 @@ export interface AuthOptions {
 }
 
 export async function runAuditCommand(
-  url: string,
+  ref: string,
   token: string,
   authOptions?: AuthOptions
 ): Promise<CommandResult> {
@@ -34,7 +34,7 @@ export async function runAuditCommand(
       output.push('')
     }
 
-    const response = await requestAudit(url, token, buildContext, auth)
+    const response = await requestAudit(ref, token, buildContext, auth)
 
     if (!response.success) {
       const { message, details } = response.error

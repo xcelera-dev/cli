@@ -27555,7 +27555,7 @@ function isNetworkError(error) {
 	return errorMessages.has(message);
 }
 
-async function requestAudit(url, token, context, auth) {
+async function requestAudit(ref, token, context, auth) {
     const apiUrl = `${getApiBaseUrl()}/api/v1/audit`;
     try {
         const response = await fetch(apiUrl, {
@@ -27565,7 +27565,7 @@ async function requestAudit(url, token, context, auth) {
                 Authorization: `Bearer ${token}`
             },
             body: JSON.stringify({
-                url,
+                ref,
                 context,
                 ...(auth && { auth })
             })
@@ -36899,7 +36899,7 @@ function parseEpochSeconds(value, lineNumber, sourceLabel) {
     return num;
 }
 
-async function runAuditCommand(url, token, authOptions) {
+async function runAuditCommand(ref, token, authOptions) {
     const output = [];
     const errors = [];
     try {
@@ -36911,13 +36911,13 @@ async function runAuditCommand(url, token, authOptions) {
             output.push('🔐 Authentication credentials detected');
             output.push('');
         }
-        const response = await requestAudit(url, token, buildContext, auth);
+        const response = await requestAudit(ref, token, buildContext, auth);
         if (!response.success) {
             const { message, details } = response.error;
             errors.push('❌ Unable to schedule audit :(');
             errors.push(` ↳ ${message}`);
             if (details) {
-                errors.push(` ↳ ${details}`);
+                errors.push(` ↳ ${JSON.stringify(details)}`);
             }
             return { exitCode: 1, output, errors };
         }
