@@ -180,15 +180,14 @@ jobs:
         if: github.actor != 'dependabot[bot]'
         run: |
           curl -s -o /dev/null \
-            -X POST https://xcelera.dev/login \
-            -H 'Content-Type: application/x-www-form-urlencoded' \
-            -d 'email=${{ secrets.XCELERA_AUTH_USER }}&password=${{ secrets.XCELERA_AUTH_PASSWORD }}' \
+            -X POST https://xcelera.dev/api/v1/session \
+            -H 'Authorization: Bearer ${{ secrets.XCELERA_TOKEN }}' \
             -c cookies.txt
 
       - name: Run CLI
         id: run-cli
         if: github.actor != 'dependabot[bot]'
-        run: node dist/cli.js audit --ref xcelera-profile-page --cookie-file cookies.txt
+        run: node dist/cli.js audit --ref xcelera-dev-account-notifications-TXC5 --cookie-file cookies.txt
         env:
           XCELERA_TOKEN: ${{ secrets.XCELERA_TOKEN }}
           DEBUG: true
@@ -198,7 +197,7 @@ jobs:
         if: github.actor != 'dependabot[bot]'
         uses: ./
         with:
-          ref: xcelera-api-tokens
+          ref: xcelera-dev-account-Q77Z
           token: ${{ secrets.XCELERA_TOKEN }}
           cookie-file: cookies.txt
 
