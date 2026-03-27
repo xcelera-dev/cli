@@ -1,14 +1,8 @@
 import { writeFileSync } from 'node:fs'
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  test
-} from '@jest/globals'
 import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
+import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
+
 import { withTempDir, withTempGitRepo } from '../test-utils.js'
 import { runAuditCommand } from './audit.js'
 

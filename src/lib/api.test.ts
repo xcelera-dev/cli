@@ -1,6 +1,6 @@
-import { afterAll, beforeEach, expect, test } from '@jest/globals'
 import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
+import { afterAll, beforeEach, expect, test } from 'vitest'
 import { requestAudit } from './api.js'
 
 const server = setupServer()

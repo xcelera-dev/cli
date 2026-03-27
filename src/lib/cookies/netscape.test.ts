@@ -1,6 +1,5 @@
 import { writeFileSync } from 'node:fs'
-
-import { describe, expect, test } from '@jest/globals'
+import { describe, expect, test } from 'vitest'
 import { withTempDir } from '../test-utils.js'
 import {
   parseNetscapeCookieFileContents,

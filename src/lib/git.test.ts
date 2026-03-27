@@ -1,4 +1,5 @@
-import { describe, expect, test } from '@jest/globals'
+import { describe, expect, test } from 'vitest'
+
 import { inferGitContext, isGitRepository } from './git.js'
 import { withTempDir, withTempGitRepo } from './test-utils.js'
 
