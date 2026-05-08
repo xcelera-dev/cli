@@ -146,6 +146,7 @@ jobs:
       - check-dist
       - codeql
     runs-on: ubuntu-latest
+    environment: ci
     permissions:
       contents: read
 
@@ -219,6 +220,7 @@ jobs:
       - ci
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       contents: write
       issues: write
