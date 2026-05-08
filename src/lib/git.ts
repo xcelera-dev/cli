@@ -17,8 +17,8 @@ export async function inferGitContext(): Promise<GitContext | undefined> {
   }
 
   const { owner, repo } = parsed
-  // repo is parsed as owner/repo but we want to use just the repo name
-  const repoName = repo.replace(`${owner}/`, '')
+  // repo is parsed as owner/repo but we want to use just the repo name, without .git suffix
+  const repoName = repo.replace(`${owner}/`, '').replace(/\.git$/, '')
   const commitInfo = await getCommit()
 
   return { owner, repo: repoName, commit: commitInfo }
@@ -30,7 +30,7 @@ async function getRemoteUrl(): Promise<string> {
     if (!remoteUrl) {
       throw new Error('No origin remote found')
     }
-    return remoteUrl
+    return remoteUrl.trim()
   } catch (error) {
     throw new Error(
       'Could not determine git remote URL. Please ensure you have an origin remote configured.',
