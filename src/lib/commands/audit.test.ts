@@ -160,7 +160,7 @@ describe('runAuditCommand', () => {
   test('handles unexpected errors', async () => {
     server.use(
       http.post('https://xcelera.dev/api/v1/audit', () => {
-        throw new Error('Unexpected error')
+        return new HttpResponse('Internal Server Error', { status: 500 })
       })
     )
 
