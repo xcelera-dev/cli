@@ -125,7 +125,7 @@ jobs:
 
       - name: Initialize CodeQL
         id: initialize
-        uses: github/codeql-action/init@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
+        uses: github/codeql-action/init@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
         with:
           languages: ${{ matrix.language }}
           source-root: src
@@ -242,6 +242,9 @@ jobs:
           node-version-file: .node-version
           cache: npm
 
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@11.16.0
+
       - name: Install dependencies
         run: npm clean-install
 
@@ -255,5 +258,4 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release
