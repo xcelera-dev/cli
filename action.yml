@@ -37,5 +37,5 @@ outputs:
     description: The error message if the audit request fails
 
 runs:
-  using: node20
+  using: node24
   main: dist/action.js
