@@ -62,6 +62,7 @@ jobs:
           VALIDATE_JSON_PRETTIER: false
           VALIDATE_YAML_PRETTIER: false
           VALIDATE_CHECKOV: false # not relevant as we don't use IaC
+          VALIDATE_GIT_COMMITLINT: false # super-linter's commitlint is incompatible with current preset deps
           VALIDATE_NATURAL_LANGUAGE: false
 
   test:
