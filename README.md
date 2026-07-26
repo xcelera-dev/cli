@@ -4,12 +4,54 @@ A CLI for running Lighthouse performance audits using xcelera.dev
 
 ## Usage
 
-### CLI Usage
+Commands are `xcelera <noun> <verb>`. Run `xcelera help` for the full list, or
+`xcelera help audit run` for one command's options.
+
+The token comes from `--token` or the `XCELERA_TOKEN` environment variable.
+`XCELERA_API_URL` overrides the API host (default `https://xcelera.dev`).
+
+### `audit run`
+
+Starts an audit and exits as soon as it is scheduled. `--wait` blocks until the
+audit finishes and prints its scores, Core Web Vitals and top opportunities —
+exiting non-zero if the audit fails or the wait times out.
 
 ```bash
-# Basic audit
-xcelera audit --ref https://example.com --token your-api-token
+# Schedule an audit and return immediately
+xcelera audit run --ref myapp-com-dashboard --token your-api-token
+
+# Wait for the result (default timeout 600s)
+xcelera audit run --ref myapp-com-dashboard --wait --timeout 900
+
+# Machine-readable output for scripting
+xcelera audit run --ref myapp-com-dashboard --wait --json
 ```
+
+`xcelera audit` on its own defaults to `xcelera audit run`.
+
+### `audit get`
+
+Fetches an existing audit without starting anything. A bare `--ref` returns the
+latest succeeded audit for that page.
+
+```bash
+xcelera audit get --ref myapp-com-dashboard
+xcelera audit get --ref myapp-com-dashboard --pr 42
+xcelera audit get --ref myapp-com-dashboard --git-hash a1b2c3d
+xcelera audit get --audit-id ah7n75i5uxk6fce9wanzeq8d --json
+```
+
+### Errors
+
+Every failure prints a stable `code` alongside the message and a hint:
+
+```text
+❌ Unable to fetch audit :(
+ ↳ [page_not_found] No page found for ref "nope".
+ ↳ Call list_pages to see valid refs.
+```
+
+Match on the code, never the message.
 
 ### Authenticated Pages
 
@@ -17,18 +59,18 @@ For pages behind login, you can pass authentication credentials:
 
 ```bash
 # With session cookie
-xcelera audit --ref myapp-com-dashboard --cookie "session=abc123"
+xcelera audit run --ref myapp-com-dashboard --cookie "session=abc123"
 
 # With bearer token header
-xcelera audit --ref myapp-com-admin \
+xcelera audit run --ref myapp-com-admin \
   --header "Authorization: Bearer eyJhbG..."
 
 # Multiple cookies
-xcelera audit --ref myapp-com-dashboard \
+xcelera audit run --ref myapp-com-dashboard \
   --cookie "session=abc123" --cookie "csrf=xyz"
 
 # With Netscape cookie file (cookies.txt)
-xcelera audit --ref myapp-com-dashboard \
+xcelera audit run --ref myapp-com-dashboard \
   --cookie-file ./cookies.txt
 
 ```
@@ -41,6 +83,23 @@ xcelera audit --ref myapp-com-dashboard \
   with:
     ref: myapp-com-dashboard
     token: ${{ secrets.XCELERA_TOKEN }}
+```
+
+To block the workflow on the result, set `wait`. The step fails if the audit
+fails or does not finish inside `timeout` seconds, and the audit id is exposed
+as the `auditId` output.
+
+```yaml
+- name: Lighthouse Performance Audit
+  id: audit
+  uses: xcelera/cli@v1
+  with:
+    ref: myapp-com-dashboard
+    token: ${{ secrets.XCELERA_TOKEN }}
+    wait: "true"
+    timeout: "900"
+
+- run: echo "Audited as ${{ steps.audit.outputs.auditId }}"
 ```
 
 For authenticated pages in CI:

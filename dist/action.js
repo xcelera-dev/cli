@@ -2215,11 +2215,11 @@ function requireDiagnostics () {
 	return diagnostics;
 }
 
-var request$1;
+var request$2;
 var hasRequiredRequest$1;
 
 function requireRequest$1 () {
-	if (hasRequiredRequest$1) return request$1;
+	if (hasRequiredRequest$1) return request$2;
 	hasRequiredRequest$1 = 1;
 
 	const {
@@ -2624,8 +2624,8 @@ function requireRequest$1 () {
 	  }
 	}
 
-	request$1 = Request;
-	return request$1;
+	request$2 = Request;
+	return request$2;
 }
 
 var dispatcher;
@@ -18058,11 +18058,11 @@ function requireDispatcherWeakref () {
 
 /* globals AbortController */
 
-var request;
+var request$1;
 var hasRequiredRequest;
 
 function requireRequest () {
-	if (hasRequiredRequest) return request;
+	if (hasRequiredRequest) return request$1;
 	hasRequiredRequest = 1;
 
 	const { extractBody, mixinBody, cloneBody, bodyUnusable } = requireBody();
@@ -19097,8 +19097,8 @@ function requireRequest () {
 	  }
 	]);
 
-	request = { Request, makeRequest, fromInnerRequest, cloneRequest };
-	return request;
+	request$1 = { Request, makeRequest, fromInnerRequest, cloneRequest };
+	return request$1;
 }
 
 var fetch_1;
@@ -28267,6 +28267,27 @@ function getInput(name, options) {
     return val.trim();
 }
 /**
+ * Gets the input value of the boolean type in the YAML 1.2 "core schema" specification.
+ * Support boolean input list: `true | True | TRUE | false | False | FALSE` .
+ * The return value is also in boolean type.
+ * ref: https://yaml.org/spec/1.2/spec.html#id2804923
+ *
+ * @param     name     name of the input to get
+ * @param     options  optional. See InputOptions.
+ * @returns   boolean
+ */
+function getBooleanInput(name, options) {
+    const trueValue = ['true', 'True', 'TRUE'];
+    const falseValue = ['false', 'False', 'FALSE'];
+    const val = getInput(name, options);
+    if (trueValue.includes(val))
+        return true;
+    if (falseValue.includes(val))
+        return false;
+    throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}\n` +
+        `Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
+}
+/**
  * Sets the value of an output.
  *
  * @param     name     name of the output to set
@@ -28357,43 +28378,54 @@ function isNetworkError(error) {
 	return errorMessages.has(message);
 }
 
-async function requestAudit(ref, token, context, auth) {
-    const apiUrl = `${getApiBaseUrl()}/api/v1/audit`;
+/**
+ * Every API call goes through here: base URL, bearer auth, the
+ * `{success, data | error}` envelope, and network/transport failures mapped to
+ * the same `{code, message, hint?, details?}` shape the API itself returns.
+ * Never throws — commands print the error and pick an exit code.
+ */
+async function request(method, path, { token, query, body }) {
+    const url = new URL(path, getApiBaseUrl());
+    for (const [key, value] of Object.entries(query ?? {})) {
+        if (value !== undefined)
+            url.searchParams.set(key, value);
+    }
     try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
+        const response = await fetch(url, {
+            method,
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify({
-                ref,
-                context,
-                ...(auth && { auth })
-            })
+            body: body === undefined ? undefined : JSON.stringify(body)
         });
         if (!response.ok) {
-            // handle expected errors
-            if (response.headers.get('content-type')?.includes('application/json')) {
-                const errorResponse = (await response.json());
-                return errorResponse;
-            }
-            // handle unexpected errors
-            const errorText = await response.text();
-            throw new Error(`Operation failed: ${response.status} ${response.statusText} - ${errorText}`);
+            return await toFailure(response);
         }
-        const { data } = (await response.json());
-        return {
-            success: true,
-            data
-        };
+        const text = await response.text();
+        try {
+            const { data } = JSON.parse(text);
+            return { success: true, data };
+        }
+        catch (error) {
+            return {
+                success: false,
+                error: {
+                    code: 'invalid_response',
+                    message: 'The API returned a malformed response.',
+                    details: error instanceof Error ? error.message : String(error)
+                }
+            };
+        }
     }
     catch (error) {
         if (isNetworkError(error)) {
             return {
                 success: false,
                 error: {
-                    message: 'Network error',
+                    code: 'network_error',
+                    message: 'Could not reach the xcelera API.',
+                    hint: 'Check your network connection, or set XCELERA_API_URL if you are pointing at a different host.',
                     details: error.message
                 }
             };
@@ -28401,12 +28433,274 @@ async function requestAudit(ref, token, context, auth) {
         throw error;
     }
 }
-/* istanbul ignore next */
-function getApiBaseUrl() {
-    if (process.env.NODE_ENV === 'development') {
-        return 'http://localhost:3000';
+async function requestAudit(ref, token, context, auth) {
+    return request('POST', '/api/v1/audits', {
+        token,
+        body: { ref, context, ...(auth && { auth }) }
+    });
+}
+async function getAudit(token, selector) {
+    if (selector.auditId) {
+        return request('GET', `/api/v1/audits/${encodeURIComponent(selector.auditId)}`, { token });
     }
-    return 'https://xcelera.dev';
+    return request('GET', '/api/v1/audits', {
+        token,
+        query: {
+            ref: selector.ref,
+            gitHash: selector.gitHash,
+            prNumber: selector.prNumber
+        }
+    });
+}
+async function toFailure(response) {
+    const retryAfterSeconds = parseRetryAfter(response.headers.get('Retry-After'));
+    const text = await response.text();
+    if (response.headers.get('content-type')?.includes('application/json')) {
+        try {
+            const body = JSON.parse(text);
+            if (body.success === false) {
+                return { success: false, error: body.error, retryAfterSeconds };
+            }
+        }
+        catch {
+            // Fall through to the generic shape below.
+        }
+    }
+    // Anything the API did not shape itself: a proxy error page, a plain-text
+    // 429 from the edge rate limiter, an unhandled 500.
+    return {
+        success: false,
+        error: {
+            code: response.status === 429 ? 'rate_limited' : 'http_error',
+            message: `Request failed: ${response.status} ${response.statusText}`,
+            details: text
+        },
+        retryAfterSeconds
+    };
+}
+function parseRetryAfter(header) {
+    if (!header)
+        return undefined;
+    const seconds = Number(header);
+    return Number.isFinite(seconds) && seconds >= 0 ? seconds : undefined;
+}
+function getApiBaseUrl() {
+    return process.env.XCELERA_API_URL || 'https://xcelera.dev';
+}
+
+const DEFAULT_INTERVAL_MS = 10_000;
+// A blip mid-run shouldn't cost the audit, but a misconfigured host shouldn't
+// spin until the timeout either. Rate limits are expected and retried freely.
+const MAX_CONSECUTIVE_ERRORS = 3;
+/**
+ * Polls one audit until it reaches a terminal status. Always polls by auditId:
+ * ref selectors only ever resolve to a succeeded audit, so they can never
+ * observe an audit that is still running.
+ */
+async function waitForAudit(auditId, token, options) {
+    const { timeoutSeconds, intervalMs = DEFAULT_INTERVAL_MS, sleep = defaultSleep, now = Date.now } = options;
+    const deadline = now() + timeoutSeconds * 1000;
+    let consecutiveErrors = 0;
+    for (;;) {
+        const response = await getAudit(token, {
+            auditId
+        });
+        if (response.success && isTerminal(response.data.status)) {
+            return { done: true, audit: response.data };
+        }
+        let waitMs = intervalMs;
+        if (!response.success) {
+            const { code } = response.error;
+            if (code === 'rate_limited') {
+                waitMs = backoffMs(response.retryAfterSeconds, intervalMs);
+            }
+            else if (isTransient(code)) {
+                consecutiveErrors += 1;
+                if (consecutiveErrors > MAX_CONSECUTIVE_ERRORS) {
+                    return { done: false, error: response.error };
+                }
+            }
+            else {
+                return { done: false, error: response.error };
+            }
+        }
+        else {
+            consecutiveErrors = 0;
+        }
+        if (now() >= deadline)
+            return { done: false, error: timedOut(auditId) };
+        // A large Retry-After shouldn't sleep past the deadline we'd otherwise
+        // time out at anyway.
+        await sleep(Math.min(waitMs, deadline - now()));
+    }
+}
+function isTerminal(status) {
+    return status === 'Succeeded' || status === 'Failed';
+}
+function isTransient(code) {
+    return code === 'network_error' || code === 'http_error';
+}
+function backoffMs(retryAfterSeconds, intervalMs) {
+    return retryAfterSeconds === undefined
+        ? intervalMs
+        : Math.max(retryAfterSeconds * 1000, intervalMs);
+}
+function timedOut(auditId) {
+    return {
+        code: 'wait_timeout',
+        message: `Timed out waiting for audit ${auditId} to finish.`,
+        hint: `The audit may still be running — raise --timeout, or check later with \`xcelera audit get --audit-id ${auditId}\`.`
+    };
+}
+function defaultSleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const RATING_ICON = {
+    good: '🟢',
+    'needs-improvement': '🟠',
+    poor: '🔴'
+};
+const TOP_INSIGHTS = 5;
+/**
+ * One audit, however we arrived at it: `audit run --wait` and `audit get`
+ * report it identically, and a failed audit is a non-zero exit in both.
+ */
+function reportAudit(audit, json) {
+    if (json) {
+        return {
+            exitCode: audit.status === 'Failed' ? 1 : 0,
+            output: [JSON.stringify(audit, null, 2)],
+            errors: []
+        };
+    }
+    if (audit.status === 'Failed') {
+        return {
+            exitCode: 1,
+            output: [],
+            errors: [
+                '❌ Audit failed.',
+                ` ↳ [audit_failed] Audit ${audit.auditId} did not produce a result.`,
+                ' ↳ Check the audit on your dashboard, or run it again.'
+            ]
+        };
+    }
+    if (audit.status !== 'Succeeded') {
+        return {
+            exitCode: 0,
+            output: [
+                `⏳ Audit ${audit.auditId} is ${audit.status.toLowerCase()} — no results yet.`,
+                '   Use --wait to block until it finishes.'
+            ],
+            errors: []
+        };
+    }
+    return { exitCode: 0, output: formatAudit(audit), errors: [] };
+}
+/** An audit as the human output renders it: scores, then the biggest wins. */
+function formatAudit(audit) {
+    const lines = [];
+    lines.push(`📊 ${audit.name ?? audit.ref} — ${audit.url}`);
+    if (audit.git.hash) {
+        const branch = audit.git.branch ? ` (${audit.git.branch})` : '';
+        lines.push(`   commit ${audit.git.hash}${branch}`);
+    }
+    lines.push('');
+    lines.push(...formatCategories(audit));
+    lines.push(...formatCoreWebVitals(audit));
+    lines.push(...formatCaveats(audit));
+    lines.push(...formatInsights(audit));
+    if (audit.reportUrl) {
+        lines.push('');
+        lines.push(`📄 Report (expires in 1 hour): ${audit.reportUrl}`);
+    }
+    return lines;
+}
+/** Prints every part of a failure — `code` is what CI scripts match on. */
+function formatApiError(error) {
+    const lines = [` ↳ [${error.code}] ${error.message}`];
+    if (error.hint) {
+        lines.push(` ↳ ${error.hint}`);
+    }
+    if (error.details) {
+        lines.push(` ↳ ${error.details}`);
+    }
+    return lines;
+}
+function formatCategories(audit) {
+    const { performance, accessibility, bestPractices, seo } = audit.metrics.categories;
+    const entries = [
+        ['Performance', performance],
+        ['Accessibility', accessibility],
+        ['Best practices', bestPractices],
+        ['SEO', seo]
+    ];
+    return formatMetricSection('Scores:', entries);
+}
+function formatCoreWebVitals(audit) {
+    const { lcp, tbt, cls, fcp, si } = audit.metrics.audits;
+    const entries = [
+        ['LCP', lcp],
+        ['TBT', tbt],
+        ['CLS', cls],
+        ['FCP', fcp],
+        ['Speed Index', si]
+    ];
+    return formatMetricSection('Metrics:', entries);
+}
+function formatMetricSection(heading, entries) {
+    const present = entries.filter(([, metric]) => metric !== undefined);
+    if (present.length === 0)
+        return [];
+    return [
+        heading,
+        ...present.map(([label, metric]) => formatMetricLine(label, metric)),
+        ''
+    ];
+}
+function formatMetricLine(label, metric) {
+    if (!metric)
+        return `   ${label.padEnd(14)} —`;
+    const icon = RATING_ICON[metric.rating] ?? '⚪';
+    return `   ${icon} ${label.padEnd(14)} ${metric.display}`;
+}
+/**
+ * Reasons to distrust the number before acting on it. Spread is this audit's
+ * noise floor; windowed and imputed scores are lower bounds, not measurements.
+ */
+function formatCaveats(audit) {
+    const lines = [];
+    if (audit.runSpread) {
+        const { perfSpread, runs } = audit.runSpread;
+        lines.push(`   ℹ️  Performance varied by ${perfSpread} points across ${runs} runs — treat smaller changes as noise.`);
+    }
+    if (audit.windowed) {
+        lines.push('   ⚠️  A run hit the observation window before the page settled; the score is a partial-load measurement.');
+    }
+    if (audit.scoreImputed) {
+        lines.push('   ⚠️  Blocking time could not be measured on every run; the performance score is a lower bound.');
+    }
+    return lines.length > 0 ? [...lines, ''] : [];
+}
+function formatInsights(audit) {
+    const insights = audit.insights.slice(0, TOP_INSIGHTS);
+    if (insights.length === 0)
+        return [];
+    return [
+        `Top opportunities (${insights.length} of ${audit.insights.length}):`,
+        ...insights.map((insight) => {
+            const savings = formatSavings(insight.metricSavings);
+            return `   • ${insight.title}${savings}`;
+        })
+    ];
+}
+function formatSavings(savings) {
+    if (!savings)
+        return '';
+    const parts = Object.entries(savings)
+        .filter(([, value]) => typeof value === 'number' && value > 0)
+        .map(([metric, value]) => metric === 'CLS' ? `${metric} ${value}` : `${metric} ${value}ms`);
+    return parts.length > 0 ? ` — saves ${parts.join(', ')}` : '';
 }
 
 // https://www.appveyor.com/docs/environment-variables
@@ -38182,44 +38476,68 @@ function parseEpochSeconds(value, lineNumber, sourceLabel) {
     return num;
 }
 
-async function runAuditCommand(ref, token, authOptions) {
+const DEFAULT_WAIT_TIMEOUT_SECONDS = 600;
+async function runAuditCommand(ref, token, options) {
     const output = [];
     const errors = [];
+    const json = options?.json ?? false;
     try {
         const buildContext = await inferBuildContext();
-        output.push(...formatBuildContext(buildContext));
-        const { auth, warnings } = parseAuthCredentials(authOptions);
+        if (!json) {
+            output.push(...formatBuildContext(buildContext));
+        }
+        const { auth, warnings } = parseAuthCredentials(options);
         errors.push(...warnings);
-        if (auth) {
+        if (auth && !json) {
             output.push('🔐 Authentication credentials detected');
             output.push('');
         }
         const response = await requestAudit(ref, token, buildContext, auth);
         if (!response.success) {
-            const { message, details } = response.error;
             errors.push('❌ Unable to schedule audit :(');
-            errors.push(` ↳ ${message}`);
-            if (details) {
-                errors.push(` ↳ ${JSON.stringify(details)}`);
-            }
+            errors.push(...formatApiError(response.error));
             return { exitCode: 1, output, errors };
         }
         const { auditId, status, integrations } = response.data;
-        output.push('✅ Audit scheduled successfully!');
-        if (process.env.DEBUG) {
-            output.push('');
-            output.push(`Audit ID: ${auditId}`);
-            output.push(`Status: ${status}`);
-            if (Object.keys(integrations).length === 0) {
-                output.push('No integrations detected');
+        if (!json) {
+            output.push('✅ Audit scheduled successfully!');
+            if (process.env.DEBUG) {
+                output.push('');
+                output.push(`Audit ID: ${auditId}`);
+                output.push(`Status: ${status}`);
+                if (!integrations || Object.keys(integrations).length === 0) {
+                    output.push('No integrations detected');
+                }
+            }
+            if (integrations?.github) {
+                const githubOutput = formatGitHubIntegrationStatus(integrations.github);
+                output.push(...githubOutput.output);
+                errors.push(...githubOutput.errors);
             }
         }
-        if (integrations?.github) {
-            const githubOutput = formatGitHubIntegrationStatus(integrations.github);
-            output.push(...githubOutput.output);
-            errors.push(...githubOutput.errors);
+        if (!options?.wait) {
+            if (json) {
+                output.push(JSON.stringify(response.data, null, 2));
+            }
+            return { exitCode: 0, output, errors, auditId };
         }
-        return { exitCode: 0, output, errors };
+        const waited = await waitForAudit(auditId, token, {
+            timeoutSeconds: options.timeoutSeconds ?? DEFAULT_WAIT_TIMEOUT_SECONDS,
+            intervalMs: options.pollIntervalMs,
+            sleep: options.sleep,
+            now: options.now
+        });
+        if (!waited.done) {
+            errors.push('❌ Audit did not complete.');
+            errors.push(...formatApiError(waited.error));
+            return { exitCode: 1, output, errors, auditId };
+        }
+        const finished = reportAudit(waited.audit, json);
+        if (!json)
+            output.push('');
+        output.push(...finished.output);
+        errors.push(...finished.errors);
+        return { exitCode: finished.exitCode, output, errors, auditId };
     }
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -38336,10 +38654,22 @@ run();
 async function run() {
     const ref = getInput('ref', { required: true });
     const token = getInput('token', { required: true });
-    const authOptions = parseAuthInputs();
-    const result = await runAuditCommand(ref, token, authOptions);
+    const timeout = parseTimeout();
+    if ('error' in timeout) {
+        setFailed(timeout.error);
+        setOutput('status', 'failed');
+        return;
+    }
+    const result = await runAuditCommand(ref, token, {
+        ...parseAuthInputs(),
+        wait: getBooleanInput('wait'),
+        timeoutSeconds: timeout.seconds
+    });
     result.output.forEach((line) => info(line));
     result.errors.forEach((line) => error(line));
+    if (result.auditId) {
+        setOutput('auditId', result.auditId);
+    }
     if (result.exitCode !== 0) {
         setFailed('Audit command failed');
         setOutput('status', 'failed');
@@ -38352,13 +38682,22 @@ function parseAuthInputs() {
     const cookieFile = getInput('cookie-file');
     const cookie = getInput('cookie');
     const header = getInput('header');
-    if (!cookieFile && !cookie && !header) {
-        return undefined;
-    }
     return {
         cookieFile: cookieFile || undefined,
         cookies: cookie ? [cookie] : undefined,
         headers: header ? [header] : undefined
     };
+}
+function parseTimeout() {
+    const raw = getInput('timeout');
+    if (!raw)
+        return { seconds: DEFAULT_WAIT_TIMEOUT_SECONDS };
+    const seconds = Number(raw);
+    if (!Number.isFinite(seconds) || seconds <= 0) {
+        return {
+            error: `timeout must be a positive number of seconds, got "${raw}"`
+        };
+    }
+    return { seconds };
 }
 //# sourceMappingURL=action.js.map

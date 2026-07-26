@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { SimpleGit, simpleGit } from 'simple-git'
+import type { AuditPayload } from '../types/index.js'
 
 interface TempDir {
   dir: string
@@ -92,5 +93,48 @@ function createTempDir(): TempDir {
   return {
     dir,
     cleanup: () => rmSync(dir, { recursive: true, force: true })
+  }
+}
+
+/** A succeeded audit as GET /api/v1/audits returns it. */
+export function succeededAudit(
+  overrides: Partial<AuditPayload> = {}
+): AuditPayload {
+  return {
+    auditId: 'abc-123',
+    ref: 'example-com',
+    name: 'Example',
+    url: 'https://example.com',
+    status: 'Succeeded',
+    runAt: '2026-07-26T00:00:00.000Z',
+    source: 'Api',
+    git: { hash: 'deadbeef', branch: 'main' },
+    metrics: {
+      categories: {
+        performance: { raw: 82, display: 82, rating: 'needs-improvement' },
+        accessibility: { raw: 95, display: 95, rating: 'good' },
+        bestPractices: { raw: 100, display: 100, rating: 'good' },
+        seo: { raw: 90, display: 90, rating: 'good' }
+      },
+      audits: {
+        lcp: { raw: 2400, display: '2.4s', rating: 'needs-improvement' },
+        tbt: { raw: 120, display: '120ms', rating: 'good' },
+        cls: { raw: 0.02, display: 0.02, rating: 'good' },
+        fcp: { raw: 1500, display: '1.5s', rating: 'good' },
+        si: { raw: 3000, display: '3.0s', rating: 'needs-improvement' }
+      }
+    },
+    insights: [
+      {
+        id: 'render-blocking-insight',
+        title: 'Render-blocking requests',
+        score: 0.4,
+        metricSavings: { FCP: 300, LCP: 450 }
+      }
+    ],
+    windowed: false,
+    scoreImputed: false,
+    reportUrl: 'https://reports.example.com/abc-123',
+    ...overrides
   }
 }

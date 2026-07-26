@@ -230,7 +230,7 @@ jobs:
       - name: Run CLI
         id: run-cli
         if: github.actor != 'dependabot[bot]'
-        run: node dist/cli.js audit --ref xcelera-dev-account-notifications-TXC5 --cookie-file cookies.txt
+        run: node dist/cli.js audit --ref xcelera-dev-account-notifications-TXC5 --cookie-file cookies.txt --wait
         env:
           XCELERA_TOKEN: ${{ secrets.XCELERA_TOKEN }}
           DEBUG: true
@@ -243,6 +243,7 @@ jobs:
           ref: xcelera-dev-account-Q77Z
           token: ${{ secrets.XCELERA_TOKEN }}
           cookie-file: cookies.txt
+          wait: "true"
 
       - name: Cleanup Auth Cookie
         id: cleanup-cookie

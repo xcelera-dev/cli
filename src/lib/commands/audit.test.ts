@@ -3,7 +3,8 @@ import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 
-import { withTempDir, withTempGitRepo } from '../test-utils.js'
+import type { AuditStatus } from '../../types/index.js'
+import { succeededAudit, withTempDir, withTempGitRepo } from '../test-utils.js'
 import { runAuditCommand } from './audit.js'
 
 const server = setupServer()
@@ -14,7 +15,7 @@ afterAll(() => server.close())
 describe('runAuditCommand', () => {
   test('successful audit returns correct output', async () => {
     server.use(
-      http.post('https://xcelera.dev/api/v1/audit', () => {
+      http.post('https://xcelera.dev/api/v1/audits', () => {
         return HttpResponse.json({
           success: true,
           data: {
@@ -39,7 +40,7 @@ describe('runAuditCommand', () => {
 
   test('successful audit with GitHub integration', async () => {
     server.use(
-      http.post('https://xcelera.dev/api/v1/audit', () => {
+      http.post('https://xcelera.dev/api/v1/audits', () => {
         return HttpResponse.json({
           success: true,
           data: {
@@ -67,12 +68,14 @@ describe('runAuditCommand', () => {
 
   test('API error returns correct exit code and message', async () => {
     server.use(
-      http.post('https://xcelera.dev/api/v1/audit', () => {
+      http.post('https://xcelera.dev/api/v1/audits', () => {
         return HttpResponse.json(
           {
             success: false,
             error: {
+              code: 'invalid_token',
               message: 'Invalid token',
+              hint: 'Create a new token in Settings → API Tokens.',
               details: 'Token expired'
             }
           },
@@ -85,8 +88,11 @@ describe('runAuditCommand', () => {
 
     expect(result.exitCode).toBe(1)
     expect(result.errors).toContain('❌ Unable to schedule audit :(')
-    expect(result.errors).toContain(' ↳ Invalid token')
-    expect(result.errors).toContain(` ↳ ${JSON.stringify('Token expired')}`)
+    expect(result.errors).toContain(' ↳ [invalid_token] Invalid token')
+    expect(result.errors).toContain(
+      ' ↳ Create a new token in Settings → API Tokens.'
+    )
+    expect(result.errors).toContain(' ↳ Token expired')
   })
 
   test('no git repo returns correct error', async () => {
@@ -103,7 +109,7 @@ describe('runAuditCommand', () => {
 
   test('misconfigured GitHub integration shows warning', async () => {
     server.use(
-      http.post('https://xcelera.dev/api/v1/audit', () => {
+      http.post('https://xcelera.dev/api/v1/audits', () => {
         return HttpResponse.json({
           success: true,
           data: {
@@ -132,7 +138,7 @@ describe('runAuditCommand', () => {
 
   test('GitHub integration error shows warning', async () => {
     server.use(
-      http.post('https://xcelera.dev/api/v1/audit', () => {
+      http.post('https://xcelera.dev/api/v1/audits', () => {
         return HttpResponse.json({
           success: true,
           data: {
@@ -157,9 +163,9 @@ describe('runAuditCommand', () => {
     )
   })
 
-  test('handles unexpected errors', async () => {
+  test('reports a non-JSON server error rather than throwing', async () => {
     server.use(
-      http.post('https://xcelera.dev/api/v1/audit', () => {
+      http.post('https://xcelera.dev/api/v1/audits', () => {
         return new HttpResponse('Internal Server Error', { status: 500 })
       })
     )
@@ -167,14 +173,15 @@ describe('runAuditCommand', () => {
     const result = await runAuditCommand('example-com', 'test-token')
 
     expect(result.exitCode).toBe(1)
-    expect(result.errors[0]).toContain('❌')
-    // should include stack trace
-    expect(result.errors).toContainEqual(expect.stringMatching(/at /))
+    expect(result.errors).toContain('❌ Unable to schedule audit :(')
+    expect(result.errors).toContainEqual(
+      expect.stringContaining('[http_error] Request failed: 500')
+    )
   })
 
   test('shows auth detected message when cookie provided', async () => {
     server.use(
-      http.post('https://xcelera.dev/api/v1/audit', () => {
+      http.post('https://xcelera.dev/api/v1/audits', () => {
         return HttpResponse.json({
           success: true,
           data: {
@@ -220,7 +227,7 @@ describe('runAuditCommand', () => {
       '.example.com\tTRUE\t/\tFALSE\t9999999999\tsession\tabc123\n'
 
     server.use(
-      http.post('https://xcelera.dev/api/v1/audit', async ({ request }) => {
+      http.post('https://xcelera.dev/api/v1/audits', async ({ request }) => {
         const body = await request.json()
 
         expect(body).toEqual(
@@ -259,6 +266,118 @@ describe('runAuditCommand', () => {
 
       expect(result.exitCode).toBe(0)
       expect(result.output).toContain('🔐 Authentication credentials detected')
+    })
+  })
+
+  test('--wait polls until the audit succeeds and reports its scores', async () => {
+    const statuses: AuditStatus[] = ['Scheduled', 'Running', 'Succeeded']
+    server.use(
+      http.post('https://xcelera.dev/api/v1/audits', () =>
+        HttpResponse.json({
+          success: true,
+          data: { auditId: 'abc-123', status: 'scheduled', integrations: {} }
+        })
+      ),
+      http.get('https://xcelera.dev/api/v1/audits/abc-123', () =>
+        HttpResponse.json({
+          success: true,
+          data: succeededAudit({ status: statuses.shift() ?? 'Succeeded' })
+        })
+      )
+    )
+
+    const result = await runAuditCommand('example-com', 'test-token', {
+      wait: true,
+      pollIntervalMs: 0
+    })
+
+    expect(statuses).toHaveLength(0)
+    expect(result.exitCode).toBe(0)
+    expect(result.auditId).toBe('abc-123')
+    expect(result.output).toContainEqual(expect.stringContaining('Performance'))
+    expect(result.output).toContainEqual(
+      expect.stringContaining('Render-blocking requests')
+    )
+  })
+
+  test('--wait exits non-zero when the audit fails', async () => {
+    server.use(
+      http.post('https://xcelera.dev/api/v1/audits', () =>
+        HttpResponse.json({
+          success: true,
+          data: { auditId: 'abc-123', status: 'scheduled', integrations: {} }
+        })
+      ),
+      http.get('https://xcelera.dev/api/v1/audits/abc-123', () =>
+        HttpResponse.json({
+          success: true,
+          data: succeededAudit({ status: 'Failed' })
+        })
+      )
+    )
+
+    const result = await runAuditCommand('example-com', 'test-token', {
+      wait: true,
+      pollIntervalMs: 0
+    })
+
+    expect(result.exitCode).toBe(1)
+    expect(result.errors).toContain('❌ Audit failed.')
+  })
+
+  test('--wait gives up at the timeout, pointing at the audit id', async () => {
+    server.use(
+      http.post('https://xcelera.dev/api/v1/audits', () =>
+        HttpResponse.json({
+          success: true,
+          data: { auditId: 'abc-123', status: 'scheduled', integrations: {} }
+        })
+      ),
+      http.get('https://xcelera.dev/api/v1/audits/abc-123', () =>
+        HttpResponse.json({
+          success: true,
+          data: succeededAudit({ status: 'Running' })
+        })
+      )
+    )
+
+    let clock = 0
+    const result = await runAuditCommand('example-com', 'test-token', {
+      wait: true,
+      timeoutSeconds: 30,
+      pollIntervalMs: 0,
+      now: () => clock,
+      sleep: async () => {
+        clock += 20_000
+      }
+    })
+
+    expect(result.exitCode).toBe(1)
+    expect(result.errors).toContainEqual(
+      expect.stringContaining('[wait_timeout]')
+    )
+    expect(result.errors).toContainEqual(
+      expect.stringContaining('audit get --audit-id abc-123')
+    )
+  })
+
+  test('--json prints the scheduled audit and no build context', async () => {
+    server.use(
+      http.post('https://xcelera.dev/api/v1/audits', () =>
+        HttpResponse.json({
+          success: true,
+          data: { auditId: 'abc-123', status: 'scheduled', integrations: {} }
+        })
+      )
+    )
+
+    const result = await runAuditCommand('example-com', 'test-token', {
+      json: true
+    })
+
+    expect(result.exitCode).toBe(0)
+    expect(JSON.parse(result.output.join('\n'))).toMatchObject({
+      auditId: 'abc-123'
     })
   })
 })

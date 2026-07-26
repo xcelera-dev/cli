@@ -27,12 +27,22 @@ inputs:
   header:
     description: 'Header in "Name: Value" format (for authenticated pages)'
     required: false
+  wait:
+    description:
+      Wait for the audit to finish and report its scores. Fails the step if the
+      audit fails.
+    required: false
+    default: 'false'
+  timeout:
+    description: Seconds to wait when `wait` is enabled
+    required: false
+    default: '600'
 
 outputs:
   auditId:
-    description: The ID of the scheduled test
+    description: The ID of the scheduled audit
   status:
-    description: The status of the audit request (scheduled, failed)
+    description: The status of the audit request (success, failed)
   error:
     description: The error message if the audit request fails
 

@@ -6,6 +6,8 @@ import type {
   GithubIntegrationContext
 } from '../../types/index.js'
 import { requestAudit } from '../api.js'
+import { waitForAudit } from '../audit-poll.js'
+import { formatApiError, reportAudit } from '../audit-report.js'
 import { inferBuildContext } from '../buildContext.js'
 import { readNetscapeCookieFileSync } from '../cookies/netscape.js'
 
@@ -15,21 +17,37 @@ export interface AuthOptions {
   headers?: string[]
 }
 
+export interface RunAuditOptions extends AuthOptions {
+  /** Block until the audit reaches a terminal status and report the result. */
+  wait?: boolean
+  timeoutSeconds?: number
+  json?: boolean
+  /** Test seam — the poll cadence and clock. */
+  pollIntervalMs?: number
+  sleep?: (ms: number) => Promise<void>
+  now?: () => number
+}
+
+export const DEFAULT_WAIT_TIMEOUT_SECONDS = 600
+
 export async function runAuditCommand(
   ref: string,
   token: string,
-  authOptions?: AuthOptions
+  options?: RunAuditOptions
 ): Promise<CommandResult> {
   const output: string[] = []
   const errors: string[] = []
+  const json = options?.json ?? false
 
   try {
     const buildContext = await inferBuildContext()
-    output.push(...formatBuildContext(buildContext))
+    if (!json) {
+      output.push(...formatBuildContext(buildContext))
+    }
 
-    const { auth, warnings } = parseAuthCredentials(authOptions)
+    const { auth, warnings } = parseAuthCredentials(options)
     errors.push(...warnings)
-    if (auth) {
+    if (auth && !json) {
       output.push('🔐 Authentication credentials detected')
       output.push('')
     }
@@ -37,36 +55,58 @@ export async function runAuditCommand(
     const response = await requestAudit(ref, token, buildContext, auth)
 
     if (!response.success) {
-      const { message, details } = response.error
       errors.push('❌ Unable to schedule audit :(')
-      errors.push(` ↳ ${message}`)
-      if (details) {
-        errors.push(` ↳ ${JSON.stringify(details)}`)
-      }
+      errors.push(...formatApiError(response.error))
       return { exitCode: 1, output, errors }
     }
 
     const { auditId, status, integrations } = response.data
 
-    output.push('✅ Audit scheduled successfully!')
+    if (!json) {
+      output.push('✅ Audit scheduled successfully!')
 
-    if (process.env.DEBUG) {
-      output.push('')
-      output.push(`Audit ID: ${auditId}`)
-      output.push(`Status: ${status}`)
+      if (process.env.DEBUG) {
+        output.push('')
+        output.push(`Audit ID: ${auditId}`)
+        output.push(`Status: ${status}`)
 
-      if (Object.keys(integrations).length === 0) {
-        output.push('No integrations detected')
+        if (!integrations || Object.keys(integrations).length === 0) {
+          output.push('No integrations detected')
+        }
+      }
+
+      if (integrations?.github) {
+        const githubOutput = formatGitHubIntegrationStatus(integrations.github)
+        output.push(...githubOutput.output)
+        errors.push(...githubOutput.errors)
       }
     }
 
-    if (integrations?.github) {
-      const githubOutput = formatGitHubIntegrationStatus(integrations.github)
-      output.push(...githubOutput.output)
-      errors.push(...githubOutput.errors)
+    if (!options?.wait) {
+      if (json) {
+        output.push(JSON.stringify(response.data, null, 2))
+      }
+      return { exitCode: 0, output, errors, auditId }
     }
 
-    return { exitCode: 0, output, errors }
+    const waited = await waitForAudit(auditId, token, {
+      timeoutSeconds: options.timeoutSeconds ?? DEFAULT_WAIT_TIMEOUT_SECONDS,
+      intervalMs: options.pollIntervalMs,
+      sleep: options.sleep,
+      now: options.now
+    })
+
+    if (!waited.done) {
+      errors.push('❌ Audit did not complete.')
+      errors.push(...formatApiError(waited.error))
+      return { exitCode: 1, output, errors, auditId }
+    }
+
+    const finished = reportAudit(waited.audit, json)
+    if (!json) output.push('')
+    output.push(...finished.output)
+    errors.push(...finished.errors)
+    return { exitCode: finished.exitCode, output, errors, auditId }
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error occurred'
