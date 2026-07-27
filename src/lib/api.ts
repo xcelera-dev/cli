@@ -3,12 +3,16 @@ import isNetworkError from 'is-network-error'
 import {
   ApiError,
   ApiResponse,
+  ArchivePagePayload,
   AuditPayload,
   AuditSelector,
   AuthCredentials,
   BuildContext,
+  CreatePageBody,
+  CreatePagePayload,
   ErrorResponse,
   GithubIntegrationContext,
+  ListPagesPayload,
   SuccessResponse
 } from '../types/index.js'
 
@@ -131,6 +135,30 @@ export async function getAudit(
       prNumber: selector.prNumber
     }
   })
+}
+
+export async function listPages(
+  token: string
+): Promise<ApiResult<ListPagesPayload>> {
+  return request<ListPagesPayload>('GET', '/api/v1/pages', { token })
+}
+
+export async function createPage(
+  token: string,
+  body: CreatePageBody
+): Promise<ApiResult<CreatePagePayload>> {
+  return request<CreatePagePayload>('POST', '/api/v1/pages', { token, body })
+}
+
+export async function archivePage(
+  token: string,
+  ref: string
+): Promise<ApiResult<ArchivePagePayload>> {
+  return request<ArchivePagePayload>(
+    'DELETE',
+    `/api/v1/pages/${encodeURIComponent(ref)}`,
+    { token }
+  )
 }
 
 async function toFailure(response: Response): Promise<ApiFailure> {

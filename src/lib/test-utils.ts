@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { SimpleGit, simpleGit } from 'simple-git'
-import type { AuditPayload } from '../types/index.js'
+import type { AuditPayload, PageSummary } from '../types/index.js'
 
 interface TempDir {
   dir: string
@@ -93,6 +93,25 @@ function createTempDir(): TempDir {
   return {
     dir,
     cleanup: () => rmSync(dir, { recursive: true, force: true })
+  }
+}
+
+/** A tracked page as GET /api/v1/pages returns it. */
+export function trackedPage(overrides: Partial<PageSummary> = {}): PageSummary {
+  return {
+    ref: 'example-com',
+    name: 'Example',
+    url: 'https://example.com',
+    auditStatus: 'Succeeded',
+    lastAuditAt: '2026-07-26T00:00:00.000Z',
+    auditId: 'abc-123',
+    scores: {
+      performance: { raw: 82, display: 82, rating: 'needs-improvement' },
+      lcp: { raw: 2400, display: '2.4s', rating: 'needs-improvement' },
+      tbt: { raw: 120, display: '120ms', rating: 'good' },
+      cls: { raw: 0.02, display: 0.02, rating: 'good' }
+    },
+    ...overrides
   }
 }
 

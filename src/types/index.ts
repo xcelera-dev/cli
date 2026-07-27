@@ -100,13 +100,56 @@ export type AuditPayload = {
   git: AuditGitContext
   metrics: AuditMetrics
   insights: AuditInsight[]
-  runSpread?: {
-    perfSpread: number
-    runs: number
-  }
   windowed: boolean
   scoreImputed: boolean
   reportUrl?: string
+}
+
+export type PageSummaryMetrics = {
+  performance?: ApiMetric
+  lcp?: ApiMetric
+  tbt?: ApiMetric
+  cls?: ApiMetric
+}
+
+/** One tracked page as GET /api/v1/pages returns it. */
+export type PageSummary = {
+  ref: string
+  name?: string
+  url: string
+  auditStatus?: string
+  lastAuditAt?: string
+  auditId?: string
+  scores?: PageSummaryMetrics
+  warning?: string
+  warningMessages?: string[]
+}
+
+export type ListPagesPayload = {
+  pages: PageSummary[]
+}
+
+/** POST /api/v1/pages body. `config` groups how the page is audited. */
+export type CreatePageBody = {
+  url: string
+  name?: string
+  config?: {
+    device?: 'mobile' | 'desktop'
+    region?: string
+  }
+}
+
+export type CreatePagePayload = {
+  ref: string
+  id: string
+  url: string
+  /** False when the url + device was already tracked and that page came back. */
+  created: boolean
+}
+
+export type ArchivePagePayload = {
+  ref: string
+  archived: true
 }
 
 /** Selects exactly one audit. auditId wins; otherwise ref plus one qualifier. */

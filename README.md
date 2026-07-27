@@ -41,6 +41,50 @@ xcelera audit get --ref myapp-com-dashboard --git-hash a1b2c3d
 xcelera audit get --audit-id ah7n75i5uxk6fce9wanzeq8d --json
 ```
 
+### `page list`
+
+Lists every tracked page with the scores of its latest audit. This is how you
+find the refs the audit commands take.
+
+`--csv` prints the same rows without the rating icons, for a spreadsheet.
+
+```bash
+xcelera page list
+xcelera page list --json
+xcelera page list --csv > pages.csv
+```
+
+### `page create`
+
+Registers a page and prints its ref. Registration is an upsert: the same url and
+device returns the page that already exists, so a deploy script can call it on
+every run. An existing page keeps its own name, settings and schedule.
+
+`--device` and `--region` default to your organization settings. Device is part
+of a page's identity — the same url as mobile and desktop is two pages.
+
+```bash
+xcelera page create --url https://example.com
+xcelera page create --url https://example.com --name Home --device desktop
+```
+
+### `page archive`
+
+Archives a page so it is no longer audited or listed. The page and its history
+are kept, but the CLI cannot unarchive it.
+
+```bash
+xcelera page archive --ref myapp-com-dashboard
+```
+
+Together the page and audit commands script a preview-environment loop:
+
+```bash
+ref=$(xcelera page create --url "$PREVIEW_URL" --json | jq -r .ref)
+xcelera audit run --ref "$ref" --wait
+xcelera page archive --ref "$ref"
+```
+
 ### Errors
 
 Every failure prints a stable `code` alongside the message and a hint:

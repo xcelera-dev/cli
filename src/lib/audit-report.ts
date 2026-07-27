@@ -4,12 +4,7 @@ import {
   AuditPayload,
   CommandResult
 } from '../types/index.js'
-
-const RATING_ICON: Record<string, string> = {
-  good: '🟢',
-  'needs-improvement': '🟠',
-  poor: '🔴'
-}
+import { ratingIcon } from './rating.js'
 
 const TOP_INSIGHTS = 5
 
@@ -130,23 +125,17 @@ function formatMetricSection(
 
 function formatMetricLine(label: string, metric?: ApiMetric): string {
   if (!metric) return `   ${label.padEnd(14)} —`
-  const icon = RATING_ICON[metric.rating] ?? '⚪'
+  const icon = ratingIcon(metric.rating)
   return `   ${icon} ${label.padEnd(14)} ${metric.display}`
 }
 
 /**
- * Reasons to distrust the number before acting on it. Spread is this audit's
- * noise floor; windowed and imputed scores are lower bounds, not measurements.
+ * Reasons to distrust the number before acting on it: windowed and imputed
+ * scores are lower bounds, not measurements.
  */
 function formatCaveats(audit: AuditPayload): string[] {
   const lines: string[] = []
 
-  if (audit.runSpread) {
-    const { perfSpread, runs } = audit.runSpread
-    lines.push(
-      `   ℹ️  Performance varied by ${perfSpread} points across ${runs} runs — treat smaller changes as noise.`
-    )
-  }
   if (audit.windowed) {
     lines.push(
       '   ⚠️  A run hit the observation window before the page settled; the score is a partial-load measurement.'

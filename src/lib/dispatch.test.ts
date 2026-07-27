@@ -3,7 +3,7 @@ import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, expect, test } from 'vitest'
 
 import { dispatch } from './dispatch.js'
-import { succeededAudit } from './test-utils.js'
+import { succeededAudit, trackedPage } from './test-utils.js'
 
 const server = setupServer()
 beforeAll(() => server.listen())
@@ -123,10 +123,97 @@ test('reports an unknown option with the command help', async () => {
 })
 
 test('reports an unknown command', async () => {
-  const result = await dispatch(['page', 'list'])
+  const result = await dispatch(['page', 'destroy'])
 
   expect(result.exitCode).toBe(1)
-  expect(result.errors[0]).toBe('Unknown command: "page list".')
+  expect(result.errors[0]).toBe('Unknown command: "page destroy".')
+})
+
+test('`page list` dispatches to the list command', async () => {
+  server.use(
+    http.get('https://xcelera.dev/api/v1/pages', () =>
+      HttpResponse.json({ success: true, data: { pages: [trackedPage()] } })
+    )
+  )
+
+  const result = await dispatch(['page', 'list', '--token', 'test-token'])
+
+  expect(result.exitCode).toBe(0)
+  expect(result.output).toContainEqual(expect.stringContaining('example-com'))
+})
+
+test('`page list` rejects --json together with --csv', async () => {
+  const result = await dispatch([
+    'page',
+    'list',
+    '--token',
+    'test-token',
+    '--json',
+    '--csv'
+  ])
+
+  expect(result.exitCode).toBe(1)
+  expect(result.errors[0]).toBe('Use either --json or --csv, not both.')
+})
+
+test('`page create` omits config when no device or region is given', async () => {
+  let body: unknown
+  server.use(
+    http.post('https://xcelera.dev/api/v1/pages', async ({ request }) => {
+      body = await request.json()
+      return HttpResponse.json({
+        success: true,
+        data: {
+          ref: 'example-com',
+          id: 'page-1',
+          url: 'https://example.com',
+          created: true
+        }
+      })
+    })
+  )
+
+  const result = await dispatch([
+    'page',
+    'create',
+    '--url',
+    'https://example.com',
+    '--token',
+    'test-token'
+  ])
+
+  expect(result.exitCode).toBe(0)
+  expect(body).toEqual({ url: 'https://example.com' })
+})
+
+test('rejects an unsupported device', async () => {
+  const result = await dispatch([
+    'page',
+    'create',
+    '--url',
+    'https://example.com',
+    '--device',
+    'tablet',
+    '--token',
+    'test-token'
+  ])
+
+  expect(result.exitCode).toBe(1)
+  expect(result.errors[0]).toContain('--device must be')
+})
+
+test('requires a url to create a page', async () => {
+  const result = await dispatch(['page', 'create', '--token', 'test-token'])
+
+  expect(result.exitCode).toBe(1)
+  expect(result.errors[0]).toContain('A url is required')
+})
+
+test('requires a ref to archive a page', async () => {
+  const result = await dispatch(['page', 'archive', '--token', 'test-token'])
+
+  expect(result.exitCode).toBe(1)
+  expect(result.errors[0]).toContain('Page ref is required')
 })
 
 test('rejects trailing command words', async () => {
@@ -148,6 +235,7 @@ test('lists every command with no arguments', async () => {
   expect(result.exitCode).toBe(0)
   expect(result.output).toContainEqual(expect.stringContaining('audit run'))
   expect(result.output).toContainEqual(expect.stringContaining('audit get'))
+  expect(result.output).toContainEqual(expect.stringContaining('page list'))
 })
 
 test('`help <noun> <verb>` prints that command', async () => {

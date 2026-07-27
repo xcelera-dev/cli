@@ -28561,6 +28561,11 @@ const RATING_ICON = {
     'needs-improvement': '🟠',
     poor: '🔴'
 };
+/** The traffic light for a metric's rating; ⚪ for anything unrated. */
+function ratingIcon(rating) {
+    return (rating && RATING_ICON[rating]) || '⚪';
+}
+
 const TOP_INSIGHTS = 5;
 /**
  * One audit, however we arrived at it: `audit run --wait` and `audit get`
@@ -28661,19 +28666,15 @@ function formatMetricSection(heading, entries) {
 function formatMetricLine(label, metric) {
     if (!metric)
         return `   ${label.padEnd(14)} —`;
-    const icon = RATING_ICON[metric.rating] ?? '⚪';
+    const icon = ratingIcon(metric.rating);
     return `   ${icon} ${label.padEnd(14)} ${metric.display}`;
 }
 /**
- * Reasons to distrust the number before acting on it. Spread is this audit's
- * noise floor; windowed and imputed scores are lower bounds, not measurements.
+ * Reasons to distrust the number before acting on it: windowed and imputed
+ * scores are lower bounds, not measurements.
  */
 function formatCaveats(audit) {
     const lines = [];
-    if (audit.runSpread) {
-        const { perfSpread, runs } = audit.runSpread;
-        lines.push(`   ℹ️  Performance varied by ${perfSpread} points across ${runs} runs — treat smaller changes as noise.`);
-    }
     if (audit.windowed) {
         lines.push('   ⚠️  A run hit the observation window before the page settled; the score is a partial-load measurement.');
     }

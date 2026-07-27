@@ -5,6 +5,9 @@ import {
   runAuditCommand
 } from './commands/audit.js'
 import { runAuditGetCommand } from './commands/audit-get.js'
+import { runPageArchiveCommand } from './commands/page-archive.js'
+import { runPageCreateCommand } from './commands/page-create.js'
+import { runPageListCommand } from './commands/page-list.js'
 
 type OptionsConfig = NonNullable<ParseArgsConfig['options']>
 type OptionValues = Record<string, string | boolean | string[] | undefined>
@@ -147,7 +150,146 @@ const auditGet: Command = {
   }
 }
 
-const COMMANDS: Command[] = [auditRun, auditGet]
+const pageList: Command = {
+  noun: 'page',
+  verb: 'list',
+  summary: 'List the tracked pages and their latest scores',
+  options: {
+    ...TOKEN_OPTION,
+    json: { type: 'boolean' },
+    csv: { type: 'boolean' }
+  },
+  help: [
+    'Usage: xcelera page list [options]',
+    '',
+    'Lists every page tracked by your organization, with the scores of its',
+    'latest audit. This is how you find the refs the audit commands take.',
+    '',
+    'Options:',
+    '  --token <token>      The xcelera API token.',
+    '                       Can also be set with XCELERA_TOKEN.',
+    '  --json               Print the raw API response instead of a table.',
+    '  --csv                Print the pages as CSV instead of a table.',
+    '',
+    'Examples:',
+    '  xcelera page list',
+    '  xcelera page list --json',
+    '  xcelera page list --csv > pages.csv'
+  ],
+  run: async (values, token) => {
+    if (values.json === true && values.csv === true) {
+      return failure(['Use either --json or --csv, not both.'])
+    }
+
+    return runPageListCommand(token, {
+      json: values.json === true,
+      csv: values.csv === true
+    })
+  }
+}
+
+const pageCreate: Command = {
+  noun: 'page',
+  verb: 'create',
+  summary: 'Register a page to audit',
+  options: {
+    ...TOKEN_OPTION,
+    url: { type: 'string' },
+    name: { type: 'string' },
+    device: { type: 'string' },
+    region: { type: 'string' },
+    json: { type: 'boolean' }
+  },
+  help: [
+    'Usage: xcelera page create --url <url> [options]',
+    '',
+    'Registers a page and prints its ref. Registration is an upsert: the same',
+    'url and device returns the page that already exists, so a deploy script',
+    'can call this every run. An existing page keeps its own name, settings',
+    'and schedule.',
+    '',
+    'The page has no audit schedule; audit it with `xcelera audit run`.',
+    '',
+    'Options:',
+    '  --url <url>          The https url to track. Required.',
+    '  --name <name>        A label for the page. Defaults to the url.',
+    '  --device <device>    "mobile" or "desktop". Defaults to your',
+    '                       organization setting. Part of page identity.',
+    '  --region <region>    Where the audit runs from. Defaults to your',
+    '                       organization setting.',
+    '  --token <token>      The xcelera API token.',
+    '                       Can also be set with XCELERA_TOKEN.',
+    '  --json               Print the raw API response.',
+    '',
+    'Examples:',
+    '  xcelera page create --url https://example.com',
+    '  xcelera page create --url https://example.com --name Home --device desktop'
+  ],
+  run: async (values, token) => {
+    const url = values.url as string | undefined
+    if (!url) {
+      return failure(['A url is required. Use --url https://example.com.'])
+    }
+
+    const device = parseDevice(values.device as string | undefined)
+    if ('error' in device) return device.error
+
+    // Omitted entirely when neither flag is given, so the org defaults apply.
+    const region = values.region as string | undefined
+    const config =
+      device.device || region ? { device: device.device, region } : undefined
+
+    return runPageCreateCommand(
+      token,
+      { url, name: values.name as string | undefined, config },
+      { json: values.json === true }
+    )
+  }
+}
+
+const pageArchive: Command = {
+  noun: 'page',
+  verb: 'archive',
+  summary: 'Archive a tracked page',
+  options: {
+    ...TOKEN_OPTION,
+    ref: { type: 'string' },
+    json: { type: 'boolean' }
+  },
+  help: [
+    'Usage: xcelera page archive --ref <ref> [options]',
+    '',
+    'Archives a page so it is no longer audited or listed.',
+    '',
+    'Options:',
+    '  --ref <ref>          The reference of the page. Required.',
+    '  --token <token>      The xcelera API token.',
+    '                       Can also be set with XCELERA_TOKEN.',
+    '  --json               Print the raw API response.',
+    '',
+    'Examples:',
+    '  xcelera page archive --ref example-page-xdfd'
+  ],
+  run: async (values, token) => {
+    const ref = values.ref as string | undefined
+    if (!ref) {
+      return failure([
+        'Page ref is required. Use --ref <ref> to specify the page to archive.',
+        'Run `xcelera page list` to see the refs you have.'
+      ])
+    }
+
+    return runPageArchiveCommand(token, ref, { json: values.json === true })
+  }
+}
+
+const COMMANDS: Command[] = [
+  auditRun,
+  auditGet,
+  pageList,
+  pageCreate,
+  pageArchive
+]
 
 /**
  * Parses argv and runs the matching command. Returns a CommandResult for every
@@ -260,6 +402,18 @@ function parseTimeout(
     }
   }
   return { seconds }
+}
+
+function parseDevice(
+  raw: string | undefined
+): { device?: 'mobile' | 'desktop' } | { error: CommandResult } {
+  if (raw === undefined) return {}
+  if (raw !== 'mobile' && raw !== 'desktop') {
+    return {
+      error: failure([`--device must be "mobile" or "desktop", got "${raw}".`])
+    }
+  }
+  return { device: raw }
 }
 
 function failure(errors: string[]): CommandResult {
