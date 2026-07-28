@@ -3,7 +3,7 @@ import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, expect, test } from 'vitest'
 
 import { dispatch } from './dispatch.js'
-import { succeededAudit, trackedPage } from './test-utils.js'
+import { collectProgress, succeededAudit, trackedPage } from './test-utils.js'
 
 const server = setupServer()
 beforeAll(() => server.listen())
@@ -250,4 +250,45 @@ test('`--help` prints the command it follows', async () => {
 
   expect(result.exitCode).toBe(0)
   expect(result.output[0]).toContain('Usage: xcelera audit run')
+})
+
+test('streams the output of a command that does not stream its own', async () => {
+  server.use(
+    http.get('https://xcelera.dev/api/v1/pages', () =>
+      HttpResponse.json({ success: true, data: { pages: [trackedPage()] } })
+    )
+  )
+
+  const progress = collectProgress()
+  const result = await dispatch(['page', 'list', '--token', 'test-token'], {
+    progress
+  })
+
+  expect(progress.lines).toEqual(result.output)
+})
+
+test('does not re-stream the output of a streaming command', async () => {
+  server.use(
+    http.post('https://xcelera.dev/api/v1/audits', () =>
+      HttpResponse.json({
+        success: true,
+        data: { auditId: 'abc-123', status: 'scheduled', integrations: {} }
+      })
+    )
+  )
+
+  const progress = collectProgress()
+  const result = await dispatch(
+    ['audit', 'run', '--ref', 'example-com', '--token', 'test-token'],
+    { progress }
+  )
+
+  expect(progress.lines).toEqual(result.output)
+})
+
+test('streams the help output', async () => {
+  const progress = collectProgress()
+  await dispatch(['help'], { progress })
+
+  expect(progress.lines).toContainEqual(expect.stringContaining('audit run'))
 })

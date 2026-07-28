@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { SimpleGit, simpleGit } from 'simple-git'
 import type { AuditPayload, PageSummary } from '../types/index.js'
+import type { Progress } from './progress.js'
 
 interface TempDir {
   dir: string
@@ -55,6 +56,34 @@ export async function withTempDir<T>(
   } finally {
     process.chdir(originalCwd)
     tempDir.cleanup()
+  }
+}
+
+export type ProgressCollector = Progress & {
+  /** Every call, interleaved: `line: …`, `status: …`, `finish`. */
+  events: string[]
+  /** Just the lines, untagged, for comparing against `CommandResult.output`. */
+  lines: string[]
+}
+
+/** A Progress that records what was streamed through it, in order. */
+export function collectProgress(): ProgressCollector {
+  const events: string[] = []
+  const lines: string[] = []
+
+  return {
+    events,
+    lines,
+    line(text) {
+      events.push(`line: ${text}`)
+      lines.push(text)
+    },
+    status(text) {
+      events.push(`status: ${text}`)
+    },
+    finish() {
+      events.push('finish')
+    }
   }
 }
 

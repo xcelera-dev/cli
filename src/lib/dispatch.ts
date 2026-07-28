@@ -8,6 +8,7 @@ import { runAuditGetCommand } from './commands/audit-get.js'
 import { runPageArchiveCommand } from './commands/page-archive.js'
 import { runPageCreateCommand } from './commands/page-create.js'
 import { runPageListCommand } from './commands/page-list.js'
+import { type Progress, silentProgress } from './progress.js'
 
 type OptionsConfig = NonNullable<ParseArgsConfig['options']>
 type OptionValues = Record<string, string | boolean | string[] | undefined>
@@ -18,7 +19,17 @@ type Command = {
   summary: string
   options: OptionsConfig
   help: string[]
-  run: (values: OptionValues, token: string) => Promise<CommandResult>
+  /** Set when `run` streams its own output; dispatch must not emit it again. */
+  streams?: boolean
+  run: (
+    values: OptionValues,
+    token: string,
+    progress: Progress
+  ) => Promise<CommandResult>
+}
+
+export type DispatchOptions = {
+  progress?: Progress
 }
 
 /** The verb assumed when only a noun is given — `xcelera audit` is `audit run`. */
@@ -82,7 +93,8 @@ const auditRun: Command = {
     '    --header "Authorization: Bearer eyJhbG..."',
     '  xcelera audit run --ref example-page-xdfd --cookie-file ./cookies.txt'
   ],
-  run: async (values, token) => {
+  streams: true,
+  run: async (values, token, progress) => {
     const ref = values.ref as string | undefined
     if (!ref) return missingRef()
 
@@ -95,7 +107,8 @@ const auditRun: Command = {
       headers: values.header as string[] | undefined,
       wait: values.wait === true,
       timeoutSeconds: timeout.seconds,
-      json: values.json === true
+      json: values.json === true,
+      progress
     })
   }
 }
@@ -294,21 +307,37 @@ const COMMANDS: Command[] = [
 /**
  * Parses argv and runs the matching command. Returns a CommandResult for every
  * outcome — including usage errors — so the entry point only prints and exits.
+ *
+ * Every line of `output` is streamed to `progress` exactly once, whether the
+ * command produced it as it went or all at the end.
  */
-export async function dispatch(argv: string[]): Promise<CommandResult> {
+export async function dispatch(
+  argv: string[],
+  options?: DispatchOptions
+): Promise<CommandResult> {
+  const progress = options?.progress ?? silentProgress
+  const { result, streamed } = await route(argv, progress)
+
+  if (!streamed) result.output.forEach((line) => progress.line(line))
+  return result
+}
+
+type Routed = { result: CommandResult; streamed: boolean }
+
+async function route(argv: string[], progress: Progress): Promise<Routed> {
   const words = argv.slice(0, findFirstFlag(argv))
   const flags = argv.slice(words.length)
 
   if (words[0] === 'help' || words.length === 0) {
-    return helpFor(words.slice(1))
+    return buffered(helpFor(words.slice(1)))
   }
 
   if (flags.includes('--help') || flags.includes('-h')) {
-    return helpFor(words)
+    return buffered(helpFor(words))
   }
 
   const command = findCommand(words)
-  if (!command) return unknownCommand(words)
+  if (!command) return buffered(unknownCommand(words))
 
   let values: OptionValues
   try {
@@ -319,18 +348,27 @@ export async function dispatch(argv: string[]): Promise<CommandResult> {
     }).values as OptionValues
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    return failure([message, '', ...command.help])
+    return buffered(failure([message, '', ...command.help]))
   }
 
   const token =
     (values.token as string | undefined) ?? process.env.XCELERA_TOKEN
   if (!token) {
-    return failure([
-      'A token is required. Use --token or set the XCELERA_TOKEN environment variable.'
-    ])
+    return buffered(
+      failure([
+        'A token is required. Use --token or set the XCELERA_TOKEN environment variable.'
+      ])
+    )
   }
 
-  return command.run(values, token)
+  return {
+    result: await command.run(values, token, progress),
+    streamed: command.streams === true
+  }
+}
+
+function buffered(result: CommandResult): Routed {
+  return { result, streamed: false }
 }
 
 function findCommand(words: string[]): Command | undefined {

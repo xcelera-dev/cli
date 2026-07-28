@@ -10,6 +10,7 @@ import { waitForAudit } from '../audit-poll.js'
 import { formatApiError, reportAudit } from '../audit-report.js'
 import { inferBuildContext } from '../buildContext.js'
 import { readNetscapeCookieFileSync } from '../cookies/netscape.js'
+import { type Progress, silentProgress } from '../progress.js'
 
 export interface AuthOptions {
   cookieFile?: string
@@ -22,6 +23,8 @@ export interface RunAuditOptions extends AuthOptions {
   wait?: boolean
   timeoutSeconds?: number
   json?: boolean
+  /** Where to stream output as it happens. Defaults to buffering silently. */
+  progress?: Progress
   /** Test seam — the poll cadence and clock. */
   pollIntervalMs?: number
   sleep?: (ms: number) => Promise<void>
@@ -38,18 +41,27 @@ export async function runAuditCommand(
   const output: string[] = []
   const errors: string[] = []
   const json = options?.json ?? false
+  const progress = options?.progress ?? silentProgress
+
+  // Buffer and stream together, so every line in `output` has already been
+  // printed by the time the command returns.
+  function emit(...lines: string[]): void {
+    for (const line of lines) {
+      output.push(line)
+      progress.line(line)
+    }
+  }
 
   try {
     const buildContext = await inferBuildContext()
     if (!json) {
-      output.push(...formatBuildContext(buildContext))
+      emit(...formatBuildContext(buildContext))
     }
 
     const { auth, warnings } = parseAuthCredentials(options)
     errors.push(...warnings)
     if (auth && !json) {
-      output.push('🔐 Authentication credentials detected')
-      output.push('')
+      emit('🔐 Authentication credentials detected', '')
     }
 
     const response = await requestAudit(ref, token, buildContext, auth)
@@ -63,28 +75,26 @@ export async function runAuditCommand(
     const { auditId, status, integrations } = response.data
 
     if (!json) {
-      output.push('✅ Audit scheduled successfully!')
+      emit('✅ Audit scheduled successfully!')
 
       if (process.env.DEBUG) {
-        output.push('')
-        output.push(`Audit ID: ${auditId}`)
-        output.push(`Status: ${status}`)
+        emit('', `Audit ID: ${auditId}`, `Status: ${status}`)
 
         if (!integrations || Object.keys(integrations).length === 0) {
-          output.push('No integrations detected')
+          emit('No integrations detected')
         }
       }
 
       if (integrations?.github) {
         const githubOutput = formatGitHubIntegrationStatus(integrations.github)
-        output.push(...githubOutput.output)
+        emit(...githubOutput.output)
         errors.push(...githubOutput.errors)
       }
     }
 
     if (!options?.wait) {
       if (json) {
-        output.push(JSON.stringify(response.data, null, 2))
+        emit(JSON.stringify(response.data, null, 2))
       }
       return { exitCode: 0, output, errors, auditId }
     }
@@ -93,8 +103,13 @@ export async function runAuditCommand(
       timeoutSeconds: options.timeoutSeconds ?? DEFAULT_WAIT_TIMEOUT_SECONDS,
       intervalMs: options.pollIntervalMs,
       sleep: options.sleep,
-      now: options.now
+      now: options.now,
+      onTick: (tick) =>
+        progress.status(
+          `⏳ ${tick.status} — ${formatElapsed(tick.elapsedMs)} elapsed`
+        )
     })
+    progress.finish()
 
     if (!waited.done) {
       errors.push('❌ Audit did not complete.')
@@ -103,11 +118,12 @@ export async function runAuditCommand(
     }
 
     const finished = reportAudit(waited.audit, json)
-    if (!json) output.push('')
-    output.push(...finished.output)
+    if (!json) emit('')
+    emit(...finished.output)
     errors.push(...finished.errors)
     return { exitCode: finished.exitCode, output, errors, auditId }
   } catch (error) {
+    progress.finish()
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error occurred'
     errors.push(`❌ ${errorMessage}`)
@@ -119,6 +135,11 @@ export async function runAuditCommand(
 
     return { exitCode: 1, output, errors }
   }
+}
+
+function formatElapsed(ms: number): string {
+  const seconds = Math.floor(ms / 1000)
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 }
 
 function formatBuildContext(context: BuildContext): string[] {

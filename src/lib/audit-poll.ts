@@ -1,11 +1,18 @@
-import { ApiError, AuditPayload } from '../types/index.js'
+import { ApiError, AuditPayload, AuditStatus } from '../types/index.js'
 import { ApiResult, getAudit } from './api.js'
+
+export type PollTick = {
+  status: AuditStatus
+  elapsedMs: number
+}
 
 export type PollOptions = {
   timeoutSeconds: number
   intervalMs?: number
   sleep?: (ms: number) => Promise<void>
   now?: () => number
+  /** Called with each non-terminal status observed, for a live status line. */
+  onTick?: (tick: PollTick) => void
 }
 
 export type PollResult =
@@ -32,10 +39,12 @@ export async function waitForAudit(
     timeoutSeconds,
     intervalMs = DEFAULT_INTERVAL_MS,
     sleep = defaultSleep,
-    now = Date.now
+    now = Date.now,
+    onTick
   } = options
 
-  const deadline = now() + timeoutSeconds * 1000
+  const startedAt = now()
+  const deadline = startedAt + timeoutSeconds * 1000
   let consecutiveErrors = 0
 
   for (;;) {
@@ -62,6 +71,10 @@ export async function waitForAudit(
       }
     } else {
       consecutiveErrors = 0
+      onTick?.({
+        status: response.data.status,
+        elapsedMs: now() - startedAt
+      })
     }
 
     if (now() >= deadline) return { done: false, error: timedOut(auditId) }

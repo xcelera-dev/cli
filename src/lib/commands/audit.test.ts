@@ -4,7 +4,12 @@ import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 
 import type { AuditStatus } from '../../types/index.js'
-import { succeededAudit, withTempDir, withTempGitRepo } from '../test-utils.js'
+import {
+  collectProgress,
+  succeededAudit,
+  withTempDir,
+  withTempGitRepo
+} from '../test-utils.js'
 import { runAuditCommand } from './audit.js'
 
 const server = setupServer()
@@ -359,6 +364,106 @@ describe('runAuditCommand', () => {
     expect(result.errors).toContainEqual(
       expect.stringContaining('audit get --audit-id abc-123')
     )
+  })
+
+  test('streams every output line, in order, before returning', async () => {
+    server.use(
+      http.post('https://xcelera.dev/api/v1/audits', () =>
+        HttpResponse.json({
+          success: true,
+          data: { auditId: 'abc-123', status: 'scheduled', integrations: {} }
+        })
+      ),
+      http.get('https://xcelera.dev/api/v1/audits/abc-123', () =>
+        HttpResponse.json({ success: true, data: succeededAudit() })
+      )
+    )
+
+    const progress = collectProgress()
+    const result = await runAuditCommand('example-com', 'test-token', {
+      wait: true,
+      pollIntervalMs: 0,
+      progress
+    })
+
+    expect(progress.lines).toEqual(result.output)
+  })
+
+  test('the scheduled message streams before the wait, not after it', async () => {
+    const statuses: AuditStatus[] = ['Running', 'Succeeded']
+    server.use(
+      http.post('https://xcelera.dev/api/v1/audits', () =>
+        HttpResponse.json({
+          success: true,
+          data: { auditId: 'abc-123', status: 'scheduled', integrations: {} }
+        })
+      ),
+      http.get('https://xcelera.dev/api/v1/audits/abc-123', () =>
+        HttpResponse.json({
+          success: true,
+          data: succeededAudit({ status: statuses.shift() ?? 'Succeeded' })
+        })
+      )
+    )
+
+    const progress = collectProgress()
+    let streamedBeforePoll: string[] = []
+
+    await runAuditCommand('example-com', 'test-token', {
+      wait: true,
+      pollIntervalMs: 0,
+      progress,
+      sleep: async () => {
+        streamedBeforePoll = [...progress.events]
+      }
+    })
+
+    expect(streamedBeforePoll).toContain(
+      'line: ✅ Audit scheduled successfully!'
+    )
+    expect(streamedBeforePoll).not.toContainEqual(
+      expect.stringContaining('Performance')
+    )
+  })
+
+  test('--wait shows a status line per poll and clears it before the report', async () => {
+    const statuses: AuditStatus[] = ['Scheduled', 'Running', 'Succeeded']
+    server.use(
+      http.post('https://xcelera.dev/api/v1/audits', () =>
+        HttpResponse.json({
+          success: true,
+          data: { auditId: 'abc-123', status: 'scheduled', integrations: {} }
+        })
+      ),
+      http.get('https://xcelera.dev/api/v1/audits/abc-123', () =>
+        HttpResponse.json({
+          success: true,
+          data: succeededAudit({ status: statuses.shift() ?? 'Succeeded' })
+        })
+      )
+    )
+
+    const progress = collectProgress()
+    let clock = 0
+    await runAuditCommand('example-com', 'test-token', {
+      wait: true,
+      pollIntervalMs: 0,
+      progress,
+      now: () => clock,
+      sleep: async () => {
+        clock += 42_000
+      }
+    })
+
+    expect(progress.events).toContain('status: ⏳ Scheduled — 0:00 elapsed')
+    expect(progress.events).toContain('status: ⏳ Running — 0:42 elapsed')
+
+    const finishedAt = progress.events.indexOf('finish')
+    const reportAt = progress.events.findIndex((event) =>
+      event.includes('Performance')
+    )
+    expect(finishedAt).toBeGreaterThan(-1)
+    expect(finishedAt).toBeLessThan(reportAt)
   })
 
   test('--json prints the scheduled audit and no build context', async () => {

@@ -2,9 +2,12 @@
 /* istanbul ignore file */
 
 import { dispatch } from './lib/dispatch.js'
+import { createConsoleProgress } from './lib/progress.js'
 
-const result = await dispatch(process.argv.slice(2))
+const progress = createConsoleProgress(process.stdout, process.stderr)
+const result = await dispatch(process.argv.slice(2), { progress })
+progress.finish()
 
-result.output.forEach((line: string) => console.log(line))
+// `output` was already streamed line by line; only the errors are left.
 result.errors.forEach((line: string) => console.error(line))
 process.exit(result.exitCode)

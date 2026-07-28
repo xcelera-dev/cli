@@ -125,6 +125,35 @@ test('stops immediately on an error that will not resolve itself', async () => {
   })
 })
 
+test('reports each non-terminal status it observes, with elapsed time', async () => {
+  const statuses = ['Scheduled', 'Running', 'Succeeded']
+  server.use(
+    http.get(AUDIT_URL, () =>
+      HttpResponse.json({
+        success: true,
+        data: succeededAudit({ status: statuses.shift() as 'Running' })
+      })
+    )
+  )
+
+  const ticks: { status: string; elapsedMs: number }[] = []
+  let clock = 0
+  await waitForAudit('abc-123', 'test-token', {
+    timeoutSeconds: 600,
+    intervalMs: 0,
+    now: () => clock,
+    sleep: async () => {
+      clock += 5_000
+    },
+    onTick: (tick) => ticks.push(tick)
+  })
+
+  expect(ticks).toEqual([
+    { status: 'Scheduled', elapsedMs: 0 },
+    { status: 'Running', elapsedMs: 5_000 }
+  ])
+})
+
 test('a failed audit is a terminal status, not an error', async () => {
   server.use(
     http.get(AUDIT_URL, () =>
