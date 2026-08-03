@@ -1,3 +1,5 @@
+import pc from 'picocolors'
+
 import type {
   AuthCredentials,
   BuildContext,
@@ -11,6 +13,7 @@ import { formatApiError, reportAudit } from '../audit-report.js'
 import { inferBuildContext } from '../buildContext.js'
 import { readNetscapeCookieFileSync } from '../cookies/netscape.js'
 import { type Progress, silentProgress } from '../progress.js'
+import { glyph } from '../style.js'
 
 export interface AuthOptions {
   cookieFile?: string
@@ -61,13 +64,13 @@ export async function runAuditCommand(
     const { auth, warnings } = parseAuthCredentials(options)
     errors.push(...warnings)
     if (auth && !json) {
-      emit('🔐 Authentication credentials detected', '')
+      emit(`${pc.green(glyph.success)} Authentication credentials detected`, '')
     }
 
     const response = await requestAudit(ref, token, buildContext, auth)
 
     if (!response.success) {
-      errors.push('❌ Unable to schedule audit :(')
+      errors.push(`${pc.red(glyph.failure)} Unable to schedule audit :(`)
       errors.push(...formatApiError(response.error))
       return { exitCode: 1, output, errors }
     }
@@ -75,7 +78,7 @@ export async function runAuditCommand(
     const { auditId, status, integrations } = response.data
 
     if (!json) {
-      emit('✅ Audit scheduled successfully!')
+      emit(`${pc.green(glyph.success)} Audit scheduled successfully!`)
 
       if (process.env.DEBUG) {
         emit('', `Audit ID: ${auditId}`, `Status: ${status}`)
@@ -106,13 +109,13 @@ export async function runAuditCommand(
       now: options.now,
       onTick: (tick) =>
         progress.status(
-          `⏳ ${tick.status} — ${formatElapsed(tick.elapsedMs)} elapsed`
+          `${tick.status} — ${formatElapsed(tick.elapsedMs)} elapsed`
         )
     })
     progress.finish()
 
     if (!waited.done) {
-      errors.push('❌ Audit did not complete.')
+      errors.push(`${pc.red(glyph.failure)} Audit did not complete.`)
       errors.push(...formatApiError(waited.error))
       return { exitCode: 1, output, errors, auditId }
     }
@@ -126,7 +129,7 @@ export async function runAuditCommand(
     progress.finish()
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error occurred'
-    errors.push(`❌ ${errorMessage}`)
+    errors.push(`${pc.red(glyph.failure)} ${errorMessage}`)
 
     if (error instanceof Error && error.stack) {
       errors.push('')
@@ -144,14 +147,16 @@ function formatElapsed(ms: number): string {
 
 function formatBuildContext(context: BuildContext): string[] {
   const logs: string[] = []
-  logs.push('🔍 Inferred build context:')
+  logs.push(`${glyph.heading} Inferred build context:`)
   if (context.service) {
-    logs.push(`   • service: ${context.service}`)
+    logs.push(`   ${glyph.bullet} service: ${context.service}`)
   }
   if (context.git) {
-    logs.push(`   • repository: ${context.git.owner}/${context.git.repo}`)
-    logs.push(`   • branch: ${context.git.branch}`)
-    logs.push(`   • commit: ${context.git.commit.hash}`)
+    logs.push(
+      `   ${glyph.bullet} repository: ${context.git.owner}/${context.git.repo}`
+    )
+    logs.push(`   ${glyph.bullet} branch: ${context.git.branch}`)
+    logs.push(`   ${glyph.bullet} commit: ${context.git.commit.hash}`)
   }
   logs.push('')
   return logs
@@ -168,7 +173,7 @@ function formatGitHubIntegrationStatus(context: GithubIntegrationContext): {
 
   switch (context.status) {
     case 'success': {
-      output.push('✅ GitHub integration detected!')
+      output.push(`${pc.green(glyph.success)} GitHub integration detected!`)
 
       if (process.env.DEBUG) {
         output.push(` ↳ installation ID: ${context.installationId}`)
@@ -187,7 +192,9 @@ function formatGitHubIntegrationStatus(context: GithubIntegrationContext): {
       break
     }
     case 'misconfigured': {
-      errors.push('⚠️ GitHub integration is misconfigured.')
+      errors.push(
+        `${pc.yellow(glyph.warning)} GitHub integration is misconfigured.`
+      )
       if (context.reason === 'no_repo_access') {
         errors.push(
           'The xcelera.dev GitHub app is installed, but it does not have access to this repository.'
@@ -203,7 +210,9 @@ function formatGitHubIntegrationStatus(context: GithubIntegrationContext): {
       break
     }
     case 'error': {
-      errors.push('⚠️ Something went wrong with the GitHub integration.')
+      errors.push(
+        `${pc.yellow(glyph.warning)} Something went wrong with the GitHub integration.`
+      )
       errors.push(
         'Your audit was scheduled successfully, but we could not create or update the GitHub check run.'
       )

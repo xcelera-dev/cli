@@ -1,3 +1,5 @@
+import pc from 'picocolors'
+
 import {
   ApiError,
   ApiMetric,
@@ -5,6 +7,7 @@ import {
   CommandResult
 } from '../types/index.js'
 import { ratingIcon } from './rating.js'
+import { glyph } from './style.js'
 
 const TOP_INSIGHTS = 5
 
@@ -26,7 +29,7 @@ export function reportAudit(audit: AuditPayload, json: boolean): CommandResult {
       exitCode: 1,
       output: [],
       errors: [
-        '❌ Audit failed.',
+        `${pc.red(glyph.failure)} Audit failed.`,
         ` ↳ [audit_failed] Audit ${audit.auditId} did not produce a result.`,
         ' ↳ Check the audit on your dashboard, or run it again.'
       ]
@@ -37,7 +40,7 @@ export function reportAudit(audit: AuditPayload, json: boolean): CommandResult {
     return {
       exitCode: 0,
       output: [
-        `⏳ Audit ${audit.auditId} is ${audit.status.toLowerCase()} — no results yet.`,
+        `${pc.blue(glyph.info)} Audit ${audit.auditId} is ${audit.status.toLowerCase()} — no results yet.`,
         '   Use --wait to block until it finishes.'
       ],
       errors: []
@@ -51,7 +54,9 @@ export function reportAudit(audit: AuditPayload, json: boolean): CommandResult {
 export function formatAudit(audit: AuditPayload): string[] {
   const lines: string[] = []
 
-  lines.push(`📊 ${audit.name ?? audit.ref} — ${audit.url}`)
+  lines.push(
+    pc.bold(`${glyph.heading} ${audit.name ?? audit.ref} — ${audit.url}`)
+  )
   if (audit.git.hash) {
     const branch = audit.git.branch ? ` (${audit.git.branch})` : ''
     lines.push(`   commit ${audit.git.hash}${branch}`)
@@ -65,7 +70,7 @@ export function formatAudit(audit: AuditPayload): string[] {
 
   if (audit.reportUrl) {
     lines.push('')
-    lines.push(`📄 Report (expires in 1 hour): ${audit.reportUrl}`)
+    lines.push(`${glyph.link} Report (expires in 1 hour): ${audit.reportUrl}`)
   }
 
   return lines
@@ -138,12 +143,12 @@ function formatCaveats(audit: AuditPayload): string[] {
 
   if (audit.windowed) {
     lines.push(
-      '   ⚠️  A run hit the observation window before the page settled; the score is a partial-load measurement.'
+      `   ${pc.yellow(glyph.warning)} A run hit the observation window before the page settled; the score is a partial-load measurement.`
     )
   }
   if (audit.scoreImputed) {
     lines.push(
-      '   ⚠️  Blocking time could not be measured on every run; the performance score is a lower bound.'
+      `   ${pc.yellow(glyph.warning)} Blocking time could not be measured on every run; the performance score is a lower bound.`
     )
   }
 
@@ -158,7 +163,7 @@ function formatInsights(audit: AuditPayload): string[] {
     `Top opportunities (${insights.length} of ${audit.insights.length}):`,
     ...insights.map((insight) => {
       const savings = formatSavings(insight.metricSavings)
-      return `   • ${insight.title}${savings}`
+      return `   ${glyph.bullet} ${insight.title}${savings}`
     })
   ]
 }

@@ -30,11 +30,11 @@ test('the status line is rendered on stderr, not stdout', () => {
   const err = fakeStream(true)
 
   const progress = createConsoleProgress(out, err)
-  progress.status('⏳ Running')
+  progress.status('Running')
   progress.finish()
 
   expect(out.chunks).toEqual([])
-  expect(err.chunks[0]).toContain('⏳ Running')
+  expect(err.chunks[0]).toContain('Running')
 })
 
 test('a line clears the status and redraws it', () => {
@@ -42,7 +42,7 @@ test('a line clears the status and redraws it', () => {
   const err = fakeStream(true)
 
   const progress = createConsoleProgress(out, err)
-  progress.status('⏳ Running')
+  progress.status('Running')
   err.chunks.length = 0
 
   progress.line('a report line')
@@ -50,7 +50,7 @@ test('a line clears the status and redraws it', () => {
 
   expect(out.chunks).toEqual(['a report line\n'])
   expect(err.chunks[0]).toBe('\r\x1b[K')
-  expect(err.chunks[1]).toContain('⏳ Running')
+  expect(err.chunks[1]).toContain('Running')
 })
 
 test('the spinner advances on a timer', () => {
@@ -59,11 +59,11 @@ test('the spinner advances on a timer', () => {
   const err = fakeStream(true)
 
   const progress = createConsoleProgress(out, err)
-  progress.status('⏳ Running')
+  progress.status('Running')
   const first = err.chunks[0]
 
   vi.advanceTimersByTime(80)
-  expect(err.chunks[1]).toContain('⏳ Running')
+  expect(err.chunks[1]).toContain('Running')
   expect(err.chunks[1]).not.toBe(first)
 
   progress.finish()
@@ -78,7 +78,7 @@ test('no status is written when stderr is not a TTY', () => {
   const err = fakeStream(false)
 
   const progress = createConsoleProgress(out, err)
-  progress.status('⏳ Running')
+  progress.status('Running')
   vi.advanceTimersByTime(1000)
   progress.finish()
 

@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     include: ['**/*.test.ts'],
     exclude: ['**/node_modules/**', '**/dist/**'],
+    env: { NO_COLOR: '1' },
     coverage: {
       include: ['src/**'],
       exclude: ['**/node_modules/**', '**/dist/**'],

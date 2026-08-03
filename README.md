@@ -90,7 +90,7 @@ xcelera page archive --ref "$ref"
 Every failure prints a stable `code` alongside the message and a hint:
 
 ```text
-❌ Unable to fetch audit :(
+✗ Unable to fetch audit :(
  ↳ [page_not_found] No page found for ref "nope".
  ↳ Call list_pages to see valid refs.
 ```

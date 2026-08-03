@@ -1,5 +1,9 @@
+import pc from 'picocolors'
+import stringWidth from 'string-width'
+
 import type { PageSummary } from '../types/index.js'
 import { ratingIcon } from './rating.js'
+import { glyph } from './style.js'
 
 const COLUMNS = ['REF', 'NAME', 'PERF', 'LCP', 'TBT', 'CLS', 'URL'] as const
 
@@ -24,11 +28,13 @@ export function formatPageList(pages: PageSummary[]): string[] {
 
   const rows = pages.map(toRow)
   const widths = COLUMNS.map((column, index) =>
-    Math.max(column.length, ...rows.map((row) => row[index].length))
+    Math.max(column.length, ...rows.map((row) => stringWidth(row[index])))
   )
 
   return [
-    `📄 ${pages.length} page${pages.length === 1 ? '' : 's'}`,
+    pc.bold(
+      `${glyph.heading} ${pages.length} page${pages.length === 1 ? '' : 's'}`
+    ),
     '',
     formatRow([...COLUMNS], widths),
     ...rows.map((row) => formatRow(row, widths))
@@ -66,10 +72,17 @@ function formatScore(metric?: { display: string | number; rating: string }) {
 function formatRow(cells: string[], widths: number[]): string {
   return cells
     .map((cell, index) =>
-      index === cells.length - 1 ? cell : cell.padEnd(widths[index])
+      index === cells.length - 1 ? cell : padCell(cell, widths[index])
     )
     .join('  ')
     .trimEnd()
+}
+
+// cell.padEnd would count colour codes and wide/CJK glyphs as one column
+// each, so pad by the rendered width instead. page.name comes from the API,
+// so it can contain any of those.
+function padCell(cell: string, width: number): string {
+  return cell + ' '.repeat(Math.max(0, width - stringWidth(cell)))
 }
 
 function toCsvRow(page: PageSummary): string[] {

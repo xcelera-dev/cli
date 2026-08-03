@@ -33,10 +33,10 @@ test('prints a row per page with its latest scores', async () => {
   const result = await runPageListCommand('test-token')
 
   expect(result.exitCode).toBe(0)
-  expect(result.output[0]).toBe('📄 2 pages')
+  expect(result.output[0]).toBe('▸ 2 pages')
   expect(result.output).toContainEqual(expect.stringContaining('REF'))
   expect(result.output[3]).toMatch(
-    /^example-com\s+Example\s+🟠 82\s+🟠 2\.4s\s+🟢 120ms\s+🟢 0\.02\s+https:\/\/example\.com$/
+    /^example-com\s+Example\s+▪ 82\s+▪ 2\.4s\s+● 120ms\s+● 0\.02\s+https:\/\/example\.com$/
   )
   // A page with no audit yet still gets a row, with dashes for its scores.
   expect(result.output[4]).toMatch(
@@ -136,7 +136,7 @@ test('prints code, message and hint on failure', async () => {
 
   expect(result.exitCode).toBe(1)
   expect(result.errors).toEqual([
-    '❌ Unable to list pages :(',
+    '✗ Unable to list pages :(',
     ' ↳ [invalid_token] Invalid API token.',
     ' ↳ Create a new token in Settings.'
   ])

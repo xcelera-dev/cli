@@ -55,7 +55,7 @@ test('prints code, message and hint when the ref is unknown', async () => {
 
   expect(result.exitCode).toBe(1)
   expect(result.errors).toEqual([
-    '❌ Unable to fetch audit :(',
+    '✗ Unable to fetch audit :(',
     ' ↳ [page_not_found] No page found for ref "nope".',
     ' ↳ Call list_pages to see valid refs.'
   ])

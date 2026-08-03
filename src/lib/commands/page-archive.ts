@@ -1,6 +1,9 @@
+import pc from 'picocolors'
+
 import type { CommandResult } from '../../types/index.js'
 import { archivePage } from '../api.js'
 import { formatApiError } from '../audit-report.js'
+import { glyph } from '../style.js'
 
 export async function runPageArchiveCommand(
   token: string,
@@ -14,7 +17,7 @@ export async function runPageArchiveCommand(
       exitCode: 1,
       output: [],
       errors: [
-        '❌ Unable to archive page :(',
+        `${pc.red(glyph.failure)} Unable to archive page :(`,
         ...formatApiError(response.error)
       ]
     }
@@ -31,7 +34,7 @@ export async function runPageArchiveCommand(
   return {
     exitCode: 0,
     output: [
-      `🗑️  Page archived: ${ref}`,
+      `${pc.green(glyph.success)} Page archived: ${ref}`,
       `   Its audit history is kept under ref ${ref}.`
     ],
     errors: []

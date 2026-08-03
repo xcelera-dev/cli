@@ -32,7 +32,7 @@ test('bare `audit` still runs an audit', async () => {
   ])
 
   expect(result.exitCode).toBe(0)
-  expect(result.output).toContain('✅ Audit scheduled successfully!')
+  expect(result.output).toContain('✓ Audit scheduled successfully!')
 })
 
 test('`audit get` dispatches to the read command', async () => {

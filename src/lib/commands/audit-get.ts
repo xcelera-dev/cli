@@ -1,6 +1,9 @@
+import pc from 'picocolors'
+
 import type { AuditSelector, CommandResult } from '../../types/index.js'
 import { getAudit } from '../api.js'
 import { formatApiError, reportAudit } from '../audit-report.js'
+import { glyph } from '../style.js'
 
 export type AuditGetOptions = {
   selector: AuditSelector
@@ -18,7 +21,10 @@ export async function runAuditGetCommand(
     return {
       exitCode: 1,
       output: [],
-      errors: ['❌ Unable to fetch audit :(', ...formatApiError(response.error)]
+      errors: [
+        `${pc.red(glyph.failure)} Unable to fetch audit :(`,
+        ...formatApiError(response.error)
+      ]
     }
   }
 

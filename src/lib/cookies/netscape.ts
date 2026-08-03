@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs'
 
+import pc from 'picocolors'
+
 import type { Cookie } from '../../types/index.js'
+import { glyph } from '../style.js'
 
 export type NetscapeCookieParseResult = {
   cookies: Cookie[]
@@ -94,7 +97,7 @@ export function parseNetscapeCookieFileContents(
     const preview = expiredCookieNames.slice(0, 5).join(', ')
     const suffix = expiredCookieNames.length > 5 ? ', …' : ''
     warnings.push(
-      `⚠️ Dropped ${expiredCookieNames.length} expired cookie(s) from ${sourceLabel}: ${preview}${suffix}`
+      `${pc.yellow(glyph.warning)} Dropped ${expiredCookieNames.length} expired cookie(s) from ${sourceLabel}: ${preview}${suffix}`
     )
   }
 

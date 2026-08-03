@@ -38,7 +38,7 @@ test('sends the grouped body and prints the new ref', async () => {
     name: 'Home',
     config: { device: 'desktop', region: 'us-central1' }
   })
-  expect(result.output[0]).toBe('✅ Page registered: example-com')
+  expect(result.output[0]).toBe('✓ Page registered: example-com')
   expect(result.output).toContainEqual(
     expect.stringContaining('xcelera audit run --ref example-com')
   )
@@ -116,7 +116,7 @@ test('fails with the api error when the url is rejected', async () => {
 
   expect(result.exitCode).toBe(1)
   expect(result.errors).toEqual([
-    '❌ Unable to register page :(',
+    '✗ Unable to register page :(',
     ' ↳ [invalid_url] Invalid url: only https URLs are allowed.'
   ])
 })

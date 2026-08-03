@@ -36,9 +36,9 @@ describe('runAuditCommand', () => {
       const result = await runAuditCommand('example-com', 'test-token')
 
       expect(result.exitCode).toBe(0)
-      expect(result.output).toContain('🔍 Inferred build context:')
-      expect(result.output).toContain('   • repository: owner/repo')
-      expect(result.output).toContain('✅ Audit scheduled successfully!')
+      expect(result.output).toContain('▸ Inferred build context:')
+      expect(result.output).toContain('   · repository: owner/repo')
+      expect(result.output).toContain('✓ Audit scheduled successfully!')
       expect(result.errors).toHaveLength(0)
     })
   })
@@ -66,8 +66,8 @@ describe('runAuditCommand', () => {
     const result = await runAuditCommand('example-com', 'test-token')
 
     expect(result.exitCode).toBe(0)
-    expect(result.output).toContain('✅ Audit scheduled successfully!')
-    expect(result.output).toContain('✅ GitHub integration detected!')
+    expect(result.output).toContain('✓ Audit scheduled successfully!')
+    expect(result.output).toContain('✓ GitHub integration detected!')
     expect(result.errors).toHaveLength(0)
   })
 
@@ -92,7 +92,7 @@ describe('runAuditCommand', () => {
     const result = await runAuditCommand('example-com', 'bad-token')
 
     expect(result.exitCode).toBe(1)
-    expect(result.errors).toContain('❌ Unable to schedule audit :(')
+    expect(result.errors).toContain('✗ Unable to schedule audit :(')
     expect(result.errors).toContain(' ↳ [invalid_token] Invalid token')
     expect(result.errors).toContain(
       ' ↳ Create a new token in Settings → API Tokens.'
@@ -134,8 +134,8 @@ describe('runAuditCommand', () => {
     const result = await runAuditCommand('example-com', 'test-token')
 
     expect(result.exitCode).toBe(0)
-    expect(result.output).toContain('✅ Audit scheduled successfully!')
-    expect(result.errors).toContain('⚠️ GitHub integration is misconfigured.')
+    expect(result.output).toContain('✓ Audit scheduled successfully!')
+    expect(result.errors).toContain('⚠ GitHub integration is misconfigured.')
     expect(result.errors).toContain(
       'The xcelera.dev GitHub app is installed, but it does not have access to this repository.'
     )
@@ -162,9 +162,9 @@ describe('runAuditCommand', () => {
     const result = await runAuditCommand('example-com', 'test-token')
 
     expect(result.exitCode).toBe(0)
-    expect(result.output).toContain('✅ Audit scheduled successfully!')
+    expect(result.output).toContain('✓ Audit scheduled successfully!')
     expect(result.errors).toContain(
-      '⚠️ Something went wrong with the GitHub integration.'
+      '⚠ Something went wrong with the GitHub integration.'
     )
   })
 
@@ -178,7 +178,7 @@ describe('runAuditCommand', () => {
     const result = await runAuditCommand('example-com', 'test-token')
 
     expect(result.exitCode).toBe(1)
-    expect(result.errors).toContain('❌ Unable to schedule audit :(')
+    expect(result.errors).toContain('✗ Unable to schedule audit :(')
     expect(result.errors).toContainEqual(
       expect.stringContaining('[http_error] Request failed: 500')
     )
@@ -203,8 +203,8 @@ describe('runAuditCommand', () => {
     })
 
     expect(result.exitCode).toBe(0)
-    expect(result.output).toContain('🔐 Authentication credentials detected')
-    expect(result.output).toContain('✅ Audit scheduled successfully!')
+    expect(result.output).toContain('✓ Authentication credentials detected')
+    expect(result.output).toContain('✓ Audit scheduled successfully!')
   })
 
   test('fails with invalid cookie format', async () => {
@@ -270,7 +270,7 @@ describe('runAuditCommand', () => {
       })
 
       expect(result.exitCode).toBe(0)
-      expect(result.output).toContain('🔐 Authentication credentials detected')
+      expect(result.output).toContain('✓ Authentication credentials detected')
     })
   })
 
@@ -327,7 +327,7 @@ describe('runAuditCommand', () => {
     })
 
     expect(result.exitCode).toBe(1)
-    expect(result.errors).toContain('❌ Audit failed.')
+    expect(result.errors).toContain('✗ Audit failed.')
   })
 
   test('--wait gives up at the timeout, pointing at the audit id', async () => {
@@ -419,7 +419,7 @@ describe('runAuditCommand', () => {
     })
 
     expect(streamedBeforePoll).toContain(
-      'line: ✅ Audit scheduled successfully!'
+      'line: ✓ Audit scheduled successfully!'
     )
     expect(streamedBeforePoll).not.toContainEqual(
       expect.stringContaining('Performance')
@@ -455,8 +455,8 @@ describe('runAuditCommand', () => {
       }
     })
 
-    expect(progress.events).toContain('status: ⏳ Scheduled — 0:00 elapsed')
-    expect(progress.events).toContain('status: ⏳ Running — 0:42 elapsed')
+    expect(progress.events).toContain('status: Scheduled — 0:00 elapsed')
+    expect(progress.events).toContain('status: Running — 0:42 elapsed')
 
     const finishedAt = progress.events.indexOf('finish')
     const reportAt = progress.events.findIndex((event) =>

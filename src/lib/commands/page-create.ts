@@ -1,6 +1,9 @@
+import pc from 'picocolors'
+
 import type { CommandResult, CreatePageBody } from '../../types/index.js'
 import { createPage } from '../api.js'
 import { formatApiError } from '../audit-report.js'
+import { glyph } from '../style.js'
 
 export async function runPageCreateCommand(
   token: string,
@@ -14,7 +17,7 @@ export async function runPageCreateCommand(
       exitCode: 1,
       output: [],
       errors: [
-        '❌ Unable to register page :(',
+        `${pc.red(glyph.failure)} Unable to register page :(`,
         ...formatApiError(response.error)
       ]
     }
@@ -30,8 +33,8 @@ export async function runPageCreateCommand(
     exitCode: 0,
     output: [
       page.created
-        ? `✅ Page registered: ${page.ref}`
-        : `ℹ️  Page already tracked: ${page.ref}`,
+        ? `${pc.green(glyph.success)} Page registered: ${page.ref}`
+        : `${pc.blue(glyph.info)} Page already tracked: ${page.ref}`,
       `   ${page.url}`,
       '',
       `Audit it with \`xcelera audit run --ref ${page.ref} --wait\`.`

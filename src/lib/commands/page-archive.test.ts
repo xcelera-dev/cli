@@ -52,6 +52,6 @@ test('fails with the api error when the ref is unknown', async () => {
   const result = await runPageArchiveCommand('test-token', 'nope')
 
   expect(result.exitCode).toBe(1)
-  expect(result.errors[0]).toBe('❌ Unable to archive page :(')
+  expect(result.errors[0]).toBe('✗ Unable to archive page :(')
   expect(result.errors[1]).toContain('[page_not_found]')
 })

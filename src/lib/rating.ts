@@ -1,10 +1,15 @@
-const RATING_ICON: Record<string, string> = {
-  good: '🟢',
-  'needs-improvement': '🟠',
-  poor: '🔴'
-}
+import pc from 'picocolors'
 
-/** The traffic light for a metric's rating; ⚪ for anything unrated. */
+/** The traffic light for a metric's rating; dim ○ for anything unrated. */
 export function ratingIcon(rating?: string): string {
-  return (rating && RATING_ICON[rating]) || '⚪'
+  switch (rating) {
+    case 'good':
+      return pc.green('●')
+    case 'needs-improvement':
+      return pc.yellow('▪')
+    case 'poor':
+      return pc.red('▲')
+    default:
+      return pc.dim('○')
+  }
 }

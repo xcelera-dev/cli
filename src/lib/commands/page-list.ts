@@ -1,7 +1,10 @@
+import pc from 'picocolors'
+
 import type { CommandResult } from '../../types/index.js'
 import { listPages } from '../api.js'
 import { formatApiError } from '../audit-report.js'
 import { formatPageList, formatPageListCsv } from '../page-report.js'
+import { glyph } from '../style.js'
 
 /** Lists the tracked pages — the only way to discover refs outside the app. */
 export async function runPageListCommand(
@@ -14,7 +17,10 @@ export async function runPageListCommand(
     return {
       exitCode: 1,
       output: [],
-      errors: ['❌ Unable to list pages :(', ...formatApiError(response.error)]
+      errors: [
+        `${pc.red(glyph.failure)} Unable to list pages :(`,
+        ...formatApiError(response.error)
+      ]
     }
   }
 
